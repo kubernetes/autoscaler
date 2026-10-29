@@ -673,7 +673,19 @@ without a selector.
 
 ## Implementation History
 
+- 2023-07-05: Original issue for per-node DaemonSet VPA recommendations opened in
+  [#5928](https://github.com/kubernetes/autoscaler/issues/5928) by @jcogilvie.
+- 2025-03-18: Initial AEP-7942 for DaemonSets with heterogeneous resource requirements proposed in
+  [#7942](https://github.com/kubernetes/autoscaler/pull/7942) by @bernot-dev.
+- 2025-12-18: AEP for `spec.selector` support on heterogeneous workloads proposed in
+  [#8956](https://github.com/kubernetes/autoscaler/pull/8956) by @msudheendra-cflt.
+- 2026-07-21: DaemonSet-scoped VPA AEP and prototype proposed in
+  [#10012](https://github.com/kubernetes/autoscaler/pull/10012),
+  [#10031](https://github.com/kubernetes/autoscaler/issues/10031), and
+  [#10032](https://github.com/kubernetes/autoscaler/pull/10032) by @ergoz.
 - 2026-09-01: Initial version, as part of AEP-7942 together with `VerticalPodAutoscalerSet`.
+  The `spec.selector.nodeSelector` and `VerticalPodAutoscalerSet` design was proposed by
+  @adrianmoisey in [#10229](https://github.com/kubernetes/autoscaler/pull/10229#issuecomment-6096510946).
 - 2026-10-25: Split out of AEP-7942 into its own AEP. `VerticalPodAutoscalerSet` is deferred to a
   follow-up AEP that builds on `spec.selector`.
 
