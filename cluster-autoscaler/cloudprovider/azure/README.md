@@ -272,6 +272,48 @@ az aks create \
 
 Please see the [AKS autoscaler documentation][] for details.
 
+## End-to-end testing
+
+The Azure provider-specific suites under [test/suites](test/suites) run with
+`make test-e2e` in [test/](test/). The separate `make test-e2e-autoscaling`
+target runs the upstream [Standard and DRA autoscaling suites](../../e2e/cluster_size_autoscaling.go)
+against AKS without changing their Go test code.
+The optional, master-only Prow job `pull-autoscaling-e2e-aks-azure-ca-test` runs
+this target for Cluster Autoscaler changes and can also be requested with
+`/test pull-autoscaling-e2e-aks-azure-ca-test`.
+
+Both CI targets reuse the CAPZ `scripts/ci-entrypoint.sh` lifecycle and the
+`build-e2e` target, which builds and pushes the Azure image from the PR checkout.
+CAPZ supplies the workload kubeconfig, Azure credentials, registry access,
+workload identity, and cluster cleanup. The upstream suite's target discovers
+the node resource group and autoscaler identity from the CAPZ management cluster,
+then invokes [run-e2e-azure.sh](../../hack/e2e/run-e2e-azure.sh).
+
+For the upstream suites, provision the
+[AKS template](test/templates/cluster-template-prow-aks-aso-cluster-autoscaler.yaml)
+with these environment variables:
+
+```sh
+CLUSTER_AUTOSCALER_NAMESPACE=kube-system
+CLUSTER_AUTOSCALER_MIN_NODES=3
+CLUSTER_AUTOSCALER_MAX_NODES=6
+CLUSTER_AUTOSCALER_WINDOWS_NODE_COUNT=0
+CLUSTER_AUTOSCALER_SYSTEM_NODE_TAINTS='["CriticalAddonsOnly=true:NoSchedule"]'
+```
+
+This keeps the autoscaler on an isolated Linux system pool and scales one Linux
+user VMSS between three and six nodes. Windows nodes must not participate in the
+upstream suites. The template defaults preserve the existing Azure-specific
+suite's topology. Do not enable the AKS-managed autoscaler alongside the
+autoscaler under test.
+
+The runner deploys the image with workload identity, runs Standard Autoscaling,
+installs the repository DRA example driver, restarts the autoscaler, and runs DRA
+Autoscaling. It allows five hours for Standard tests and ninety minutes for DRA,
+retains separate `junit_standard_01.xml`, `junit_dra_01.xml`, and autoscaler logs
+under `ARTIFACTS`, and returns failures to CAPZ for cleanup. The Prow job must also
+reserve time for image building, cluster provisioning, and teardown.
+
 ## Rate limit and back-off retries
 
 The new version of [Azure client][] supports rate limit and back-off retries when the cluster hits the throttling issue. These can be set by either environment variables, or cloud config file. With config file, defaults values are false or 0.
