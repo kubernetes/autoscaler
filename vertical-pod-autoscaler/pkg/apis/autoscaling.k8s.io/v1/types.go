@@ -435,6 +435,11 @@ var (
 	// ConfigUnsupported indicates that this VPA configuration is unsupported
 	// and recommendations will not be provided for it.
 	ConfigUnsupported VerticalPodAutoscalerConditionType = "ConfigUnsupported"
+	// TargetConflict indicates that multiple VerticalPodAutoscaler objects with an
+	// active update mode target the same workload. Only the oldest of them
+	// controls the pods; this condition is set on the others, which are not
+	// applied, and names the controlling VPA.
+	TargetConflict VerticalPodAutoscalerConditionType = "TargetConflict"
 )
 
 // VerticalPodAutoscalerCondition describes the state of
