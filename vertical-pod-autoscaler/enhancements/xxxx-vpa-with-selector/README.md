@@ -42,7 +42,7 @@ recommendation, so the standbys are over-provisioned or the active replica is st
 This AEP adds an optional `spec.selector` field to `VerticalPodAutoscaler`. It narrows the set of
 pods, among those controlled by the VPA's `targetRef`, that the VPA applies to. In this first
 iteration the selector supports node labels only (`selector.nodeSelector`). The API leaves room to
-add a pod label selector later (ref #8956). A VPA with a selector is still a regular VPA: it has
+add a pod label selector later (ref [#8956](https://github.com/kubernetes/autoscaler/pull/8956)). A VPA with a selector is still a regular VPA: it has
 its own `status.recommendation`, its own checkpoints, and is applied by the updater and the
 admission controller only to the pods it selects. Several VPAs can therefore target the same
 DaemonSet, each covering a different set of nodes.
