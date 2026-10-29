@@ -1,23 +1,31 @@
 {{- if .Values.admissionController.enabled }}
-{{- if and .Values.admissionController.registerWebhook .Values.admissionController.certGen.enabled }}
-{{- fail "admissionController.registerWebhook and admissionController.certGen.enabled cannot both be true. Choose either application-managed webhook (registerWebhook: true) or Helm-managed webhook with certGen (certGen.enabled: true)." }}
+{{- $ac := .Values.admissionController }}
+{{- if and $ac.tls.create $ac.registerWebhook }}
+{{- fail "admissionController.tls.create and admissionController.registerWebhook cannot both be true. With registerWebhook the application manages the webhook, so set admissionController.tls.create: false and provide the TLS Secret yourself." }}
 {{- end }}
-{{- if and .Values.admissionController.certManager.enabled .Values.admissionController.certGen.enabled }}
-{{- fail "admissionController.certManager.enabled and admissionController.certGen.enabled cannot both be true. Set admissionController.certGen.enabled: false to use cert-manager." }}
+{{- if and $ac.tls.create $ac.certManager.enabled }}
+{{- fail "admissionController.tls.create and admissionController.certManager.enabled cannot both be true. Set admissionController.tls.create: false to use cert-manager." }}
 {{- end }}
-{{- if and .Values.admissionController.certManager.enabled .Values.admissionController.registerWebhook }}
+{{- if and $ac.certManager.enabled $ac.registerWebhook }}
 {{- fail "admissionController.certManager.enabled and admissionController.registerWebhook cannot both be true. Set admissionController.registerWebhook: false when using cert-manager." }}
 {{- end }}
-{{- if and .Values.admissionController.certManager.enabled .Values.admissionController.tls.create }}
-{{- fail "admissionController.certManager.enabled and admissionController.tls.create cannot both be true. Set admissionController.tls.create: false when using cert-manager." }}
+{{- if not (or $ac.tls.create $ac.certManager.enabled $ac.registerWebhook) }}
+{{- fail "No TLS certificate source configured for the admission controller. Enable exactly one of: admissionController.tls.create (Helm-generated certificate, default), admissionController.certManager.enabled, or admissionController.registerWebhook (you provide the TLS Secret)." }}
 {{- end }}
-{{- if .Values.admissionController.certManager.enabled }}
-{{- range .Values.admissionController.extraArgs }}
+{{- $supplied := len (compact (list $ac.tls.caCert $ac.tls.cert $ac.tls.key)) }}
+{{- if and (gt $supplied 0) (lt $supplied 3) }}
+{{- fail "admissionController.tls.caCert, admissionController.tls.cert and admissionController.tls.key must either all be set or all be empty." }}
+{{- end }}
+{{- if and (gt $supplied 0) (not $ac.tls.create) }}
+{{- fail "admissionController.tls.caCert/cert/key are only used when admissionController.tls.create is true." }}
+{{- end }}
+{{- if $ac.certManager.enabled }}
+{{- range $ac.extraArgs }}
 {{- if eq . "--reload-cert=false" }}
 {{- fail "admissionController.extraArgs contains --reload-cert=false which conflicts with certManager.enabled. cert-manager requires cert reloading to pick up renewed certificates." }}
 {{- end }}
 {{- end }}
-{{- if and (not .Values.admissionController.certManager.createSelfSignedIssuer.enabled) (empty .Values.admissionController.certManager.issuerRef.name) }}
+{{- if and (not $ac.certManager.createSelfSignedIssuer.enabled) (empty $ac.certManager.issuerRef.name) }}
 {{- fail "admissionController.certManager.issuerRef.name is required when admissionController.certManager.createSelfSignedIssuer.enabled is false. Set issuerRef.name to an existing Issuer/ClusterIssuer or enable createSelfSignedIssuer." }}
 {{- end }}
 {{- end }}
