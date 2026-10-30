@@ -80,6 +80,7 @@ type GceCache struct {
 	instanceTemplateNameCache        map[GceRef]InstanceTemplateName
 	instanceTemplatesCache           map[GceRef]*gce.InstanceTemplate
 	kubeEnvCache                     map[GceRef]KubeEnv
+	migListingErrors                 map[string]error
 }
 
 // NewGceCache creates empty GceCache.
@@ -100,6 +101,7 @@ func NewGceCache() *GceCache {
 		instanceTemplateNameCache:        map[GceRef]InstanceTemplateName{},
 		instanceTemplatesCache:           map[GceRef]*gce.InstanceTemplate{},
 		kubeEnvCache:                     map[GceRef]KubeEnv{},
+		migListingErrors:                 map[string]error{},
 	}
 }
 
@@ -661,4 +663,31 @@ func (gc *GceCache) InvalidateMigInstancesStateCount() {
 	gc.cacheMutex.Lock()
 	defer gc.cacheMutex.Unlock()
 	gc.migInstancesStateCountCache = make(map[GceRef]map[cloudprovider.InstanceState]int64)
+}
+
+// SetMigListingError records the error from listing MIGs in a zone. The error
+// is kept until InvalidateMigListingErrors is called, so that the zone is not
+// listed (or its MIGs fetched individually) again within the same loop.
+func (gc *GceCache) SetMigListingError(zone string, err error) {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+
+	gc.migListingErrors[zone] = err
+}
+
+// GetMigListingError returns the cached MIG listing error for a zone, or nil
+// if listing the zone did not fail since the last InvalidateMigListingErrors.
+func (gc *GceCache) GetMigListingError(zone string) error {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+
+	return gc.migListingErrors[zone]
+}
+
+// InvalidateMigListingErrors clears all cached MIG listing errors.
+func (gc *GceCache) InvalidateMigListingErrors() {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+
+	gc.migListingErrors = map[string]error{}
 }

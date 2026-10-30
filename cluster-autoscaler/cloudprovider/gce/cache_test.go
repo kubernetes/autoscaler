@@ -149,3 +149,22 @@ func TestMigInstancesCache(t *testing.T) {
 	assert.False(t, found, "Expected MIG instances cache to be empty after InvalidateAllMigInstances was called")
 	assert.True(t, c.IsMigInstancesCacheEmpty(migRef))
 }
+
+func TestMigListingErrorsCache(t *testing.T) {
+	c := NewGceCache()
+
+	assert.NoError(t, c.GetMigListingError("us-test1"))
+
+	c.SetMigListingError("us-test1", errFetchMigs)
+	assert.Equal(t, errFetchMigs, c.GetMigListingError("us-test1"))
+	assert.NoError(t, c.GetMigListingError("us-test2"))
+
+	// Setting an error for another zone must not drop the existing one.
+	c.SetMigListingError("us-test2", errFetchMig)
+	assert.Equal(t, errFetchMigs, c.GetMigListingError("us-test1"))
+	assert.Equal(t, errFetchMig, c.GetMigListingError("us-test2"))
+
+	c.InvalidateMigListingErrors()
+	assert.NoError(t, c.GetMigListingError("us-test1"))
+	assert.NoError(t, c.GetMigListingError("us-test2"))
+}
