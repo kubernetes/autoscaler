@@ -351,6 +351,7 @@ func newTestGceManager(t *testing.T, testServerURL string, regional bool) *gceMa
 		migBaseNameCache:                 map[GceRef]string{},
 		migInstancesStateCountCache:      map[GceRef]map[cloudprovider.InstanceState]int64{},
 		listManagedInstancesResultsCache: map[GceRef]string{},
+		migListingErrors:                 map[string]error{},
 	}
 	migLister := NewMigLister(cache)
 	manager := &gceManagerImpl{
