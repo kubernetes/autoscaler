@@ -117,6 +117,18 @@ type Config struct {
 	// VMSS PUTs so concurrent modifications are rejected with 412 instead of overwritten.
 	// Disabled by default; set to true to opt in.
 	EnableVMSSEtag bool `json:"enableVMSSEtag,omitempty" yaml:"enableVMSSEtag,omitempty"`
+
+	// EnableStaleInstanceCleanup defines whether to enable automatic cleanup of stale unregistered VMSS instances
+	EnableStaleInstanceCleanup bool `json:"enableStaleInstanceCleanup,omitempty" yaml:"enableStaleInstanceCleanup,omitempty"`
+
+	// StaleInstanceCleanupDryRun defines whether stale instance cleanup should run in dry-run mode (detect but don't delete)
+	// In dry-run mode, stale instances are detected and logged but NOT deleted
+	StaleInstanceCleanupDryRun bool `json:"staleInstanceCleanupDryRun,omitempty" yaml:"staleInstanceCleanupDryRun,omitempty"`
+
+	// StaleInstanceMinAgeMinutes defines the minimum VM age for age-based unregistered-instance checks
+	// and the additional continuous observation grace period before deleting those candidates.
+	// It also defines the minimum unhealthy duration for registered-node checks, in minutes.
+	StaleInstanceMinAgeMinutes int `json:"staleInstanceMinAgeMinutes,omitempty" yaml:"staleInstanceMinAgeMinutes,omitempty"`
 }
 
 // These are only here for backward compabitility. Their equivalent exists in providerazure.Config with a different name.
@@ -149,6 +161,10 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 	cfg.StrictCacheUpdates = false
 	cfg.EnableLabelPredictionsOnTemplate = true
 	cfg.EnableVMSSEtag = false
+	// Stale instance cleanup disabled by default for safety
+	cfg.EnableStaleInstanceCleanup = false
+	cfg.StaleInstanceCleanupDryRun = true // Default to dry-run mode for extra safety
+	cfg.StaleInstanceMinAgeMinutes = 5    // Default 5 minutes minimum age
 
 	// Config file overrides defaults
 	if configReader != nil {
@@ -346,6 +362,9 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 		// 0 means "use default" in this case.
 		// This means, if it is valued by the config file, but explicitly set to 0 in the env, it will retreat to default.
 		cfg.MaxDeploymentsCount = int64(defaultMaxDeploymentsCount)
+	}
+	if cfg.StaleInstanceMinAgeMinutes < 1 {
+		cfg.StaleInstanceMinAgeMinutes = 5
 	}
 	if cfg.SubscriptionID == "" {
 		metadataService, err := providerazure.NewInstanceMetadataService(imdsServerURL)
