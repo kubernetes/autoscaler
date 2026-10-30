@@ -270,8 +270,8 @@ func (f *PodsRestrictionFactoryImpl) NewPodsEvictionRestriction(creatorToSingleG
 		clock:                        f.clock,
 		lastInPlaceAttemptTimeMap:    f.lastInPlaceAttemptTimeMap,
 		activeEvictionRequests:       f.activeEvictionRequests,
-		useEvictionRequest:          f.useEvictionRequest,
-		evictionRequestRequester:    f.evictionRequestRequester,
+		useEvictionRequest:           f.useEvictionRequest,
+		evictionRequestRequester:     f.evictionRequestRequester,
 	}
 }
 

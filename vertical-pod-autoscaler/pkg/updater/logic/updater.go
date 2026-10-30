@@ -88,11 +88,11 @@ type Updater interface {
 }
 
 type updater struct {
-	kubeClient                   kube_client.Interface
-	vpaNamespace                 string
-	useEvictionRequest           bool
-	evictionRequestTimeout       time.Duration
-	evictionRequestRequester     string
+	kubeClient               kube_client.Interface
+	vpaNamespace             string
+	useEvictionRequest       bool
+	evictionRequestTimeout   time.Duration
+	evictionRequestRequester string
 	// vpaIndexer must have the vpa_api_util.TargetRefIndex index registered.
 	vpaIndexer                   cache.Indexer
 	podLister                    listersv1.PodLister
