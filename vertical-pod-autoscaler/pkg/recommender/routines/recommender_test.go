@@ -442,8 +442,8 @@ func TestUpdateInitialDelayCondition(t *testing.T) {
 			seedStale:      true,
 			expectFound:    true,
 			expectStatus:   false,
-			expectReason:   "DelayWindowRemoved",
-			expectMessage:  "Initial delay is no longer set",
+			expectReason:   "DelayWindowExpired",
+			expectMessage:  "Initial delay window ended",
 		},
 		{
 			name:           "feature disabled",
