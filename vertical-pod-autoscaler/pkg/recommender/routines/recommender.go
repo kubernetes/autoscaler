@@ -92,8 +92,8 @@ func updateInitialDelayCondition(vpa *model.Vpa, observedVpa *vpaautoscalingv1.V
 	expiry, ok := vpa_utils.InitialDelayExpiry(observedVpa)
 	if !ok {
 		if _, found := vpa.GetConditionsMap()[vpaautoscalingv1.InitialDelayActive]; found {
-			vpa.SetCondition(vpaautoscalingv1.InitialDelayActive, false, "DelayWindowRemoved",
-				"Initial delay is no longer set")
+			vpa.SetCondition(vpaautoscalingv1.InitialDelayActive, false, "DelayWindowExpired",
+				"Initial delay window ended")
 		}
 		return
 	}
