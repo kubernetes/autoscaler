@@ -25,6 +25,7 @@ import (
 
 	"golang.org/x/time/rate"
 	corev1 "k8s.io/api/core/v1"
+	lifecyclev1alpha1 "k8s.io/api/lifecycle/v1alpha1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -82,9 +83,16 @@ type Updater interface {
 	PodUpdateHandler(oldObj, curObj any)
 	// ShutDown shuts down the boost work queue.
 	ShutDown()
+	// SetEvictionRequestOptions configures the EvictionRequest API mode for the updater.
+	SetEvictionRequestOptions(enabled bool, timeout time.Duration, requester string)
 }
 
 type updater struct {
+	kubeClient                   kube_client.Interface
+	vpaNamespace                 string
+	useEvictionRequest           bool
+	evictionRequestTimeout       time.Duration
+	evictionRequestRequester     string
 	// vpaIndexer must have the vpa_api_util.TargetRefIndex index registered.
 	vpaIndexer                   cache.Indexer
 	podLister                    listersv1.PodLister
@@ -152,6 +160,8 @@ func NewUpdater(
 
 	_, vpaIndexer := vpa_api_util.NewVpasListerWithIndexer(vpaClient, make(chan struct{}), namespace)
 	u := &updater{
+		kubeClient:                   kubeClient,
+		vpaNamespace:                 namespace,
 		vpaIndexer:                   vpaIndexer,
 		podLister:                    podInformerFactory.Core().V1().Pods().Lister(),
 		eventRecorder:                newEventRecorder(kubeClient),
@@ -281,6 +291,14 @@ func (u *updater) RunOnce(ctx context.Context) {
 		u.cleanupStaleInfeasibleAttempts(livePodUIDs)
 	}
 	timer.ObserveStep("FilterPods")
+
+	if u.useEvictionRequest {
+		activeEvictionRequests := u.reconcileEvictionRequests(ctx, allLivePods, livePodUIDs)
+		if u.restrictionFactory != nil {
+			u.restrictionFactory.SetOutstandingEvictionRequests(activeEvictionRequests)
+		}
+		timer.ObserveStep("ReconcileEvictionRequests")
+	}
 
 	if u.evictionAdmission != nil {
 		u.evictionAdmission.LoopInit(allLivePods, controlledPods)
@@ -447,7 +465,11 @@ func (u *updater) RunOnce(ctx context.Context) {
 				metrics_updater.RecordFailedEviction(vpaSize, vpa.Name, vpa.Namespace, updateMode, "EvictionError")
 			} else {
 				withEvicted = true
-				metrics_updater.AddEvictedPod(vpaSize, vpa.Name, vpa.Namespace, updateMode)
+				if u.useEvictionRequest {
+					metrics_updater.AddEvictionRequest(vpaSize, vpa.Name, vpa.Namespace)
+				} else {
+					metrics_updater.AddEvictedPod(vpaSize, vpa.Name, vpa.Namespace, updateMode)
+				}
 			}
 		}
 
@@ -479,6 +501,139 @@ func (u *updater) cleanupStaleInfeasibleAttempts(livePodUIDs set.Set[types.UID])
 func (u *updater) recordInfeasibleAttempt(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) {
 	u.infeasibleAttempts[pod.UID] = vpa.Status.Recommendation
 	klog.V(2).InfoS("Recorded infeasible attempt, will retry when recommendation changes", "pod", klog.KObj(pod))
+}
+
+func (u *updater) reconcileEvictionRequests(ctx context.Context, allLivePods []*corev1.Pod, livePodUIDs set.Set[types.UID]) set.Set[types.UID] {
+	activePodUIDs := set.New[types.UID]()
+	if u.kubeClient == nil {
+		return activePodUIDs
+	}
+
+	podByUID := make(map[types.UID]*corev1.Pod, len(allLivePods))
+	for _, pod := range allLivePods {
+		podByUID[pod.UID] = pod
+	}
+
+	reqList, err := u.kubeClient.LifecycleV1alpha1().EvictionRequests(u.vpaNamespace).List(ctx, metav1.ListOptions{})
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			klog.V(2).InfoS("EvictionRequest API not available on cluster, falling back to imperative eviction", "err", err)
+			u.useEvictionRequest = false
+			if u.restrictionFactory != nil {
+				u.restrictionFactory.SetEvictionRequestOptions(false, u.evictionRequestRequester)
+			}
+			return activePodUIDs
+		}
+		klog.ErrorS(err, "Failed to list EvictionRequests")
+		return activePodUIDs
+	}
+
+	for _, req := range reqList.Items {
+		requester := u.evictionRequestRequester
+		if requester == "" {
+			requester = "vpa.autoscaling.k8s.io/updater"
+		}
+		if req.Spec.Requester != requester && req.Labels["app.kubernetes.io/managed-by"] != "vpa-updater" {
+			continue
+		}
+		if req.Spec.Target.Pod == nil {
+			continue
+		}
+		targetPodUID := req.Spec.Target.Pod.UID
+
+		// Check if target pod is already gone or in terminal/evicted state
+		if !livePodUIDs.Has(targetPodUID) {
+			klog.V(3).InfoS("Cleaning up EvictionRequest for terminated or deleted pod", "request", req.Name, "pod", req.Spec.Target.Pod.Name)
+			_ = u.kubeClient.LifecycleV1alpha1().EvictionRequests(req.Namespace).Delete(ctx, req.Name, metav1.DeleteOptions{})
+			continue
+		}
+
+		// Check if EvictionRequest completed or failed
+		isEvicted := false
+		isFailed := false
+		for _, cond := range req.Status.Conditions {
+			if cond.Type == "TargetEvicted" && cond.Status == metav1.ConditionTrue {
+				isEvicted = true
+				break
+			}
+			if cond.Type == "Failed" && cond.Status == metav1.ConditionTrue {
+				isFailed = true
+				break
+			}
+		}
+		if isEvicted || isFailed {
+			klog.V(3).InfoS("Cleaning up completed or failed EvictionRequest", "request", req.Name, "pod", req.Spec.Target.Pod.Name, "isEvicted", isEvicted, "isFailed", isFailed)
+			_ = u.kubeClient.LifecycleV1alpha1().EvictionRequests(req.Namespace).Delete(ctx, req.Name, metav1.DeleteOptions{})
+			continue
+		}
+
+		// If already withdrawn, wait for controller to finalize / clean up
+		if req.Spec.Intent == lifecyclev1alpha1.EvictionRequestIntentWithdrawn {
+			continue
+		}
+
+		// Check timeout
+		if u.evictionRequestTimeout > 0 && time.Since(req.CreationTimestamp.Time) > u.evictionRequestTimeout {
+			klog.V(2).InfoS("EvictionRequest timed out, withdrawing", "request", req.Name, "pod", req.Spec.Target.Pod.Name)
+			_ = u.withdrawEvictionRequest(ctx, &req)
+			metrics_updater.RecordWithdrawnEvictionRequest("timeout")
+			continue
+		}
+
+		// Check if controlling VPA still requires eviction
+		pod := podByUID[targetPodUID]
+		if pod != nil {
+			controllingVPA := u.controllingVPAForPod(ctx, pod, u.vpasByTarget)
+			if controllingVPA == nil {
+				klog.V(2).InfoS("Withdrawing EvictionRequest because VPA no longer controls pod", "request", req.Name, "pod", pod.Name)
+				_ = u.withdrawEvictionRequest(ctx, &req)
+				metrics_updater.RecordWithdrawnEvictionRequest("vpa_not_found")
+				continue
+			}
+			updateMode := vpa_api_util.GetUpdateMode(controllingVPA)
+			if updateMode == vpa_types.UpdateModeOff || updateMode == vpa_types.UpdateModeInitial {
+				klog.V(2).InfoS("Withdrawing EvictionRequest because VPA update mode changed", "request", req.Name, "pod", pod.Name, "updateMode", updateMode)
+				_ = u.withdrawEvictionRequest(ctx, &req)
+				metrics_updater.RecordWithdrawnEvictionRequest("update_mode_disabled")
+				continue
+			}
+			if !u.podNeedsUpdate(pod, controllingVPA) {
+				klog.V(2).InfoS("Withdrawing EvictionRequest because pod is now within recommendation bounds", "request", req.Name, "pod", pod.Name)
+				_ = u.withdrawEvictionRequest(ctx, &req)
+				metrics_updater.RecordWithdrawnEvictionRequest("in_recommendation_bounds")
+				continue
+			}
+		}
+
+		activePodUIDs.Insert(targetPodUID)
+	}
+
+	return activePodUIDs
+}
+
+func (u *updater) withdrawEvictionRequest(ctx context.Context, req *lifecyclev1alpha1.EvictionRequest) error {
+	reqCopy := req.DeepCopy()
+	reqCopy.Spec.Intent = lifecyclev1alpha1.EvictionRequestIntentWithdrawn
+	_, err := u.kubeClient.LifecycleV1alpha1().EvictionRequests(req.Namespace).Update(ctx, reqCopy, metav1.UpdateOptions{})
+	return err
+}
+
+func (u *updater) podNeedsUpdate(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) bool {
+	if vpa == nil || vpa.Status.Recommendation == nil {
+		return false
+	}
+	updateconfig := priority.UpdateConfig{
+		MinChangePriority:          u.defaultUpdateThreshold,
+		PodLifetimeUpdateThreshold: u.podLifetimeUpdateThreshold,
+		EvictAfterOOMThreshold:     u.evictAfterOOMThreshold,
+	}
+	priorityCalculator := priority.NewUpdatePriorityCalculator(
+		vpa,
+		updateconfig,
+		u.recommendationProcessor,
+		u.priorityProcessor)
+	priorityCalculator.AddPod(pod, time.Now(), u.infeasibleAttempts)
+	return len(priorityCalculator.GetSortedPods(u.evictionAdmission)) > 0
 }
 
 func (u *updater) PodAddHandler(obj any) {
@@ -526,6 +681,15 @@ func (u *updater) RunBoostWorker(ctx context.Context) {
 
 func (u *updater) ShutDown() {
 	u.cpuStartupBoostQueue.ShutDown()
+}
+
+func (u *updater) SetEvictionRequestOptions(enabled bool, timeout time.Duration, requester string) {
+	u.useEvictionRequest = enabled
+	u.evictionRequestTimeout = timeout
+	u.evictionRequestRequester = requester
+	if u.restrictionFactory != nil {
+		u.restrictionFactory.SetEvictionRequestOptions(enabled, requester)
+	}
 }
 
 func (u *updater) processNextBoostItem(ctx context.Context) bool {

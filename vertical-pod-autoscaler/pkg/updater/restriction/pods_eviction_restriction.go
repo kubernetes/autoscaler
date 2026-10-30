@@ -22,12 +22,15 @@ import (
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
+	lifecyclev1alpha1 "k8s.io/api/lifecycle/v1alpha1"
 	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/klog/v2"
 	"k8s.io/utils/clock"
+	"k8s.io/utils/set"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 )
@@ -50,10 +53,17 @@ type PodsEvictionRestrictionImpl struct {
 	creatorToSingleGroupStatsMap map[podReplicaCreator]singleGroupStats
 	clock                        clock.Clock
 	lastInPlaceAttemptTimeMap    map[string]time.Time
+	activeEvictionRequests       set.Set[types.UID]
+	useEvictionRequest           bool
+	evictionRequestRequester     string
 }
 
 // CanEvict checks if pod can be safely evicted
 func (e *PodsEvictionRestrictionImpl) CanEvict(pod *corev1.Pod) bool {
+	if e.activeEvictionRequests != nil && e.activeEvictionRequests.Has(pod.UID) {
+		klog.V(3).InfoS("Cannot evict pod, active EvictionRequest already exists", "pod", klog.KObj(pod))
+		return false
+	}
 	cr, present := e.podToReplicaCreatorMap[getPodID(pod)]
 	if present {
 		singleGroupStats, present := e.creatorToSingleGroupStatsMap[cr]
@@ -86,6 +96,22 @@ func (e *PodsEvictionRestrictionImpl) Evict(podToEvict *corev1.Pod, vpa *vpa_typ
 		return fmt.Errorf("cannot evict pod %s/%s: eviction budget exceeded", podToEvict.Namespace, podToEvict.Name)
 	}
 
+	if e.useEvictionRequest {
+		reqErr := e.evictViaEvictionRequest(podToEvict, vpa, eventRecorder)
+		if reqErr == nil {
+			if podToEvict.Status.Phase != corev1.PodPending {
+				singleGroupStats, present := e.creatorToSingleGroupStatsMap[cr]
+				if !present {
+					return fmt.Errorf("internal error - cannot find stats for replication group %v", cr)
+				}
+				singleGroupStats.evicted = singleGroupStats.evicted + 1
+				e.creatorToSingleGroupStatsMap[cr] = singleGroupStats
+			}
+			return nil
+		}
+		klog.V(2).InfoS("Failed to create EvictionRequest, falling back to imperative eviction", "pod", klog.KObj(podToEvict), "error", reqErr)
+	}
+
 	eviction := &policyv1.Eviction{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: podToEvict.Namespace,
@@ -112,5 +138,47 @@ func (e *PodsEvictionRestrictionImpl) Evict(podToEvict *corev1.Pod, vpa *vpa_typ
 		e.creatorToSingleGroupStatsMap[cr] = singleGroupStats
 	}
 
+	return nil
+}
+
+func (e *PodsEvictionRestrictionImpl) evictViaEvictionRequest(podToEvict *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler, eventRecorder record.EventRecorder) error {
+	requester := e.evictionRequestRequester
+	if requester == "" {
+		requester = "vpa.autoscaling.k8s.io/updater"
+	}
+	req := &lifecyclev1alpha1.EvictionRequest{
+		ObjectMeta: metav1.ObjectMeta{
+			GenerateName: fmt.Sprintf("%s-vpa-", podToEvict.Name),
+			Namespace:    podToEvict.Namespace,
+			Labels: map[string]string{
+				"app.kubernetes.io/managed-by": "vpa-updater",
+				"vpa.autoscaling.k8s.io/name":  vpa.Name,
+			},
+		},
+		Spec: lifecyclev1alpha1.EvictionRequestSpec{
+			Target: lifecyclev1alpha1.EvictionRequestTarget{
+				Pod: &lifecyclev1alpha1.EvictionRequestPodReference{
+					Name: podToEvict.Name,
+					UID:  podToEvict.UID,
+				},
+			},
+			Requester: requester,
+			Intent:    lifecyclev1alpha1.EvictionRequestIntentEviction,
+		},
+	}
+	created, err := e.client.LifecycleV1alpha1().EvictionRequests(podToEvict.Namespace).Create(context.TODO(), req, metav1.CreateOptions{})
+	if err != nil {
+		return err
+	}
+	eventRecorder.Event(podToEvict, corev1.EventTypeNormal, "EvictionRequestedByVPA",
+		"EvictionRequest "+created.Name+" was created by VPA Updater to apply resource recommendation.")
+
+	eventRecorder.Event(vpa, corev1.EventTypeNormal, "RequestedPodEviction",
+		"VPA Updater requested eviction of Pod "+podToEvict.Name+" via EvictionRequest "+created.Name+".")
+
+	if e.activeEvictionRequests == nil {
+		e.activeEvictionRequests = set.New[types.UID]()
+	}
+	e.activeEvictionRequests.Insert(podToEvict.UID)
 	return nil
 }

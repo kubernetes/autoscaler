@@ -25,10 +25,12 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/klog/v2"
 	"k8s.io/utils/clock"
+	"k8s.io/utils/set"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource/pod/patch"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
@@ -58,6 +60,8 @@ type PodsRestrictionFactory interface {
 	GetCreatorMaps(pods []*corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) (map[podReplicaCreator]singleGroupStats, map[string]podReplicaCreator, error)
 	NewPodsEvictionRestriction(creatorToSingleGroupStatsMap map[podReplicaCreator]singleGroupStats, podToReplicaCreatorMap map[string]podReplicaCreator) PodsEvictionRestriction
 	NewPodsInPlaceRestriction(creatorToSingleGroupStatsMap map[podReplicaCreator]singleGroupStats, podToReplicaCreatorMap map[string]podReplicaCreator) PodsInPlaceRestriction
+	SetOutstandingEvictionRequests(activePodUIDs set.Set[types.UID])
+	SetEvictionRequestOptions(enabled bool, requester string)
 }
 
 // PodsRestrictionFactoryImpl is the implementation of the PodsRestrictionFactory interface.
@@ -70,6 +74,9 @@ type PodsRestrictionFactoryImpl struct {
 	lastInPlaceAttemptTimeMap   map[string]time.Time
 	patchCalculators            []patch.Calculator
 	inPlaceSkipDisruptionBudget bool
+	activeEvictionRequests      set.Set[types.UID]
+	useEvictionRequest          bool
+	evictionRequestRequester    string
 }
 
 // NewPodsRestrictionFactory creates a new PodsRestrictionFactory.
@@ -233,11 +240,25 @@ func (f *PodsRestrictionFactoryImpl) GetCreatorMaps(pods []*corev1.Pod, vpa *vpa
 			if isInPlaceUpdating(pod) {
 				singleGroup.inPlaceUpdateOngoing = singleGroup.inPlaceUpdateOngoing + 1
 			}
+			if f.activeEvictionRequests != nil && f.activeEvictionRequests.Has(pod.UID) {
+				singleGroup.outstandingEvictionRequests = singleGroup.outstandingEvictionRequests + 1
+			}
 		}
 		singleGroup.running = len(replicas) - singleGroup.pending
 		creatorToSingleGroupStatsMap[creator] = singleGroup
 	}
 	return creatorToSingleGroupStatsMap, podToReplicaCreatorMap, nil
+}
+
+// SetOutstandingEvictionRequests sets the UIDs of pods with in-flight EvictionRequests
+func (f *PodsRestrictionFactoryImpl) SetOutstandingEvictionRequests(activePodUIDs set.Set[types.UID]) {
+	f.activeEvictionRequests = activePodUIDs
+}
+
+// SetEvictionRequestOptions configures whether EvictionRequest mode is enabled and the requester ID
+func (f *PodsRestrictionFactoryImpl) SetEvictionRequestOptions(enabled bool, requester string) {
+	f.useEvictionRequest = enabled
+	f.evictionRequestRequester = requester
 }
 
 // NewPodsEvictionRestriction creates a new PodsEvictionRestriction.
@@ -248,6 +269,9 @@ func (f *PodsRestrictionFactoryImpl) NewPodsEvictionRestriction(creatorToSingleG
 		creatorToSingleGroupStatsMap: creatorToSingleGroupStatsMap,
 		clock:                        f.clock,
 		lastInPlaceAttemptTimeMap:    f.lastInPlaceAttemptTimeMap,
+		activeEvictionRequests:       f.activeEvictionRequests,
+		useEvictionRequest:          f.useEvictionRequest,
+		evictionRequestRequester:    f.evictionRequestRequester,
 	}
 }
 
@@ -296,23 +320,24 @@ func managingControllerRef(pod *corev1.Pod) *metav1.OwnerReference {
 }
 
 type singleGroupStats struct {
-	configured             int
-	pending                int
-	running                int
-	evictionTolerance      int
-	evicted                int
-	inPlaceUpdateOngoing   int  // number of pods from last loop that are still in-place updating
-	inPlaceUpdateInitiated int  // number of pods from the current loop that have newly requested in-place resize
-	belowMinReplicas       bool // true if this group was allowed through despite being below minReplicas (for in-place only)
+	configured                  int
+	pending                     int
+	running                     int
+	evictionTolerance           int
+	evicted                     int
+	inPlaceUpdateOngoing        int  // number of pods from last loop that are still in-place updating
+	inPlaceUpdateInitiated      int  // number of pods from the current loop that have newly requested in-place resize
+	outstandingEvictionRequests int  // number of pods from previous loops that have active EvictionRequests
+	belowMinReplicas            bool // true if this group was allowed through despite being below minReplicas (for in-place only)
 }
 
 // isPodDisruptable checks if all pods are running and eviction tolerance is small, we can
 // disrupt the current pod.
 func (s *singleGroupStats) isPodDisruptable() bool {
 	shouldBeAlive := s.configured - s.evictionTolerance
-	actuallyAlive := s.running - (s.evicted + s.inPlaceUpdateInitiated)
+	actuallyAlive := s.running - (s.evicted + s.inPlaceUpdateInitiated + s.outstandingEvictionRequests)
 	return actuallyAlive > shouldBeAlive ||
-		(s.configured == s.running && s.evictionTolerance == 0 && s.evicted == 0 && s.inPlaceUpdateInitiated == 0)
+		(s.configured == s.running && s.evictionTolerance == 0 && s.evicted == 0 && s.inPlaceUpdateInitiated == 0 && s.outstandingEvictionRequests == 0)
 	// we don't want to block pods from being considered for eviction if tolerance is small and some pods are potentially stuck resizing
 }
 

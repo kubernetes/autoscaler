@@ -92,6 +92,22 @@ var (
 		}, []string{"vpa_size_log2", "update_mode", "reason", "vpa_name", "vpa_namespace"},
 	)
 
+	evictionRequestsCount = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "eviction_requests_total",
+			Help:      "Number of EvictionRequests created by Updater to apply a new recommendation.",
+		}, []string{"vpa_size_log2", "vpa_name", "vpa_namespace"},
+	)
+
+	withdrawnEvictionRequestsCount = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "withdrawn_eviction_requests_total",
+			Help:      "Number of EvictionRequests withdrawn by Updater.",
+		}, []string{"reason"},
+	)
+
 	inPlaceUpdatableCount = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Namespace: metricsNamespace,
@@ -167,6 +183,8 @@ func Register() {
 		vpasWithInPlaceUpdatablePodsCount,
 		vpasWithInPlaceUpdatedPodsCount,
 		failedInPlaceUpdateAttempts,
+		evictionRequestsCount,
+		withdrawnEvictionRequestsCount,
 		functionLatency,
 		admissionControllerStatusInvalidCount,
 	}
@@ -279,6 +297,17 @@ func RecordFailedInPlaceUpdate(vpaSize int, vpaName string, vpaNamespace string,
 func RecordInPlaceInfeasibleCached(vpaSize int, vpaName string, vpaNamespace string) {
 	log2 := metrics.GetVpaSizeLog2(vpaSize)
 	inPlaceInfeasibleCachedCount.WithLabelValues(strconv.Itoa(log2), vpaName, vpaNamespace).Inc()
+}
+
+// AddEvictionRequest increases the counter of created EvictionRequests by given VPA size, name, and namespace
+func AddEvictionRequest(vpaSize int, vpaName string, vpaNamespace string) {
+	log2 := metrics.GetVpaSizeLog2(vpaSize)
+	evictionRequestsCount.WithLabelValues(strconv.Itoa(log2), vpaName, vpaNamespace).Inc()
+}
+
+// RecordWithdrawnEvictionRequest increases the counter of withdrawn EvictionRequests with the given reason
+func RecordWithdrawnEvictionRequest(reason string) {
+	withdrawnEvictionRequestsCount.WithLabelValues(reason).Inc()
 }
 
 // Add increases the counter for the given VPA size
