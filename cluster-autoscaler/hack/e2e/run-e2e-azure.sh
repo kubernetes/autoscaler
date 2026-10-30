@@ -136,6 +136,8 @@ PHASE=dra
 "${KUBECTL}" rollout status daemonset/dra-example-driver-kubeletplugin --namespace kube-system --timeout=10m
 "${KUBECTL}" rollout restart deployment/cluster-autoscaler --namespace kube-system
 "${KUBECTL}" rollout status deployment/cluster-autoscaler --namespace kube-system --timeout=5m
+# CA deletes this ConfigMap on exit; rollout readiness does not wait for its recreation.
+"${KUBECTL}" wait --for=create configmap/cluster-autoscaler-status --namespace kube-system --timeout=5m
 
 TIMEOUT=90m "${SCRIPT_DIR}/run-e2e-tests.sh" --report-prefix=dra_ \
   '\[sig-autoscaling\].*Cluster size autoscaling.*DRA Autoscaling' -- \

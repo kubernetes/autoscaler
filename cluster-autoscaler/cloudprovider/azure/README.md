@@ -308,8 +308,11 @@ suite's topology. Do not enable the AKS-managed autoscaler alongside the
 autoscaler under test.
 
 The runner deploys the image with workload identity, runs Standard Autoscaling,
-installs the repository DRA example driver, restarts the autoscaler, and runs DRA
-Autoscaling. It allows five hours for Standard tests and ninety minutes for DRA,
+installs the repository DRA example driver, and restarts the autoscaler. Before
+running DRA Autoscaling, it waits up to five minutes for the
+`cluster-autoscaler-status` ConfigMap to be recreated; a timeout fails the job
+instead of allowing tests to skip because the autoscaler is not ready.
+It allows five hours for Standard tests and ninety minutes for DRA,
 retains separate `junit_standard_01.xml`, `junit_dra_01.xml`, and autoscaler logs
 under `ARTIFACTS`, and returns failures to CAPZ for cleanup. The Prow job must also
 reserve time for image building, cluster provisioning, and teardown.

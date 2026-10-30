@@ -132,6 +132,8 @@ func azureFixture(t *testing.T) (string, string) {
 		"NODES_FILE":                   filepath.Join(root, "nodes.json"),
 		"HELM_VALUES_FILE":             filepath.Join(root, "helm-values.json"),
 		"HELM_VALUES_PATH_FILE":        filepath.Join(root, "helm-values-path"),
+		"STATUS_CONFIGMAP_FILE":        filepath.Join(root, "status-configmap"),
+		"STATUS_WAIT_EXIT":             "0",
 		"STANDARD_EXIT":                "0",
 		"DRA_EXIT":                     "0",
 		"LOG_EXIT":                     "0",
@@ -156,6 +158,18 @@ set -euo pipefail
 printf 'kubectl %s\n' "$*" >> "$CALLS_FILE"
 if [[ "$1" == get && "$2" == nodes ]]; then
   cat "$NODES_FILE"
+elif [[ "$*" == "rollout restart deployment/cluster-autoscaler --namespace kube-system" ]]; then
+  rm -f -- "$STATUS_CONFIGMAP_FILE"
+elif [[ "$*" == "wait --for=create configmap/cluster-autoscaler-status --namespace kube-system --timeout=5m" ]]; then
+  if grep -q '^kubectl rollout restart deployment/cluster-autoscaler ' "$CALLS_FILE"; then
+    sleep 0.05
+    if [[ "$STATUS_WAIT_EXIT" != 0 ]]; then
+      echo "error: timed out waiting for cluster-autoscaler-status" >&2
+      exit "$STATUS_WAIT_EXIT"
+    fi
+    printf 'status ConfigMap recreated\n' >> "$CALLS_FILE"
+  fi
+  touch "$STATUS_CONFIGMAP_FILE"
 elif [[ "$*" == *" logs "* ]]; then
   echo "autoscaler diagnostics"
   if grep -q '^suite 90m ' "$CALLS_FILE"; then
@@ -182,6 +196,10 @@ printf 'suite %s %s\n' "$TIMEOUT" "$*" >> "$CALLS_FILE"
 if [[ "$2" == *"Standard Autoscaling" ]]; then
   exit "$STANDARD_EXIT"
 elif [[ "$2" == *"DRA Autoscaling" ]]; then
+  if [[ ! -f "$STATUS_CONFIGMAP_FILE" ]]; then
+    echo "DRA started before the status ConfigMap was recreated" >&2
+    exit 99
+  fi
   exit "$DRA_EXIT"
 fi
 echo "unexpected test focus" >&2
@@ -279,6 +297,61 @@ func TestAzureE2ERunner(t *testing.T) {
 						}
 					}
 				})
+			}
+		})
+	}
+}
+
+func TestAzureE2ERunnerWaitsForStatusAfterRestart(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		waitExit string
+		wantExit int
+	}{
+		{name: "delayed ConfigMap recreation", waitExit: "0"},
+		{name: "ConfigMap wait timeout", waitExit: "1", wantExit: 1},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			root, script := azureFixture(t)
+			t.Setenv("STATUS_WAIT_EXIT", tc.waitExit)
+			output, err := exec.Command("bash", script, "registry.example/autoscaler", testImageTag).CombinedOutput()
+			exitCode := 0
+			var exitErr *exec.ExitError
+			if errors.As(err, &exitErr) {
+				exitCode = exitErr.ExitCode()
+			} else if err != nil {
+				t.Fatalf("executing runner: %v\n%s", err, output)
+			}
+			if exitCode != tc.wantExit {
+				t.Fatalf("exit code %d, want %d:\n%s", exitCode, tc.wantExit, output)
+			}
+
+			calls := readTestFile(t, filepath.Join(root, "calls"))
+			rollout := strings.Index(calls, "kubectl rollout status deployment/cluster-autoscaler ")
+			statusWait := strings.LastIndex(calls, "kubectl wait --for=create configmap/cluster-autoscaler-status --namespace kube-system --timeout=5m")
+			if rollout < 0 || statusWait <= rollout {
+				t.Fatalf("missing bounded status wait after rollout:\n%s", calls)
+			}
+			dra := strings.Index(calls, "suite 90m --report-prefix=dra_")
+			recreated := strings.Index(calls, "status ConfigMap recreated")
+			if tc.wantExit == 0 {
+				if recreated <= statusWait || dra <= recreated {
+					t.Fatalf("DRA did not wait for ConfigMap recreation:\n%s", calls)
+				}
+			} else {
+				if dra >= 0 || recreated >= 0 {
+					t.Fatalf("DRA must not run after the status wait times out:\n%s", calls)
+				}
+				if !strings.Contains(string(output), "timed out waiting for cluster-autoscaler-status") {
+					t.Fatalf("timeout was not reported:\n%s", output)
+				}
+			}
+			if got := readTestFile(t, filepath.Join(root, "artifacts", "cluster-autoscaler-dra.log")); !strings.Contains(got, "autoscaler diagnostics") {
+				t.Fatalf("missing DRA diagnostics: %q", got)
+			}
+			valuesPath := readTestFile(t, filepath.Join(root, "helm-values-path"))
+			if _, err := os.Stat(valuesPath); !os.IsNotExist(err) {
+				t.Fatalf("temporary Helm values were not removed: %v", err)
 			}
 		})
 	}
