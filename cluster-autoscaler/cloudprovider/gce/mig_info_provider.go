@@ -359,7 +359,7 @@ func (c *cachingMigInfoProvider) GetMigTargetSize(ctx context.Context, migRef Gc
 	var err error
 	if c.cache.IsMigTargetSizeCacheEmpty() {
 		// Cache is cold after Refresh() -- list all MIGs and populate the cache.
-		err = c.fillMigInfoCache(ctx)
+		err = c.fillMigInfoCacheUnlessZoneFailed(ctx, migRef)
 	}
 
 	targetSize, found = c.cache.GetMigTargetSize(ctx, migRef)
@@ -391,7 +391,7 @@ func (c *cachingMigInfoProvider) GetMigBasename(ctx context.Context, migRef GceR
 		return basename, nil
 	}
 
-	err := c.fillMigInfoCache(ctx)
+	err := c.fillMigInfoCacheUnlessZoneFailed(ctx, migRef)
 	basename, found = c.cache.GetMigBasename(migRef)
 	if err == nil && found {
 		return basename, nil
@@ -417,7 +417,7 @@ func (c *cachingMigInfoProvider) GetMigInstanceTemplateName(ctx context.Context,
 		return instanceTemplateName, nil
 	}
 
-	err := c.fillMigInfoCache(ctx)
+	err := c.fillMigInfoCacheUnlessZoneFailed(ctx, migRef)
 	instanceTemplateName, found = c.cache.GetMigInstanceTemplateName(ctx, migRef)
 	if err == nil && found {
 		return instanceTemplateName, nil
@@ -477,6 +477,14 @@ func (c *cachingMigInfoProvider) GetMigKubeEnv(ctx context.Context, migRef GceRe
 	return kubeEnv, nil
 }
 
+// fillMigInfoCacheUnlessZoneFailed needs to be called with migInfoMutex locked.
+func (c *cachingMigInfoProvider) fillMigInfoCacheUnlessZoneFailed(ctx context.Context, migRef GceRef) error {
+	if err, failed := c.cache.GetMigListingError(migRef.Zone); failed {
+		return err
+	}
+	return c.fillMigInfoCache(ctx)
+}
+
 // filMigInfoCache needs to be called with migInfoMutex locked
 func (c *cachingMigInfoProvider) fillMigInfoCache(ctx context.Context) error {
 	logger := klog.FromContext(ctx)
@@ -500,6 +508,7 @@ func (c *cachingMigInfoProvider) fillMigInfoCache(ctx context.Context) error {
 			failedZoneCount++
 		}
 	}
+	c.cache.SetMigListingErrors(failedZones)
 
 	if failedZoneCount > 0 && failedZoneCount == len(zones) {
 		return fmt.Errorf("%v", errors)
@@ -584,7 +593,7 @@ func (c *cachingMigInfoProvider) GetMigIsStable(migRef GceRef) (bool, error) {
 		return isStable, nil
 	}
 
-	err := c.fillMigInfoCache(context.TODO())
+	err := c.fillMigInfoCacheUnlessZoneFailed(context.TODO(), migRef)
 	isStable, found = c.cache.GetMigIsStable(migRef)
 	if err == nil && found {
 		return isStable, nil
@@ -666,7 +675,7 @@ func (c *cachingMigInfoProvider) GetListManagedInstancesResults(migRef GceRef) (
 		return listManagedInstancesResults, nil
 	}
 
-	err := c.fillMigInfoCache(context.TODO())
+	err := c.fillMigInfoCacheUnlessZoneFailed(context.TODO(), migRef)
 	listManagedInstancesResults, found = c.cache.GetListManagedInstancesResults(migRef)
 	if err == nil && found {
 		return listManagedInstancesResults, nil
