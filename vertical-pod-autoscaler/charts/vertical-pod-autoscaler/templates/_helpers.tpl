@@ -147,7 +147,7 @@ false
 
 
 {{/*
-Create the name of the namespace to use
+Namespace for namespaced resources. namespaceOverride wins over the release namespace.
 */}}
 {{- define "common.names.namespace" -}}
 {{- default .Release.Namespace .Values.namespaceOverride | trunc 63 | trimSuffix "-" -}}

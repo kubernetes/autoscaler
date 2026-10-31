@@ -10,7 +10,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}-leader-locking
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ include "common.names.namespace" . }}
   labels:
     {{- include "vertical-pod-autoscaler.recommender.labels" . | nindent 4 }}
 rules:
@@ -35,7 +35,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}-leader-locking
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ include "common.names.namespace" . }}
   labels:
     {{- include "vertical-pod-autoscaler.recommender.labels" . | nindent 4 }}
 roleRef:
@@ -45,6 +45,6 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}
-    namespace: {{ .Release.Namespace }}
+    namespace: {{ include "common.names.namespace" . }}
 {{- end -}}
 {{- end -}}

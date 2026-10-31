@@ -1,0 +1,126 @@
+suite: namespace override
+templates:
+  - recommender-deployment.yaml
+  - recommender-serviceaccount.yaml
+  - recommender-clusterrolebindings.yaml
+  - recommender-leader-election-rbac.yaml
+  - updater-role.yaml
+  - updater-rolebinding.yaml
+  - admission-controller-service.yaml
+  - admission-controller-webhook.yaml
+  - admission-controller-certgen.yaml
+  - admission-controller-deployment.yaml
+  - updater-deployment.yaml
+tests:
+  - it: uses the release namespace when namespaceOverride is empty
+    release:
+      namespace: vpa
+    asserts:
+      - equal:
+          path: metadata.namespace
+          value: vpa
+        template: recommender-deployment.yaml
+      - equal:
+          path: metadata.namespace
+          value: vpa
+        template: recommender-serviceaccount.yaml
+      - equal:
+          path: subjects[0].namespace
+          value: vpa
+        template: recommender-clusterrolebindings.yaml
+        documentIndex: 0
+      - equal:
+          path: webhooks[0].clientConfig.service.namespace
+          value: vpa
+        template: admission-controller-webhook.yaml
+      - contains:
+          path: spec.template.spec.containers[0].args
+          content: --leader-elect-resource-namespace=vpa
+        template: recommender-deployment.yaml
+      - contains:
+          path: spec.template.spec.containers[0].args
+          content: --namespace=vpa
+        template: admission-controller-certgen.yaml
+
+  - it: renders namespaced resources into namespaceOverride when namespaceOverride is set
+    set:
+      namespaceOverride: kube-system
+    release:
+      namespace: vpa
+    asserts:
+      - equal:
+          path: metadata.namespace
+          value: kube-system
+        template: recommender-deployment.yaml
+      - equal:
+          path: metadata.namespace
+          value: kube-system
+        template: recommender-serviceaccount.yaml
+      - equal:
+          path: metadata.namespace
+          value: kube-system
+        template: admission-controller-deployment.yaml
+      - equal:
+          path: metadata.namespace
+          value: kube-system
+        template: admission-controller-service.yaml
+      - equal:
+          path: subjects[0].namespace
+          value: kube-system
+        template: recommender-clusterrolebindings.yaml
+        documentIndex: 0
+      - equal:
+          path: metadata.namespace
+          value: kube-system
+        template: recommender-leader-election-rbac.yaml
+        documentIndex: 0
+      - equal:
+          path: subjects[0].namespace
+          value: kube-system
+        template: recommender-leader-election-rbac.yaml
+        documentIndex: 1
+      - equal:
+          path: metadata.namespace
+          value: kube-system
+        template: updater-role.yaml
+      - equal:
+          path: subjects[0].namespace
+          value: kube-system
+        template: updater-rolebinding.yaml
+      - equal:
+          path: webhooks[0].clientConfig.service.namespace
+          value: kube-system
+        template: admission-controller-webhook.yaml
+      - contains:
+          path: spec.template.spec.containers[0].args
+          content: --leader-elect-resource-namespace=kube-system
+        template: recommender-deployment.yaml
+      - contains:
+          path: spec.template.spec.containers[0].args
+          content: --namespace=kube-system
+        template: admission-controller-certgen.yaml
+      - contains:
+          path: spec.template.spec.containers[0].args
+          content: --host=vpa-webhook,vpa-webhook.kube-system.svc
+        template: admission-controller-certgen.yaml
+
+  - it: keeps an explicit leader election namespace
+    set:
+      namespaceOverride: kube-system
+      recommender.leaderElection.resourceNamespace: leases
+      updater.leaderElection.resourceNamespace: leases
+    release:
+      namespace: vpa
+    asserts:
+      - equal:
+          path: metadata.namespace
+          value: kube-system
+        template: recommender-deployment.yaml
+      - contains:
+          path: spec.template.spec.containers[0].args
+          content: --leader-elect-resource-namespace=leases
+        template: recommender-deployment.yaml
+      - contains:
+          path: spec.template.spec.containers[0].args
+          content: --leader-elect-resource-namespace=leases
+        template: updater-deployment.yaml

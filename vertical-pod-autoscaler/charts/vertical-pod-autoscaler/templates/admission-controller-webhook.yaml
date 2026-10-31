@@ -7,7 +7,7 @@ metadata:
     {{- include "vertical-pod-autoscaler.admissionController.labels" . | nindent 4 }}
   {{- $annotations := dict }}
   {{- if .Values.admissionController.certManager.enabled }}
-    {{- $_ := set $annotations "cert-manager.io/inject-ca-from" (printf "%s/%s" .Release.Namespace (include "vertical-pod-autoscaler.admissionController.certManager.certName" .)) }}
+    {{- $_ := set $annotations "cert-manager.io/inject-ca-from" (printf "%s/%s" (include "common.names.namespace" .) (include "vertical-pod-autoscaler.admissionController.certManager.certName" .)) }}
   {{- end }}
   {{- with .Values.admissionController.mutatingWebhookConfiguration.annotations }}
     {{- $annotations = merge $annotations . }}
@@ -23,7 +23,7 @@ webhooks:
     # caBundle is injected by the certgen patch job (certGen mode) or by cert-manager cainjector (certManager mode)
     service:
       name: {{ .Values.admissionController.service.name }}
-      namespace: {{ .Release.Namespace }}
+      namespace: {{ include "common.names.namespace" . }}
       port: 443
   failurePolicy: {{ .Values.admissionController.mutatingWebhookConfiguration.failurePolicy }}
   matchPolicy: Equivalent

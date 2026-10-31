@@ -4,7 +4,7 @@ WARNING: This chart is currently under development and is not ready for producti
 
 Automatically adjust resources for your workloads
 
-![Version: 0.15.0](https://img.shields.io/badge/Version-0.15.0-informational?style=flat-square)
+![Version: 0.15.1](https://img.shields.io/badge/Version-0.15.1-informational?style=flat-square)
 ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 ![AppVersion: 1.8.1](https://img.shields.io/badge/AppVersion-1.8.1-informational?style=flat-square)
 
@@ -275,6 +275,7 @@ This chart includes [helm-unittest](https://github.com/helm-unittest/helm-unitte
 | fullnameOverride | string | `nil` |  |
 | imagePullSecrets | list | `[]` |  |
 | nameOverride | string | `nil` |  |
+| namespaceOverride | string | `""` | Override the namespace |
 | podSecurityContext.runAsNonRoot | bool | `true` |  |
 | podSecurityContext.runAsUser | int | `65534` |  |
 | rbac.create | bool | `true` |  |

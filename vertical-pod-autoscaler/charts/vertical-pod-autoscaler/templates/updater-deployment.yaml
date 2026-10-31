@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "vertical-pod-autoscaler.updater.fullname" . }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ include "common.names.namespace" . }}
   labels:
     {{- include "vertical-pod-autoscaler.updater.labels" . | nindent 4 }}
   {{- with .Values.updater.annotations }}
@@ -78,7 +78,7 @@ spec:
             - --stderrthreshold=info
             {{- if eq (include "vertical-pod-autoscaler.updater.leaderElectionEnabled" .) "true" }}
             - --leader-elect=true
-            - --leader-elect-resource-namespace={{ .Values.updater.leaderElection.resourceNamespace | default .Release.Namespace }}
+            - --leader-elect-resource-namespace={{ .Values.updater.leaderElection.resourceNamespace | default (include "common.names.namespace" .) }}
             - --leader-elect-resource-name={{ .Values.updater.leaderElection.resourceName }}
             - --leader-elect-lease-duration={{ .Values.updater.leaderElection.leaseDuration }}
             - --leader-elect-renew-deadline={{ .Values.updater.leaderElection.renewDeadline }}
