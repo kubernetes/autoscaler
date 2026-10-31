@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 	"path"
 	"strconv"
 	"strings"
@@ -145,6 +146,41 @@ func (r *unstructuredScalableResource) SetSize(nreplicas int) error {
 	}
 
 	return updateErr
+}
+
+func (r *unstructuredScalableResource) AtomicIncreaseSize(ctx context.Context, delta int) error {
+	if delta <= 0 {
+		return fmt.Errorf("size increase must be positive")
+	}
+	delta64 := int64(delta)
+	if delta64 > math.MaxInt32 {
+		return fmt.Errorf("size increase too large - delta:%d max:%d", delta64, int64(math.MaxInt32))
+	}
+
+	gvr, err := r.GroupVersionResource()
+	if err != nil {
+		return err
+	}
+
+	scale, err := r.controller.managementScaleClient.Scales(r.Namespace()).Get(ctx, gvr.GroupResource(), r.Name(), metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+
+	desired := int64(scale.Spec.Replicas) + delta64
+	if desired > math.MaxInt32 {
+		return fmt.Errorf("size increase too large - desired:%d max:%d", desired, int64(math.MaxInt32))
+	}
+	if desired > int64(r.maxSize) {
+		return fmt.Errorf("size increase too large - desired:%d max:%d", desired, r.maxSize)
+	}
+
+	scale.Spec.Replicas = int32(desired)
+	if _, err := r.controller.managementScaleClient.Scales(r.Namespace()).Update(ctx, gvr.GroupResource(), scale, metav1.UpdateOptions{}); err != nil {
+		return err
+	}
+
+	return unstructured.SetNestedField(r.unstructured.UnstructuredContent(), desired, "spec", "replicas")
 }
 
 // scale is a version of the autoscalingv1.Scale struct that marshals correctly.
