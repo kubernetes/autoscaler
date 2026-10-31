@@ -165,6 +165,12 @@ func NewRecommenderController(
 		CheckpointsWriteTimeout:      config.CheckpointsWriteTimeout,
 		UseCheckpoints:               useCheckpoints,
 		UpdateWorkerCount:            config.UpdateWorkerCount,
+		PercentileBounds: PercentileBounds{
+			LowerBoundCPU:    config.LowerBoundCPUPercentile,
+			UpperBoundCPU:    config.UpperBoundCPUPercentile,
+			LowerBoundMemory: config.LowerBoundMemoryPercentile,
+			UpperBoundMemory: config.UpperBoundMemoryPercentile,
+		},
 	}.Make()
 
 	return &RecommenderController{
