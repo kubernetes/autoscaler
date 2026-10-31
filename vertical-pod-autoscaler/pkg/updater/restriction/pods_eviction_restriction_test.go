@@ -25,7 +25,9 @@ import (
 	"github.com/stretchr/testify/mock"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	baseclocktest "k8s.io/utils/clock/testing"
+	"k8s.io/utils/set"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
@@ -297,4 +299,146 @@ func TestEvictTooFewReplicasWithInPlaceSkipDisruptionBudget(t *testing.T) {
 		err := eviction.Evict(pod, basicVpa, test.FakeEventRecorder())
 		assert.Error(t, err, "Error expected")
 	}
+}
+
+func TestEvictionRequestCreation(t *testing.T) {
+	replicas := int32(5)
+	livePods := 5
+
+	rc := corev1.ReplicationController{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rc",
+			Namespace: "default",
+		},
+		TypeMeta: metav1.TypeMeta{
+			Kind: "ReplicationController",
+		},
+		Spec: corev1.ReplicationControllerSpec{
+			Replicas: &replicas,
+		},
+	}
+
+	pods := make([]*corev1.Pod, livePods)
+	for i := range pods {
+		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get()
+		pods[i].UID = types.UID(fmt.Sprintf("pod-uid-%d", i))
+	}
+
+	basicVpa := getBasicVpa()
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, 0.5, nil, nil, nil, false)
+	assert.NoError(t, err)
+
+	factory.SetEvictionRequestOptions(true, "vpa.autoscaling.k8s.io/updater")
+	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, basicVpa)
+	assert.NoError(t, err)
+
+	eviction := factory.NewPodsEvictionRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
+
+	// CanEvict should be true initially
+	assert.True(t, eviction.CanEvict(pods[0]))
+
+	// Evict should create an EvictionRequest
+	err = eviction.Evict(pods[0], basicVpa, test.FakeEventRecorder())
+	assert.NoError(t, err)
+
+	// Pod 0 now has an active EvictionRequest, so CanEvict should return false for Pod 0
+	assert.False(t, eviction.CanEvict(pods[0]))
+}
+
+func TestEvictionRequestExcludeInFlightPod(t *testing.T) {
+	replicas := int32(5)
+	livePods := 5
+
+	rc := corev1.ReplicationController{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rc",
+			Namespace: "default",
+		},
+		TypeMeta: metav1.TypeMeta{
+			Kind: "ReplicationController",
+		},
+		Spec: corev1.ReplicationControllerSpec{
+			Replicas: &replicas,
+		},
+	}
+
+	pods := make([]*corev1.Pod, livePods)
+	for i := range pods {
+		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get()
+		pods[i].UID = types.UID(fmt.Sprintf("pod-uid-%d", i))
+	}
+
+	basicVpa := getBasicVpa()
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, 0.5, nil, nil, nil, false)
+	assert.NoError(t, err)
+
+	// Pre-populate active EvictionRequest for pod 0
+	activeUIDs := set.New[types.UID](pods[0].UID)
+	factory.SetOutstandingEvictionRequests(activeUIDs)
+	factory.SetEvictionRequestOptions(true, "vpa.autoscaling.k8s.io/updater")
+
+	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, basicVpa)
+	assert.NoError(t, err)
+
+	eviction := factory.NewPodsEvictionRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
+
+	// Pod 0 already has an active EvictionRequest: cannot evict
+	assert.False(t, eviction.CanEvict(pods[0]))
+	// Other pods without EvictionRequests can still be evaluated
+	assert.True(t, eviction.CanEvict(pods[1]))
+}
+
+func TestAsynchronousEvictionBudgetAccounting(t *testing.T) {
+	// Replicas = 4, tolerance = 0.5 (configured: 4, tolerance: 2, shouldBeAlive: 2)
+	// If 2 pods already have outstanding EvictionRequests from previous loops:
+	// actuallyAlive = 4 - 2 = 2.
+	// Since 2 is not > 2, further evictions must be blocked!
+	replicas := int32(4)
+	livePods := 4
+
+	rc := corev1.ReplicationController{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rc",
+			Namespace: "default",
+		},
+		TypeMeta: metav1.TypeMeta{
+			Kind: "ReplicationController",
+		},
+		Spec: corev1.ReplicationControllerSpec{
+			Replicas: &replicas,
+		},
+	}
+
+	pods := make([]*corev1.Pod, livePods)
+	for i := range pods {
+		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get()
+		pods[i].UID = types.UID(fmt.Sprintf("pod-uid-%d", i))
+	}
+
+	basicVpa := getBasicVpa()
+	factory, err := getRestrictionFactory(&rc, nil, nil, nil, 2, 0.5, nil, nil, nil, false)
+	assert.NoError(t, err)
+
+	// Mark Pods 0 and 1 as having outstanding EvictionRequests
+	activeUIDs := set.New[types.UID](pods[0].UID, pods[1].UID)
+	factory.SetOutstandingEvictionRequests(activeUIDs)
+	factory.SetEvictionRequestOptions(true, "vpa.autoscaling.k8s.io/updater")
+
+	creatorToSingleGroupStatsMap, podToReplicaCreatorMap, err := factory.GetCreatorMaps(pods, basicVpa)
+	assert.NoError(t, err)
+
+	// Verify stats accounted for 2 outstanding requests
+	cr := podToReplicaCreatorMap[getPodID(pods[0])]
+	stats := creatorToSingleGroupStatsMap[cr]
+	assert.Equal(t, 2, stats.outstandingEvictionRequests)
+
+	eviction := factory.NewPodsEvictionRestriction(creatorToSingleGroupStatsMap, podToReplicaCreatorMap)
+
+	// Pods 0 and 1 cannot be evicted because they are already in flight
+	assert.False(t, eviction.CanEvict(pods[0]))
+	assert.False(t, eviction.CanEvict(pods[1]))
+
+	// Pods 2 and 3 must also be blocked from eviction because the disruption budget is exhausted
+	assert.False(t, eviction.CanEvict(pods[2]))
+	assert.False(t, eviction.CanEvict(pods[3]))
 }
