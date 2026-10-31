@@ -290,6 +290,12 @@ func buildNodeFromTemplate(nodeGroupName string, template NodeTemplate, manager 
 		return nil, fmt.Errorf("invalid node template: missing both VMSS and VMPool templates")
 	}
 
+	if gpuDraDriverEnabled(&node) {
+		// DRA-only pools must not satisfy device-plugin GPU requests in scale-up simulation.
+		delete(node.Status.Capacity, gpu.ResourceNvidiaGPU)
+		delete(node.Status.Allocatable, gpu.ResourceNvidiaGPU)
+	}
+
 	klog.V(4).Infof("Setting node %s labels to: %s", nodeName, node.Labels)
 	klog.V(4).Infof("Setting node %s taints to: %s", nodeName, node.Spec.Taints)
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
