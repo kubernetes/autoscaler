@@ -20,21 +20,19 @@ set -o pipefail
 
 echo "verify-kubelint"
 
-echo "installing dependencies"
-go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
-
-cd $(dirname "${BASH_SOURCE}")/..
-SCRIPT_ROOT="$PWD"
-
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
 TOOLS_DIR="${PWD}/hack/tools/kube-api-linter"
-TOOLS_BIN_DIR="${TOOLS_DIR}/bin"
 
-GOLANGCI_LINT_BIN=${GOLANGCI_LINT_BIN:-"golangci-lint"}
-GOLANGCI_LINT_KAL_BIN=${GOLANGCI_LINT_KAL_BIN:-"${TOOLS_BIN_DIR}/golangci-kube-api-linter"}
-GOLANGCI_LINT_CONFIG_PATH=${GOLANGCI_LINT_CONFIG_PATH:-"${TOOLS_DIR}/.golangci-kal.yml"}
+# renovate: datasource=go depName=github.com/golangci/golangci-lint/v2
+GOLANGCI_LINT_VERSION=v2.13.2
+
+echo "installing golangci-lint ${GOLANGCI_LINT_VERSION}"
+GOBIN="${TOOLS_DIR}/bin" go install "github.com/golangci/golangci-lint/v2/cmd/golangci-lint@${GOLANGCI_LINT_VERSION}"
 
 echo "creating custom golangci linter"
-cd "${TOOLS_DIR}"; "${GOLANGCI_LINT_BIN}" custom
-cd "${SCRIPT_ROOT}"
+(
+  cd "${TOOLS_DIR}"
+  ./bin/golangci-lint custom
+)
 
-"${GOLANGCI_LINT_KAL_BIN}" run -v --config "${GOLANGCI_LINT_CONFIG_PATH}"
+"${TOOLS_DIR}/bin/golangci-kube-api-linter" run -v --config "${TOOLS_DIR}/.golangci-kal.yml"
