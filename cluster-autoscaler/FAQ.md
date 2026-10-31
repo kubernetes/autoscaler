@@ -840,11 +840,12 @@ the scheduler will place the pods somewhere else.
 
 If a node is unneeded for more than 10 minutes, it will be terminated. (This time can
 be configured by flags - please see [I have a couple of nodes with low utilization, but they are not scaled down. Why?](#i-have-a-couple-of-nodes-with-low-utilization-but-they-are-not-scaled-down-why) section for a more detailed explanation.)
-Cluster Autoscaler terminates one non-empty node at a time to reduce the risk of
-creating new unschedulable pods. The next node may possibly be terminated just after the first one,
+By default, Cluster Autoscaler drains and terminates one non-empty node at a time to reduce the risk of
+creating new unschedulable pods (configurable by `--max-drain-parallelism` flag). The next node may possibly be terminated just after the first one,
 if it was also unneeded for more than 10 min and didn't rely on the same nodes
-in simulation (see below example scenario), but not together.
-Empty nodes, on the other hand, can be terminated in bulk, up to 10 nodes at a time (configurable by `--max-empty-bulk-delete` flag.)
+in simulation (see below example scenario).
+Empty nodes, on the other hand, can be terminated in bulk. The total number of nodes (both empty and non-empty)
+deleted in parallel is limited to 10 by default (configurable by `--max-scale-down-parallelism` flag.)
 
 What happens when a non-empty node is terminated? As mentioned above, all pods should be migrated
 elsewhere. Cluster Autoscaler does this by evicting them and tainting the node, so they aren't
