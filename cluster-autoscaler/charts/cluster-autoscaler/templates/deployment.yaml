@@ -268,6 +268,7 @@ spec:
                 configMapKeyRef:
                   name: {{ default (include "cluster-autoscaler.fullname" $) $value.name }}
                   key: {{ required "Must specify key!" $value.key }}
+                  optional: {{ default false $value.optional }}
           {{- end }}
           {{- range $key, $value := .Values.extraEnvSecrets }}
             - name: {{ $key }}
@@ -275,6 +276,7 @@ spec:
                 secretKeyRef:
                   name: {{ default (include "cluster-autoscaler.fullname" $) $value.name }}
                   key: {{ required "Must specify key!" $value.key }}
+                  optional: {{ default false $value.optional }}
           {{- end }}
           {{- if or .Values.envFromSecret .Values.envFromConfigMap }}
           envFrom:
