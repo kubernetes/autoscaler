@@ -218,6 +218,7 @@ func TestRunOnce_Mode(t *testing.T) {
 				tc.expectedInPlacedCount,
 				tc.canInPlaceUpdate,
 				tc.isCPUBoostTest,
+				nil,
 			)
 		})
 	}
@@ -265,6 +266,104 @@ func TestRunOnce_Status(t *testing.T) {
 				tc.expectedInPlacedCount,
 				utils.InPlaceApproved,
 				false,
+				nil,
+			)
+		})
+	}
+}
+
+func TestRunOnce_InitialDelay(t *testing.T) {
+	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlace, true)
+	tests := []struct {
+		name                  string
+		updateMode            vpa_types.UpdateMode
+		created               time.Time
+		featureEnabled        bool
+		expectFetchCalls      bool
+		expectedEvictionCount int
+		expectedInPlacedCount int
+	}{
+		{
+			name:                  "inside the window",
+			updateMode:            vpa_types.UpdateModeRecreate,
+			created:               time.Now(),
+			featureEnabled:        true,
+			expectFetchCalls:      true,
+			expectedEvictionCount: 0,
+			expectedInPlacedCount: 0,
+		},
+		{
+			name:                  "after the window",
+			updateMode:            vpa_types.UpdateModeRecreate,
+			created:               time.Now().Add(-2 * time.Hour),
+			featureEnabled:        true,
+			expectFetchCalls:      true,
+			expectedEvictionCount: 5,
+			expectedInPlacedCount: 0,
+		},
+		{
+			name:                  "inside the window, feature disabled",
+			updateMode:            vpa_types.UpdateModeRecreate,
+			created:               time.Now(),
+			featureEnabled:        false,
+			expectFetchCalls:      true,
+			expectedEvictionCount: 5,
+			expectedInPlacedCount: 0,
+		},
+		{
+			name:                  "inside the window, InPlaceOrRecreate mode",
+			updateMode:            vpa_types.UpdateModeInPlaceOrRecreate,
+			created:               time.Now(),
+			featureEnabled:        true,
+			expectFetchCalls:      true,
+			expectedEvictionCount: 0,
+			expectedInPlacedCount: 0,
+		},
+		{
+			name:                  "after the window, InPlaceOrRecreate mode",
+			updateMode:            vpa_types.UpdateModeInPlaceOrRecreate,
+			created:               time.Now().Add(-2 * time.Hour),
+			featureEnabled:        true,
+			expectFetchCalls:      true,
+			expectedEvictionCount: 0,
+			expectedInPlacedCount: 5,
+		},
+		{
+			name:                  "inside the window, InPlace mode",
+			updateMode:            vpa_types.UpdateModeInPlace,
+			created:               time.Now(),
+			featureEnabled:        true,
+			expectFetchCalls:      true,
+			expectedEvictionCount: 0,
+			expectedInPlacedCount: 0,
+		},
+		{
+			name:                  "after the window, InPlace mode",
+			updateMode:            vpa_types.UpdateModeInPlace,
+			created:               time.Now().Add(-2 * time.Hour),
+			featureEnabled:        true,
+			expectFetchCalls:      true,
+			expectedEvictionCount: 0,
+			expectedInPlacedCount: 5,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.VPAInitialDelay, tc.featureEnabled)
+			testRunOnceBase(
+				t,
+				tc.updateMode,
+				false,
+				newFakeValidator(true),
+				tc.expectFetchCalls,
+				tc.expectedEvictionCount,
+				tc.expectedInPlacedCount,
+				utils.InPlaceApproved,
+				false,
+				func(vpa *vpa_types.VerticalPodAutoscaler) {
+					vpa.CreationTimestamp = metav1.NewTime(tc.created)
+					vpa.Spec.UpdatePolicy.InitialDelaySeconds = new(int32(3600))
+				},
 			)
 		})
 	}
@@ -280,6 +379,7 @@ func testRunOnceBase(
 	expectedInPlacedCount int,
 	canInPlaceUpdate utils.InPlaceDecision,
 	isCPUBoostTest bool,
+	modifyVpa func(*vpa_types.VerticalPodAutoscaler),
 ) {
 	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.CPUStartupBoost, true)
 	ctrl := gomock.NewController(t)
@@ -362,6 +462,9 @@ func testRunOnceBase(
 	podLister.On("List").Return(pods, nil)
 
 	vpaObj.Spec.UpdatePolicy = &vpa_types.PodUpdatePolicy{UpdateMode: &updateMode}
+	if modifyVpa != nil {
+		modifyVpa(vpaObj)
+	}
 	if isCPUBoostTest {
 		durationSeconds := int32(60)
 		cpuStartupBoost := &vpa_types.GenericStartupBoost{
