@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"sync"
 	"testing"
 	"time"
 
@@ -2098,5 +2099,213 @@ func fetchAllInstancesInZone(allInstances map[string][]GceInstance) func(string,
 			return nil, errors.New("")
 		}
 		return instances, nil
+	}
+}
+
+type migInfoGetterTestCase struct {
+	name    string
+	guarded bool
+	call    func(ctx context.Context, p MigInfoProvider, ref GceRef) error
+}
+
+func migInfoGetters() []migInfoGetterTestCase {
+	return []migInfoGetterTestCase{
+		{
+			name:    "GetMigTargetSize",
+			guarded: true,
+			call: func(ctx context.Context, p MigInfoProvider, ref GceRef) error {
+				_, err := p.GetMigTargetSize(ctx, ref)
+				return err
+			},
+		},
+		{
+			name: "GetMigBasename",
+			call: func(ctx context.Context, p MigInfoProvider, ref GceRef) error {
+				_, err := p.GetMigBasename(ctx, ref)
+				return err
+			},
+		},
+		{
+			name: "GetMigInstanceTemplateName",
+			call: func(ctx context.Context, p MigInfoProvider, ref GceRef) error {
+				_, err := p.GetMigInstanceTemplateName(ctx, ref)
+				return err
+			},
+		},
+		{
+			name: "GetMigIsStable",
+			call: func(_ context.Context, p MigInfoProvider, ref GceRef) error {
+				_, err := p.GetMigIsStable(ref)
+				return err
+			},
+		},
+		{
+			name: "GetListManagedInstancesResults",
+			call: func(_ context.Context, p MigInfoProvider, ref GceRef) error {
+				_, err := p.GetListManagedInstancesResults(ref)
+				return err
+			},
+		},
+	}
+}
+
+func TestMigInfoGettersDoNotRepeatFailedMigListing(t *testing.T) {
+	for _, getter := range migInfoGetters() {
+		t.Run(getter.name, func(t *testing.T) {
+			ctx := context.Background()
+			cache := NewGceCache().WithMigs(map[GceRef]Mig{
+				mig1.GceRef(): mig1,
+				mig2.GceRef(): mig2,
+			})
+
+			var mu sync.Mutex
+			fetchAllMigsCalls := map[string]int{}
+			fetchMigCalls := 0
+
+			client := &mockAutoscalingGceClient{
+				fetchMigs: func(zone string) ([]*gce.InstanceGroupManager, error) {
+					mu.Lock()
+					defer mu.Unlock()
+					fetchAllMigsCalls[zone]++
+					return nil, errFetchMigs
+				},
+				fetchMig: func(GceRef) (*gce.InstanceGroupManager, error) {
+					mu.Lock()
+					defer mu.Unlock()
+					fetchMigCalls++
+					return nil, errFetchMig
+				},
+			}
+
+			provider := NewCachingMigInfoProvider(cache, NewMigLister(cache), client, mig1.GceRef().Project, 1, 0, false, false)
+
+			assert.ErrorIs(t, getter.call(ctx, provider, mig1.GceRef()), errFetchMig)
+			assert.ErrorIs(t, getter.call(ctx, provider, mig2.GceRef()), errFetchMig)
+			assert.ErrorIs(t, getter.call(ctx, provider, mig1.GceRef()), errFetchMig)
+
+			assert.Equal(t, 1, fetchAllMigsCalls[mig1.GceRef().Zone])
+			assert.Equal(t, 1, fetchAllMigsCalls[mig2.GceRef().Zone])
+			assert.Equal(t, 3, fetchMigCalls)
+
+			cache.InvalidateMigListingErrors()
+			cache.InvalidateAllMigTargetSizes(ctx)
+
+			assert.ErrorIs(t, getter.call(ctx, provider, mig1.GceRef()), errFetchMig)
+			assert.Equal(t, 2, fetchAllMigsCalls[mig1.GceRef().Zone])
+			assert.Equal(t, 2, fetchAllMigsCalls[mig2.GceRef().Zone])
+			assert.Equal(t, 4, fetchMigCalls)
+		})
+	}
+}
+
+func TestMigInfoGettersDoNotRepeatMigListingForFailedZone(t *testing.T) {
+	igm2 := &gce.InstanceGroupManager{
+		Name:                        mig2.GceRef().Name,
+		BaseInstanceName:            "mig2-base",
+		InstanceTemplate:            "https://www.googleapis.com/compute/v1/projects/myprojid/global/instanceTemplates/tmpl-2",
+		TargetSize:                  3,
+		ListManagedInstancesResults: "PAGINATED",
+		Status:                      &gce.InstanceGroupManagerStatus{IsStable: true},
+	}
+
+	for _, getter := range migInfoGetters() {
+		t.Run(getter.name, func(t *testing.T) {
+			ctx := context.Background()
+			cache := NewGceCache().WithMigs(map[GceRef]Mig{
+				mig1.GceRef(): mig1,
+				mig2.GceRef(): mig2,
+			})
+
+			var mu sync.Mutex
+			fetchAllMigsCalls := map[string]int{}
+			fetchMigCalls := 0
+
+			client := &mockAutoscalingGceClient{
+				fetchMigs: func(zone string) ([]*gce.InstanceGroupManager, error) {
+					mu.Lock()
+					fetchAllMigsCalls[zone]++
+					mu.Unlock()
+					if zone == mig1.GceRef().Zone {
+						return nil, errFetchMigs
+					}
+					return []*gce.InstanceGroupManager{igm2}, nil
+				},
+				fetchMig: func(GceRef) (*gce.InstanceGroupManager, error) {
+					mu.Lock()
+					defer mu.Unlock()
+					fetchMigCalls++
+					return nil, errFetchMig
+				},
+			}
+
+			provider := NewCachingMigInfoProvider(cache, NewMigLister(cache), client, mig1.GceRef().Project, 1, 0, false, false)
+
+			assert.ErrorIs(t, getter.call(ctx, provider, mig1.GceRef()), errFetchMig)
+			assert.ErrorIs(t, getter.call(ctx, provider, mig1.GceRef()), errFetchMig)
+
+			assert.Equal(t, 1, fetchAllMigsCalls[mig1.GceRef().Zone])
+			assert.Equal(t, 1, fetchAllMigsCalls[mig2.GceRef().Zone])
+			assert.Equal(t, 2, fetchMigCalls)
+
+			assert.NoError(t, getter.call(ctx, provider, mig2.GceRef()))
+			assert.Equal(t, 1, fetchAllMigsCalls[mig1.GceRef().Zone])
+			assert.Equal(t, 1, fetchAllMigsCalls[mig2.GceRef().Zone])
+			assert.Equal(t, 2, fetchMigCalls)
+		})
+	}
+}
+
+func TestMigInfoGettersListMigsAgainOnMissAfterSuccessfulListing(t *testing.T) {
+	igm2 := &gce.InstanceGroupManager{
+		Name:                        mig2.GceRef().Name,
+		BaseInstanceName:            "mig2-base",
+		InstanceTemplate:            "https://www.googleapis.com/compute/v1/projects/myprojid/global/instanceTemplates/tmpl-2",
+		TargetSize:                  3,
+		ListManagedInstancesResults: "PAGINATED",
+		Status:                      &gce.InstanceGroupManagerStatus{IsStable: true},
+	}
+
+	for _, getter := range migInfoGetters() {
+		if getter.guarded {
+			continue
+		}
+		t.Run(getter.name, func(t *testing.T) {
+			ctx := context.Background()
+			cache := NewGceCache().WithMigs(map[GceRef]Mig{
+				mig1.GceRef(): mig1,
+				mig2.GceRef(): mig2,
+			})
+
+			var mu sync.Mutex
+			fetchAllMigsCalls := map[string]int{}
+			fetchMigCalls := 0
+
+			client := &mockAutoscalingGceClient{
+				fetchMigs: func(zone string) ([]*gce.InstanceGroupManager, error) {
+					mu.Lock()
+					fetchAllMigsCalls[zone]++
+					mu.Unlock()
+					if zone == mig2.GceRef().Zone {
+						return []*gce.InstanceGroupManager{igm2}, nil
+					}
+					return nil, nil
+				},
+				fetchMig: func(GceRef) (*gce.InstanceGroupManager, error) {
+					mu.Lock()
+					defer mu.Unlock()
+					fetchMigCalls++
+					return nil, errFetchMig
+				},
+			}
+
+			provider := NewCachingMigInfoProvider(cache, NewMigLister(cache), client, mig1.GceRef().Project, 1, 0, false, false)
+
+			assert.ErrorIs(t, getter.call(ctx, provider, mig1.GceRef()), errFetchMig)
+			assert.ErrorIs(t, getter.call(ctx, provider, mig1.GceRef()), errFetchMig)
+
+			assert.Equal(t, 2, fetchAllMigsCalls[mig1.GceRef().Zone])
+			assert.Equal(t, 2, fetchAllMigsCalls[mig2.GceRef().Zone])
+			assert.Equal(t, 2, fetchMigCalls)
+		})
 	}
 }

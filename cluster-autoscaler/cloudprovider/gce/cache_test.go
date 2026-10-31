@@ -149,3 +149,32 @@ func TestMigInstancesCache(t *testing.T) {
 	assert.False(t, found, "Expected MIG instances cache to be empty after InvalidateAllMigInstances was called")
 	assert.True(t, c.IsMigInstancesCacheEmpty(migRef))
 }
+
+func TestMigListingErrorsCache(t *testing.T) {
+	c := NewGceCache()
+
+	err, found := c.GetMigListingError("us-test1")
+	assert.False(t, found)
+	assert.NoError(t, err)
+
+	errorsByZone := map[string]error{
+		"us-test1": errFetchMigs,
+	}
+	c.SetMigListingErrors(errorsByZone)
+
+	// Mutating caller map after SetMigListingErrors must not affect cache.
+	errorsByZone["us-test2"] = errFetchMigs
+
+	err, found = c.GetMigListingError("us-test1")
+	assert.True(t, found)
+	assert.Equal(t, errFetchMigs, err)
+
+	err, found = c.GetMigListingError("us-test2")
+	assert.False(t, found)
+	assert.NoError(t, err)
+
+	c.InvalidateMigListingErrors()
+	err, found = c.GetMigListingError("us-test1")
+	assert.False(t, found)
+	assert.NoError(t, err)
+}
