@@ -24,7 +24,7 @@ cd "$(dirname "${BASH_SOURCE[0]}")/.."
 TOOLS_DIR="${PWD}/hack/tools/kube-api-linter"
 
 # renovate: datasource=go depName=github.com/golangci/golangci-lint/v2
-GOLANGCI_LINT_VERSION=v2.13.2
+GOLANGCI_LINT_VERSION=v2.15.0
 
 echo "installing golangci-lint ${GOLANGCI_LINT_VERSION}"
 GOBIN="${TOOLS_DIR}/bin" go install "github.com/golangci/golangci-lint/v2/cmd/golangci-lint@${GOLANGCI_LINT_VERSION}"
