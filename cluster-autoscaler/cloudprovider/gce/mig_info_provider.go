@@ -57,11 +57,11 @@ type MigInfoProvider interface {
 	// machine name. For standard types it's retrieved from GCE API.
 	GetMigMachineType(ctx context.Context, migRef GceRef) (MachineType, error)
 	// Returns the pagination behavior of the listManagedInstances Results API method for a given MIG ref
-	GetListManagedInstancesResults(migRef GceRef) (string, error)
+	GetListManagedInstancesResults(ctx context.Context, migRef GceRef) (string, error)
 	// GetMigIsStable returns whether given MIG is stable. A stable state means that: none of the instances in the managed instance group is currently undergoing any type of change (for example, creation, restart, or deletion); no future changes are scheduled for instances in the managed instance group; and the managed instance group itself is not being modified.
-	GetMigIsStable(migRef GceRef) (bool, error)
+	GetMigIsStable(ctx context.Context, migRef GceRef) (bool, error)
 	// RefreshMigInfo updates the cached information for a specific MIG without rebuilding the full zone cache
-	RefreshMigInfo(migRef GceRef) error
+	RefreshMigInfo(ctx context.Context, migRef GceRef) error
 }
 
 type timeProvider interface {
@@ -356,12 +356,7 @@ func (c *cachingMigInfoProvider) GetMigTargetSize(ctx context.Context, migRef Gc
 		return targetSize, nil
 	}
 
-	var err error
-	if c.cache.IsMigTargetSizeCacheEmpty() {
-		// Cache is cold after Refresh() -- list all MIGs and populate the cache.
-		err = c.fillMigInfoCache(ctx)
-	}
-
+	err := c.fillMigInfoCacheIfCold(ctx)
 	targetSize, found = c.cache.GetMigTargetSize(ctx, migRef)
 	if found && err == nil {
 		return targetSize, nil
@@ -369,8 +364,8 @@ func (c *cachingMigInfoProvider) GetMigTargetSize(ctx context.Context, migRef Gc
 
 	// We get here in one of 3 cases:
 	//  * InvalidateMigTargetSize was called for this specific mig, so it's not found in cache
-	//  * fillMigInfoCache returned an error
-	//  * MIG not found
+	//  * fillMigInfoCache returned an error, now or earlier since the cache was last invalidated
+	//  * MIG not found, e.g. because it was deleted or registered after MIGs were listed
 	err = c.fillSingleMigInfo(ctx, migRef)
 	if err != nil {
 		return 0, err
@@ -391,7 +386,7 @@ func (c *cachingMigInfoProvider) GetMigBasename(ctx context.Context, migRef GceR
 		return basename, nil
 	}
 
-	err := c.fillMigInfoCache(ctx)
+	err := c.fillMigInfoCacheIfCold(ctx)
 	basename, found = c.cache.GetMigBasename(migRef)
 	if err == nil && found {
 		return basename, nil
@@ -417,7 +412,7 @@ func (c *cachingMigInfoProvider) GetMigInstanceTemplateName(ctx context.Context,
 		return instanceTemplateName, nil
 	}
 
-	err := c.fillMigInfoCache(ctx)
+	err := c.fillMigInfoCacheIfCold(ctx)
 	instanceTemplateName, found = c.cache.GetMigInstanceTemplateName(ctx, migRef)
 	if err == nil && found {
 		return instanceTemplateName, nil
@@ -477,8 +472,21 @@ func (c *cachingMigInfoProvider) GetMigKubeEnv(ctx context.Context, migRef GceRe
 	return kubeEnv, nil
 }
 
+// fillMigInfoCacheIfCold lists all MIGs to populate the MIG info cache, unless it has already been
+// attempted since the cache was last invalidated. It needs to be called with migInfoMutex locked.
+func (c *cachingMigInfoProvider) fillMigInfoCacheIfCold(ctx context.Context) error {
+	if c.cache.IsMigInfoCacheWarm() {
+		return nil
+	}
+	return c.fillMigInfoCache(ctx)
+}
+
 // filMigInfoCache needs to be called with migInfoMutex locked
+//
+// It marks the MIG info cache as warm even if listing MIGs fails, so that a failed listing is only
+// retried after the cache is invalidated, rather than for every MIG missing from the cache.
 func (c *cachingMigInfoProvider) fillMigInfoCache(ctx context.Context) error {
+	defer c.cache.MarkMigInfoCacheWarm()
 	logger := klog.FromContext(ctx)
 	var zones []string
 	for zone := range c.listAllZonesWithMigs() {
@@ -543,8 +551,8 @@ func (c *cachingMigInfoProvider) fillMigInfoCache(ctx context.Context) error {
 }
 
 // RefreshMigInfo updates the cached information for a specific MIG without rebuilding the full zone cache
-func (c *cachingMigInfoProvider) RefreshMigInfo(migRef GceRef) error {
-	return c.fillSingleMigInfo(context.TODO(), migRef)
+func (c *cachingMigInfoProvider) RefreshMigInfo(ctx context.Context, migRef GceRef) error {
+	return c.fillSingleMigInfo(ctx, migRef)
 }
 
 func (c *cachingMigInfoProvider) fillSingleMigInfo(ctx context.Context, migRef GceRef) error {
@@ -575,7 +583,7 @@ func (c *cachingMigInfoProvider) setMigInfoCache(ctx context.Context, migRef Gce
 	c.cache.SetMigInstanceTemplateName(migRef, InstanceTemplateName{templateName, regional})
 }
 
-func (c *cachingMigInfoProvider) GetMigIsStable(migRef GceRef) (bool, error) {
+func (c *cachingMigInfoProvider) GetMigIsStable(ctx context.Context, migRef GceRef) (bool, error) {
 	c.migInfoMutex.Lock()
 	defer c.migInfoMutex.Unlock()
 
@@ -584,13 +592,13 @@ func (c *cachingMigInfoProvider) GetMigIsStable(migRef GceRef) (bool, error) {
 		return isStable, nil
 	}
 
-	err := c.fillMigInfoCache(context.TODO())
+	err := c.fillMigInfoCacheIfCold(ctx)
 	isStable, found = c.cache.GetMigIsStable(migRef)
 	if err == nil && found {
 		return isStable, nil
 	}
 
-	err = c.fillSingleMigInfo(context.TODO(), migRef)
+	err = c.fillSingleMigInfo(ctx, migRef)
 	if err != nil {
 		return false, err
 	}
@@ -657,7 +665,7 @@ func (c *cachingMigInfoProvider) GetMigMachineType(ctx context.Context, migRef G
 	return machine, nil
 }
 
-func (c *cachingMigInfoProvider) GetListManagedInstancesResults(migRef GceRef) (string, error) {
+func (c *cachingMigInfoProvider) GetListManagedInstancesResults(ctx context.Context, migRef GceRef) (string, error) {
 	c.migInfoMutex.Lock()
 	defer c.migInfoMutex.Unlock()
 
@@ -666,13 +674,13 @@ func (c *cachingMigInfoProvider) GetListManagedInstancesResults(migRef GceRef) (
 		return listManagedInstancesResults, nil
 	}
 
-	err := c.fillMigInfoCache(context.TODO())
+	err := c.fillMigInfoCacheIfCold(ctx)
 	listManagedInstancesResults, found = c.cache.GetListManagedInstancesResults(migRef)
 	if err == nil && found {
 		return listManagedInstancesResults, nil
 	}
 
-	err = c.fillSingleMigInfo(context.TODO(), migRef)
+	err = c.fillSingleMigInfo(ctx, migRef)
 	if err != nil {
 		return "", err
 	}
