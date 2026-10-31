@@ -896,6 +896,23 @@ CA stops all operations until the situation improves. If there are fewer unready
 but they are concentrated in a particular node group,
 then this node group may be excluded from future scale-ups.
 
+By default this check looks at every node in the cluster, including nodes that belong to no
+autoscaled node group. On clusters that mix autoscaled node groups with an externally managed
+node fleet, `--unready-nodes-scope=autoscaled` excludes nodes known to be outside autoscaled
+node groups from this check, so unready nodes in the externally managed fleet no longer block
+autoscaling. Nodes whose node group lookup fails remain included because their ownership is unknown.
+The percentage threshold also uses only nodes in the selected scope as its denominator, so
+excluding ready external nodes can make this check stricter. For example, with the default
+thresholds, 5 unready nodes among 10 autoscaled nodes alongside 100 ready external nodes pass
+the cluster-wide check under `cluster` (5/110, about 4.5%) but fail it under `autoscaled`
+(5/10, 50%). The per-node-group check is unaffected either way.
+
+The status ConfigMap keeps reporting cluster-wide node counts, as does the
+`cluster_autoscaler_nodes_count{state="unready"}` metric for unready nodes. The
+`cluster_autoscaler_cluster_safe_to_autoscale` metric follows the scoped health check. Under
+`autoscaled`, cluster-wide counts can exceed the configured thresholds while the cluster is
+still reported healthy, so alerts based on those counts can disagree with the health metric.
+
 ### How fast is Cluster Autoscaler?
 
 By default, scale-up is considered up to 10 seconds after pod is marked as unschedulable, and scale-down 10 minutes after a node becomes unneeded.
