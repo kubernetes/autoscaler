@@ -79,6 +79,9 @@ spec:
           {{- end }}
           args:
             - --stderrthreshold=info
+            {{- with .Values.vpaObjectNamespace }}
+            - --vpa-object-namespace={{ . }}
+            {{- end }}
           {{- if .Values.admissionController.registerWebhook }}
             - --register-webhook=true
             {{- else }}
