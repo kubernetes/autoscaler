@@ -49,6 +49,9 @@ const (
 	// InProgressResizeUpdateTimeout defines the duration during which an in-place resize request
 	// is considered in progress. If the resize is not completed within this time, it falls back to eviction.
 	InProgressResizeUpdateTimeout = 1 * time.Hour
+
+	// InPlaceResizedEventReason is the reason of the event recorded after an in-place resize.
+	InPlaceResizedEventReason = "InPlaceResizedByVPA"
 )
 
 // PodsInPlaceRestriction controls pods in-place updates. It ensures that we will not update too
@@ -274,7 +277,7 @@ func (ip *PodsInPlaceRestrictionImpl) InPlaceUpdate(podToUpdate *corev1.Pod, vpa
 		}
 	}
 
-	eventRecorder.Event(podToUpdate, corev1.EventTypeNormal, "InPlaceResizedByVPA", "Pod was resized in place by VPA Updater.")
+	eventRecorder.Event(podToUpdate, corev1.EventTypeNormal, InPlaceResizedEventReason, "Pod was resized in place by VPA Updater.")
 
 	singleGroupStats, present := ip.creatorToSingleGroupStatsMap[cr]
 	if !present {
