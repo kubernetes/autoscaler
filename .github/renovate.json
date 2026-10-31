@@ -50,6 +50,18 @@
       "matchStrings": [
         "# renovate: datasource=(?<datasource>go) depName=(?<depName>\\S+)\\r?\\n\\s*(?:GOLANGCI_LINT_VERSION=|version: )(?<currentValue>v\\S+)\\s"
       ]
+    },
+    {
+      "description": "Track the golangci-lint version used by the golangci-lint GitHub Action (version-file input). The file holds nothing but the version, so depName and datasource are templated.",
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^vertical-pod-autoscaler/\\.golangci-lint-version$/"
+      ],
+      "matchStrings": [
+        "^(?<currentValue>v\\d+\\.\\d+\\.\\d+)\\s*$"
+      ],
+      "depNameTemplate": "github.com/golangci/golangci-lint/v2",
+      "datasourceTemplate": "go"
     }
   ],
   "packageRules": [
@@ -57,6 +69,12 @@
       "description": "The custom kube-api-linter build is updated as one unit: both golangci-lint pins and the kube-api-linter plugin, which must be compatible with each other.",
       "matchManagers": ["custom.regex"],
       "groupName": "kube-api-linter"
+    },
+    {
+      "description": "The CI golangci-lint pin (.golangci-lint-version) is independent of the custom kube-api-linter build and gets its own PR. Must come after the kube-api-linter grouping rule to override its groupName.",
+      "matchManagers": ["custom.regex"],
+      "matchFileNames": ["vertical-pod-autoscaler/.golangci-lint-version"],
+      "groupName": "golangci-lint"
     },
     {
       "description": "golangci-lint major upgrades require changing the /v2 module path manually.",
