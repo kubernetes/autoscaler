@@ -23,6 +23,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v7"
 	"github.com/stretchr/testify/assert"
 
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
@@ -103,6 +104,56 @@ func TestInstanceStatusFromVM(t *testing.T) {
 	t.Run("fast delete enablement = true", func(t *testing.T) {
 		provider := newTestProvider(t)
 		scaleSet := newTestScaleSetWithFastDelete(provider.azureManager, "testScaleSet")
+
+		t.Run("provisioning state = failed without a reason, power state = stopped", func(t *testing.T) {
+			vm := newVMObjectWithState(string(armcompute.GalleryProvisioningStateFailed), vmPowerStateStopped)
+
+			status := scaleSet.instanceStatusFromVM(vm)
+
+			assert.NotNil(t, status.ErrorInfo)
+			assert.Equal(t, cloudprovider.OutOfResourcesErrorClass, status.ErrorInfo.ErrorClass)
+			assert.Equal(t, "provisioning-state-failed", status.ErrorInfo.ErrorCode)
+			assert.Equal(t, "Azure failed to provision a node for this node group", status.ErrorInfo.ErrorMessage)
+		})
+
+		t.Run("provisioning state = failed with a zonal allocation reason, no power state", func(t *testing.T) {
+			vm := newVMObjectWithState(string(armcompute.GalleryProvisioningStateFailed), vmPowerStateUnknown)
+			vm.Properties.InstanceView.Statuses = []*armcompute.InstanceViewStatus{{
+				Code:    ptr.To("ProvisioningState/failed/ZonalAllocationFailed"),
+				Message: ptr.To("Allocation failed. We do not have sufficient capacity for the requested VM size in this zone."),
+			}}
+
+			status := scaleSet.instanceStatusFromVM(vm)
+
+			assert.Equal(t, cloudprovider.InstanceCreating, status.State)
+			assert.NotNil(t, status.ErrorInfo)
+			assert.Equal(t, cloudprovider.OutOfResourcesErrorClass, status.ErrorInfo.ErrorClass)
+			assert.Equal(t, "ZonalAllocationFailed", status.ErrorInfo.ErrorCode)
+			assert.Equal(t, "Allocation failed. We do not have sufficient capacity for the requested VM size in this zone.", status.ErrorInfo.ErrorMessage)
+		})
+
+		t.Run("provisioning state = failed with a reason but no message", func(t *testing.T) {
+			vm := newVMObjectWithState(string(armcompute.GalleryProvisioningStateFailed), vmPowerStateUnknown)
+			vm.Properties.InstanceView.Statuses = []*armcompute.InstanceViewStatus{{Code: ptr.To("ProvisioningState/failed/AllocationFailed")}}
+
+			status := scaleSet.instanceStatusFromVM(vm)
+
+			assert.Equal(t, "AllocationFailed", status.ErrorInfo.ErrorCode)
+			assert.Equal(t, "Azure failed to provision a node for this node group", status.ErrorInfo.ErrorMessage)
+		})
+
+		t.Run("provisioning state = failed with a message but no reason", func(t *testing.T) {
+			vm := newVMObjectWithState(string(armcompute.GalleryProvisioningStateFailed), vmPowerStateUnknown)
+			vm.Properties.InstanceView.Statuses = []*armcompute.InstanceViewStatus{{
+				Code:    ptr.To("ProvisioningState/failed"),
+				Message: ptr.To("The VM could not be provisioned."),
+			}}
+
+			status := scaleSet.instanceStatusFromVM(vm)
+
+			assert.Equal(t, "provisioning-state-failed", status.ErrorInfo.ErrorCode)
+			assert.Equal(t, "The VM could not be provisioned.", status.ErrorInfo.ErrorMessage)
+		})
 
 		t.Run("provisioning state = failed, power state = starting", func(t *testing.T) {
 			vm := newVMObjectWithState(string(armcompute.GalleryProvisioningStateFailed), vmPowerStateStarting)
