@@ -298,6 +298,7 @@ func (m *asgCache) DeleteInstances(instances []*AwsInstanceRef) error {
 		return fmt.Errorf("can't delete instance %s, which is not part of an ASG", instances[0].Name)
 	}
 
+	instancesToTerminate := make([]string, 0, len(instances))
 	for _, instance := range instances {
 		asg := m.findForInstance(*instance)
 
@@ -366,21 +367,34 @@ func (m *asgCache) DeleteInstances(instances []*AwsInstanceRef) error {
 			continue
 		}
 
+		instancesToTerminate = append(instancesToTerminate, instance.Name)
+	}
+
+	for start := 0; start < len(instancesToTerminate); start += 100 {
+		end := start + 100
+		if end > len(instancesToTerminate) {
+			end = len(instancesToTerminate)
+		}
+		batch := instancesToTerminate[start:end]
 		params := &autoscaling.TerminateInstanceInAutoScalingGroupInput{
-			InstanceId:                     aws.String(instance.Name),
 			ShouldDecrementDesiredCapacity: aws.Bool(true),
 		}
-		start := time.Now()
-		resp, err := m.awsService.TerminateInstanceInAutoScalingGroup(context.Background(), params)
-		observeAWSRequest("TerminateInstanceInAutoScalingGroup", err, start)
+		if len(batch) == 1 {
+			params.InstanceId = aws.String(batch[0])
+		} else {
+			params.AutoScalingGroupName = aws.String(commonAsg.Name)
+			params.InstanceIds = batch
+		}
+		requestStart := time.Now()
+		_, err := m.awsService.TerminateInstanceInAutoScalingGroup(context.Background(), params)
+		observeAWSRequest("TerminateInstanceInAutoScalingGroup", err, requestStart)
 		if err != nil {
 			return err
 		}
-		klog.V(4).Infof("Terminated instance %s in autoscaling group: %s", instance.Name, aws.ToString(resp.Activity.Description))
+		klog.V(4).Infof("Terminated %d instance(s) in autoscaling group %s", len(batch), commonAsg.Name)
 
 		// Proactively decrement the size so autoscaler makes better decisions
-		commonAsg.curSize--
-
+		commonAsg.curSize -= len(batch)
 	}
 	return nil
 }
