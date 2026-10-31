@@ -1,3 +1,7 @@
+# OCI IAM prerequisite for the dynamic group containing the instance where this
+# pod runs: Allow dynamic-group <group-name> to read cluster-work-requests in
+# compartment <compartment-name>. This lets Cluster Autoscaler detect failed
+# NODEPOOL_RECONCILE work requests and report their OCI error messages.
 ---
 apiVersion: v1
 kind: ServiceAccount
