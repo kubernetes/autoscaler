@@ -1,7 +1,9 @@
 approvers:
-# - pierre-emmanuelJ
-# - 7fELF
-# - PhilippeChepy
+- pierre-emmanuelJ
+- natalie-o-perret
+- PhilippeChepy
+- nerzhul
+- ylmrx
 
 labels:
 - area/provider/exoscale
