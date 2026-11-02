@@ -179,7 +179,7 @@ Validation (admission controller webhook and CRD validation):
   rejected.
 - `nodeSelector` must be a valid label selector (checked with `ValidateLabelSelector`).
 - `nodeSelector` is only allowed when `targetRef.kind` is `DaemonSet`.
-- `selector` is only allowed when the `VPASelector` feature gate is enabled.
+- `nodeSelector` is only allowed when the `VPANodeSelector` feature gate is enabled.
 - `selector` cannot be combined with CPU startup boost: `spec.startupBoost` and
   `resourcePolicy.containerPolicies[].startupBoost` must be unset when `selector` is set. This
   is enforced both by the admission controller and by a CEL rule on
@@ -190,7 +190,7 @@ Validation (admission controller webhook and CRD validation):
 
 #### Recommender
 
-When the `VPASelector` feature gate is enabled:
+When the `VPANodeSelector` feature gate is enabled:
 
 1. Load node labels - The recommender has no node lister or informer today, so one is added.
    It stores node labels in the cluster state model, so
@@ -236,7 +236,7 @@ its checkpoints remain valid and are reused.
 
 #### Updater
 
-When the `VPASelector` feature gate is enabled, the updater:
+When the `VPANodeSelector` feature gate is enabled, the updater:
 
 1. Keeps a node lister so it can look up the labels of `pod.spec.nodeName` for running pods.
 2. Uses the extended matching in
@@ -274,8 +274,8 @@ VPA and applies that VPA's `updateMode`, so a recreated pod is admitted with the
 recommendation. Until then, the updater skips the pod in the same way.
 
 Validation - The admission controller enforces the validation rules listed under
-[API Changes](#api-changes). It needs the `VPASelector` feature gate to accept VPAs with
-`spec.selector`.
+[API Changes](#api-changes). It needs the `VPANodeSelector` feature gate to accept VPAs with
+`spec.selector.nodeSelector`.
 
 ### Choosing the controlling VPA for a pod
 
@@ -595,15 +595,15 @@ selectors, and can be revisited once the selector plumbing is stable.
 
 ### Feature Enablement and Rollback
 
-- Feature gate name: `VPASelector`
+- Feature gate name: `VPANodeSelector`
 - Components depending on the feature gate:
     - admission-controller
     - recommender
     - updater
 
-Enabling of feature gate `VPASelector` will cause the following to happen:
+Enabling of feature gate `VPANodeSelector` will cause the following to happen:
 - admission-controller will:
-    - Accept new VPA objects created with `spec.selector` configured
+    - Accept new VPA objects created with `spec.selector.nodeSelector` configured
     - Resolve the controlling VPA for a new DaemonSet pod by the labels of its target node and
       inject that VPA's recommendation
 - recommender will:
@@ -615,9 +615,9 @@ Enabling of feature gate `VPASelector` will cause the following to happen:
     - Compute the disruption budget of each VPA on a DaemonSet with selector VPAs (including the
       fallback VPA) from the pods it controls only
 
-Disabling of feature gate `VPASelector` will cause the following to happen:
+Disabling of feature gate `VPANodeSelector` will cause the following to happen:
 - admission-controller will:
-    - Reject new VPA objects being created with `spec.selector` configured
+    - Reject new VPA objects being created with `spec.selector.nodeSelector` configured
         - A descriptive error message should be returned to the user letting them know that they
           are using a feature gated feature
     - Leave existing VPA objects with `spec.selector` in place
@@ -640,7 +640,7 @@ checkpoints remain valid and are reused.
 
 - **Alpha → Beta**:
   - E2E tests are stable for at least 2 releases.
-  - No open bugs against the `VPASelector` feature gate.
+  - No open bugs against the `VPANodeSelector` feature gate.
   - Positive user feedback from at least two production deployments.
 - **Beta → GA**:
   - Feature has been stable in beta for at least 2 releases.
@@ -648,7 +648,7 @@ checkpoints remain valid and are reused.
 
 ### Version Skew
 
-All three components (recommender, updater, admission controller) need the `VPASelector` gate,
+All three components (recommender, updater, admission controller) need the `VPANodeSelector` gate,
 and need to be on a version that understands `spec.selector`, for selector VPAs to work
 correctly:
 
