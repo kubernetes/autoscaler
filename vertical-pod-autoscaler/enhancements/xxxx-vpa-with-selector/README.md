@@ -669,15 +669,7 @@ correctly:
 
 ### Kubernetes Version Compatibility
 
-When using `updateMode: Off`, `Recreate`, or `InPlaceOrRecreate` (falling back to eviction),
-this feature works on any Kubernetes version; no in-place update support is required.
-
-When using `updateMode: InPlace` or `InPlaceOrRecreate` (for the in-place path), this feature
-requires Kubernetes 1.27+ with the `InPlacePodVerticalScaling` feature gate enabled.
-On Kubernetes versions without in-place pod updates, the `InPlace` update
-mode will not function, and the admission controller rejects VPAs that combine `selector` with
-`InPlace` mode when the `InPlace` feature gate is not enabled, exactly as it does for VPAs
-without a selector.
+NONE.
 
 ## Implementation History
 
