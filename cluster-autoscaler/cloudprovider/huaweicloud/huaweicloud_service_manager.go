@@ -741,3 +741,4 @@ func buildGenericLabels(template *asgTemplate, nodeName string) map[string]strin
 
 	return result
 }
+
