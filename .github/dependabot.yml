@@ -5,8 +5,7 @@ updates:
 - package-ecosystem: gomod
   directory: "/addon-resizer"
   schedule:
-    interval: daily
-  target-branch: "addon-resizer-release-1.8"
+    interval: "weekly"
   open-pull-requests-limit: 3
   labels:
     - "release-note-none"
