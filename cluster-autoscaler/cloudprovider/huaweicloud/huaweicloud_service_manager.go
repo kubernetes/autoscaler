@@ -249,10 +249,10 @@ type listScalingInstancesFunc func(opts *huaweicloudsdkasmodel.ListScalingInstan
 func listScalingInstancesPaged(groupID string, fn listScalingInstancesFunc) ([]huaweicloudsdkasmodel.ScalingGroupInstance, error) {
 	var scalingGroupInstances []huaweicloudsdkasmodel.ScalingGroupInstance
 	var startNumber int32 = 0
-	const maxPages = 100  // defensive cap to prevent infinite loops if the API misbehaves
-	pageSize := int32(100)  // explicit page size instead of relying on the default, to avoid surprises if the default changes in the future
-    seen := make(map[string]struct{})  // track seen instance IDs to detect duplicates
-	dupCount := 0  // count of duplicate instance IDs encountered
+	const maxPages = 100
+	pageSize := int32(100)
+    seen := make(map[string]struct{})
+	dupCount := 0
 
 	for page := 0; page < maxPages; page++ {
 		opts := &huaweicloudsdkasmodel.ListScalingInstancesRequest{
