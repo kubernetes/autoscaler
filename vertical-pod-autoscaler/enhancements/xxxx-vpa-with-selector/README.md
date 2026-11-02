@@ -126,6 +126,7 @@ selector VPA covers. Creating or deleting a selector VPA therefore never changes
 ### API Changes
 
 ```go
+// +kubebuilder:validation:XValidation:rule="!has(self.selector) || (!has(self.startupBoost) && (!has(self.resourcePolicy) || !has(self.resourcePolicy.containerPolicies) || self.resourcePolicy.containerPolicies.all(p, !has(p.startupBoost))))",message="startupBoost cannot be set when selector is set"
 type VerticalPodAutoscalerSpec struct {
     // ... existing fields ...
 
@@ -180,7 +181,9 @@ Validation (admission controller webhook and CRD validation):
 - `nodeSelector` is only allowed when `targetRef.kind` is `DaemonSet`.
 - `selector` is only allowed when the `VPASelector` feature gate is enabled.
 - `selector` cannot be combined with CPU startup boost: `spec.startupBoost` and
-  `resourcePolicy.containerPolicies[].startupBoost` must be unset when `selector` is set. See
+  `resourcePolicy.containerPolicies[].startupBoost` must be unset when `selector` is set. This
+  is enforced both by the admission controller and by a CEL rule on
+  `VerticalPodAutoscalerSpec`, shown above. See
   [Why startup boost is excluded](#why-startup-boost-is-excluded).
 
 ### Component Changes
@@ -574,7 +577,8 @@ selectors, and can be revisited once the selector plumbing is stable.
     target its controller, and is updated once the node appears.
   - Validation rules for `spec.selector` (DaemonSet-only, at least one non-empty selector field,
     rejection of `selector: {}` and `nodeSelector: {}`, invalid label selectors, feature gate,
-    rejection of startup boost together with a selector).
+    rejection of startup boost together with a selector), in both the admission controller and
+    the CRD CEL rule.
 - **E2E tests**:
   - Several selector VPAs on a heterogeneous cluster each receive an independent recommendation
     computed only from the pods on their nodes.
@@ -660,8 +664,8 @@ correctly:
   having no per-node-group recommendations.
 - **Old admission controller**: An admission controller that does not know `spec.selector`
   does not validate it. The CRD validation still applies the structural rules (valid label keys
-  and values), but the DaemonSet-only and startup-boost rules are only enforced once the admission
-  controller is upgraded.
+  and values) and the CEL rule rejecting startup boost together with a selector, but the
+  DaemonSet-only rule is only enforced once the admission controller is upgraded.
 
 ### Kubernetes Version Compatibility
 
