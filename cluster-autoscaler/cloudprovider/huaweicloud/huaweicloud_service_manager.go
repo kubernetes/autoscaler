@@ -251,7 +251,7 @@ func listScalingInstancesPaged(groupID string, fn listScalingInstancesFunc) ([]h
 	var startNumber int32 = 0
 	const maxPages = 100
 	pageSize := int32(100)
-    seen := make(map[string]struct{})
+	seen := make(map[string]struct{})
 	dupCount := 0
 
 	for page := 0; page < maxPages; page++ {
@@ -294,10 +294,10 @@ func listScalingInstancesPaged(groupID string, fn listScalingInstancesFunc) ([]h
 			klog.V(2).Infof("  instance: id=%s, name=%s, health=%v, lifecycle=%v", instID, instName, inst.HealthStatus, inst.LifeCycleState)
 			// dedup skip instance already seen in previous pages (can happen if instances are added/removed during pagination,
 			// or if the API returns duplicates). We log a warning but continue processing.
-            if instID != "" {
+			if instID != "" {
 				if _, exists := seen[instID]; exists {
 					dupCount++
-					continue  // skip duplicate instance ID
+					continue
 				}
 				seen[instID] = struct{}{}
 			}
@@ -307,10 +307,10 @@ func listScalingInstancesPaged(groupID string, fn listScalingInstancesFunc) ([]h
 
 		// terminate when current page is smaller than requested pageSize, which means no more instances to list.
 		// do NOT rely on TotalNumber which can drift due to instance scale up/down during the listing process.
-        if int32(len(currentPage)) < pageSize {
+		if int32(len(currentPage)) < pageSize {
 			break
 		}
-        // advance startNumber by the original page size, not the number of new instances added, to avoid skipping pages if duplicates were removed.
+		// advance startNumber by the original page size, not the number of new instances added, to avoid skipping pages if duplicates were removed.
 		// because the AS offset is based on total list position, not the number of unique instances returned.
 		startNumber += int32(len(currentPage))
 	}
@@ -372,9 +372,9 @@ func (csm *cloudServiceManager) IncreaseSizeInstance(groupID string, delta int) 
 	}
 	newDesired := int32(currentDesired + delta)
 	klog.V(2).Infof("Increasing group %s desired instance number from %d to %d (delta: %d)",
-	    groupID, currentDesired, newDesired, delta)
+		groupID, currentDesired, newDesired, delta)
 
-    asClient := csm.getASClientFunc()
+	asClient := csm.getASClientFunc()
 	if asClient == nil {
 		return fmt.Errorf("failed to get as client")
 	}
@@ -741,4 +741,3 @@ func buildGenericLabels(template *asgTemplate, nodeName string) map[string]strin
 
 	return result
 }
-
