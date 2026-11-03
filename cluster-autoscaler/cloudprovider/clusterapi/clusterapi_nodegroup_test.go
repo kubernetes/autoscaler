@@ -2594,6 +2594,9 @@ func validateCSIDrivers(t *testing.T, expectedDrivers []storagev1.CSINodeDriver,
 	}
 }
 
+// TestNodeGroupTemplateNodeInfoWithoutInfrastructureAccess verifies that
+// nodeGroups discovery and TemplateNodeInfo succeed using capacity annotations
+// when the autoscaler lacks RBAC access to infrastructure machine templates.
 func TestNodeGroupTemplateNodeInfoWithoutInfrastructureAccess(t *testing.T) {
 	annotations := map[string]string{
 		nodeGroupMinSizeAnnotationKey: "0",

@@ -1065,12 +1065,16 @@ func (c *machineController) allowedByAutoDiscoverySpecs(r *unstructured.Unstruct
 	return false
 }
 
-func (c *machineController) allowedAccessToInfrastructureResource(resource schema.GroupVersionResource, namespace string) (bool, error) {
+// allowedAccessToInfrastructureResource checks whether the management client has
+// RBAC permissions to list and watch the given infrastructure resource in the
+// namespace scope used by managementInformerFactory.
+func (c *machineController) allowedAccessToInfrastructureResource(resource schema.GroupVersionResource) (bool, error) {
+	watchNamespace := namespaceToWatch(c.autoDiscoverySpecs)
 	for _, verb := range []string{"list", "watch"} {
 		sar := &authv1.SelfSubjectAccessReview{
 			Spec: authv1.SelfSubjectAccessReviewSpec{
 				ResourceAttributes: &authv1.ResourceAttributes{
-					Namespace: namespace,
+					Namespace: watchNamespace,
 					Verb:      verb,
 					Group:     resource.Group,
 					Version:   resource.Version,
@@ -1093,7 +1097,7 @@ func (c *machineController) allowedAccessToInfrastructureResource(resource schem
 
 // Get an infrastructure machine template given its GVR, name, and namespace.
 func (c *machineController) getInfrastructureResource(resource schema.GroupVersionResource, name string, namespace string) (*unstructured.Unstructured, error) {
-	allowed, err := c.allowedAccessToInfrastructureResource(resource, namespace)
+	allowed, err := c.allowedAccessToInfrastructureResource(resource)
 	if err != nil || !allowed {
 		klog.V(4).Infof("Unable to validate infrastructure reference authorization, error: %v", err)
 		return nil, err

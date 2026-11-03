@@ -1149,13 +1149,17 @@ func TestReadInfrastructureReferenceResourceScalesWithoutExtraDiscovery(t *testi
 	}
 }
 
+// TestCanScaleFromZeroWithoutInfrastructureAccess verifies that CanScaleFromZero
+// and InstanceCapacity do not block in WaitForCacheSync when the autoscaler
+// lacks RBAC permissions to list or watch infrastructure machine templates.
 func TestCanScaleFromZeroWithoutInfrastructureAccess(t *testing.T) {
 	testCases := []struct {
-		name        string
-		annotations map[string]string
-		deniedVerb  string
-		sarErr      error
-		canScale    bool
+		name               string
+		annotations        map[string]string
+		deniedVerb         string
+		namespaceOnlyGrant bool
+		sarErr             error
+		canScale           bool
 	}{
 		{
 			name: "with CPU and memory annotations can scale from zero when list access is denied",
@@ -1174,6 +1178,15 @@ func TestCanScaleFromZeroWithoutInfrastructureAccess(t *testing.T) {
 			},
 			deniedVerb: "watch",
 			canScale:   true,
+		},
+		{
+			name: "with CPU and memory annotations can scale from zero when only namespace-scoped access is granted but informer watches all namespaces",
+			annotations: map[string]string{
+				cpuKey:    "2",
+				memoryKey: "4Gi",
+			},
+			namespaceOnlyGrant: true,
+			canScale:           true,
 		},
 		{
 			name: "with CPU and memory annotations can scale from zero when SelfSubjectAccessReview errors",
@@ -1234,7 +1247,11 @@ func TestCanScaleFromZeroWithoutInfrastructureAccess(t *testing.T) {
 						return false, nil, nil
 					}
 					sar = sar.DeepCopy()
-					sar.Status.Allowed = sar.Spec.ResourceAttributes.Verb != tc.deniedVerb
+					if tc.namespaceOnlyGrant {
+						sar.Status.Allowed = sar.Spec.ResourceAttributes.Namespace != metav1.NamespaceAll
+					} else {
+						sar.Status.Allowed = sar.Spec.ResourceAttributes.Verb != tc.deniedVerb
+					}
 					return true, sar, nil
 				})
 
