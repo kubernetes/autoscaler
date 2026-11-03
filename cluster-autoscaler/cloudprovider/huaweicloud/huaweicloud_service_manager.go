@@ -396,29 +396,37 @@ func (csm *cloudServiceManager) ListScalingGroups() ([]AutoScalingGroup, error) 
 	if asClient == nil {
 		return nil, fmt.Errorf("failed to list scaling groups due to can not get as client")
 	}
-
-	// requiredState := huaweicloudsdkasmodel.GetListScalingGroupsRequestScalingGroupStatusEnum().INSERVICE
-	opts := &huaweicloudsdkasmodel.ListScalingGroupsRequest{
-		// ScalingGroupStatus: &requiredState,
+	pageLimit := int32(100)
+	autoScalingGroups := make([]AutoScalingGroup, 0)
+	for startNumber := int32(0); startNumber < pageLimit*1000; {
+		opts := &huaweicloudsdkasmodel.ListScalingGroupsRequest{
+			StartNumber: &startNumber,
+			Limit: &pageLimit,
+		}
+		response, err := asClient.ListScalingGroups(opts)
+		if err != nil {
+			klog.Errorf("failed to list scaling groups. error: %v", err)
+			return nil, err
+		}
+		if response == nil || response.ScalingGroups == nil {
+			klog.Info("no scaling group yet.")
+			break
+		}
+		for _, sg := range *response.ScalingGroups {
+			autoScalingGroup := newAutoScalingGroup(csm, sg)
+			autoScalingGroups = append(autoScalingGroups, autoScalingGroup)
+			klog.Infof("found autoscaling group: %s", autoScalingGroup.groupName)
+		}
+		returned := int32(len(*response.ScalingGroups))
+		if returned == 0 {
+			break
+		}
+		startNumber += returned
+		if response.TotalNumber != nil && int32(len(autoScalingGroups)) >= *response.TotalNumber {
+			break
+		}
 	}
-	response, err := asClient.ListScalingGroups(opts)
-	if err != nil {
-		klog.Errorf("failed to list scaling groups. error: %v", err)
-		return nil, err
-	}
-
-	if response == nil || response.ScalingGroups == nil {
-		klog.Info("no scaling group yet.")
-		return nil, nil
-	}
-
-	autoScalingGroups := make([]AutoScalingGroup, 0, len(*response.ScalingGroups))
-	for _, sg := range *response.ScalingGroups {
-		autoScalingGroup := newAutoScalingGroup(csm, sg)
-		autoScalingGroups = append(autoScalingGroups, autoScalingGroup)
-		klog.Infof("found autoscaling group: %s", autoScalingGroup.groupName)
-	}
-
+	klog.Infof("listed %d scaling groups in total", len(autoScalingGroups))
 	return autoScalingGroups, nil
 }
 
@@ -453,12 +461,14 @@ func (csm *cloudServiceManager) transformInstanceState(lifeCycleState huaweiclou
 	case healthStatusEnum.ERROR:
 		instanceStatus.ErrorInfo = &cloudprovider.InstanceErrorInfo{
 			ErrorClass:   cloudprovider.OtherErrorClass,
+			ErrorCode: "healthStatusError",
 			ErrorMessage: fmt.Sprintf("%v", healthStatus),
 		}
 		return instanceStatus
 	default:
 		instanceStatus.ErrorInfo = &cloudprovider.InstanceErrorInfo{
 			ErrorClass:   cloudprovider.OtherErrorClass,
+			ErrorCode: "invalidHealthStatus",
 			ErrorMessage: fmt.Sprintf("invalid instance health state: %v", healthStatus),
 		}
 		return instanceStatus
