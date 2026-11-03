@@ -468,7 +468,7 @@ func (csm *cloudServiceManager) transformInstanceState(lifeCycleState huaweiclou
 	default:
 		instanceStatus.ErrorInfo = &cloudprovider.InstanceErrorInfo{
 			ErrorClass:   cloudprovider.OtherErrorClass,
-			ErrorCode: "invalidHealthStatus",
+			ErrorCode: "invalidHealthState",
 			ErrorMessage: fmt.Sprintf("invalid instance health state: %v", healthStatus),
 		}
 		return instanceStatus
