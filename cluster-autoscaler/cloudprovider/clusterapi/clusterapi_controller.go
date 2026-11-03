@@ -70,9 +70,10 @@ const (
 	autoDiscovererClusterNameKey  = "clusterName"
 	autoDiscovererNamespaceKey    = "namespace"
 
-	machinePhaseFailed  = "Failed"
-	kindVersionCacheTTL = time.Minute
-	infraAccessCacheTTL = time.Minute
+	machinePhaseFailed       = "Failed"
+	kindVersionCacheTTL      = time.Minute
+	infraAccessCacheTTL      = time.Minute
+	infraAccessReviewTimeout = 30 * time.Second
 )
 
 type kindVersionCacheEntry struct {
@@ -1109,9 +1110,11 @@ func (c *machineController) allowedAccessToInfrastructureResource(resource schem
 				},
 			},
 		}
+		ctx, cancel := context.WithTimeout(context.TODO(), infraAccessReviewTimeout)
 		resp, err := c.managementClientset.AuthorizationV1().
 			SelfSubjectAccessReviews().
-			Create(context.TODO(), sar, metav1.CreateOptions{})
+			Create(ctx, sar, metav1.CreateOptions{})
+		cancel()
 		if err != nil {
 			return false, err
 		}
