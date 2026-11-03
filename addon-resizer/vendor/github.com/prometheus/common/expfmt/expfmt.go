@@ -36,8 +36,6 @@ const (
 	//nolint:revive // Allow for underscores.
 	OpenMetricsVersion_1_0_0 = "1.0.0"
 	//nolint:revive // Allow for underscores.
-	OpenMetricsVersion_2_0_0_rc = "2.0.0-rc"
-	//nolint:revive // Allow for underscores.
 	OpenMetricsVersion_2_0_0 = "2.0.0"
 )
 
@@ -58,8 +56,6 @@ const (
 	FmtProtoCompact Format = ProtoFmt + ` encoding=compact-text`
 	//nolint:revive // Allow for underscores.
 	FmtOpenMetrics_2_0_0 Format = OpenMetricsType + `; version=` + OpenMetricsVersion_2_0_0 + `; charset=utf-8`
-	//nolint:revive // Allow for underscores.
-	FmtOpenMetrics_2_0_0_rc Format = OpenMetricsType + `; version=` + OpenMetricsVersion_2_0_0_rc + `; charset=utf-8`
 	//nolint:revive // Allow for underscores.
 	FmtOpenMetrics_1_0_0 Format = OpenMetricsType + `; version=` + OpenMetricsVersion_1_0_0 + `; charset=utf-8`
 	//nolint:revive // Allow for underscores.
@@ -110,27 +106,20 @@ func NewFormat(t FormatType) Format {
 // NewOpenMetricsFormat generates a new OpenMetrics format matching the
 // specified version number.
 //
-// Note: OpenMetrics versions 2.0.0-rc and 2.0.0 are experimental and encode-only (supporting
+// Note: OpenMetrics version 2.0.0 is experimental and encode-only (supporting
 // counter, gauge, summary, untyped, histogram, and gaugehistogram metric types).
 func NewOpenMetricsFormat(version string) (Format, error) {
-	switch version {
-	case OpenMetricsVersion_0_0_1:
+	if version == OpenMetricsVersion_0_0_1 {
 		return FmtOpenMetrics_0_0_1, nil
-	case OpenMetricsVersion_1_0_0:
+	}
+	if version == OpenMetricsVersion_1_0_0 {
 		return FmtOpenMetrics_1_0_0, nil
-	case OpenMetricsVersion_2_0_0_rc:
-		// OpenMetrics 2.0.0-rc is experimental and encode-only.
-		return FmtOpenMetrics_2_0_0_rc, nil
-	case OpenMetricsVersion_2_0_0:
+	}
+	if version == OpenMetricsVersion_2_0_0 {
 		// OpenMetrics 2.0.0 is experimental and encode-only.
 		return FmtOpenMetrics_2_0_0, nil
-	default:
-		return FmtUnknown, errors.New("unknown open metrics version string")
 	}
-}
-
-func isOpenMetrics20Version(v string) bool {
-	return v == OpenMetricsVersion_2_0_0 || v == OpenMetricsVersion_2_0_0_rc
+	return FmtUnknown, errors.New("unknown open metrics version string")
 }
 
 // Version returns the version parameter without validating whether it is supported.
