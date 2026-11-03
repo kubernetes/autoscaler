@@ -94,9 +94,10 @@ func (ng *nodegroup) IncreaseSize(ctx context.Context, delta int) error {
 	return ng.scalableResource.SetSize(size + delta)
 }
 
-// AtomicIncreaseSize is not implemented.
+// AtomicIncreaseSize increases the target size using an optimistic-concurrency
+// update of the Scale subresource. It doesn't wait for the new instances to appear.
 func (ng *nodegroup) AtomicIncreaseSize(ctx context.Context, delta int) error {
-	return cloudprovider.ErrNotImplemented
+	return ng.scalableResource.AtomicIncreaseSize(ctx, delta)
 }
 
 // DeleteNodes deletes nodes from this node group. Error is returned
