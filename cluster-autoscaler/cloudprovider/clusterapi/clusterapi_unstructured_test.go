@@ -1290,3 +1290,81 @@ func TestCanScaleFromZeroWithoutInfrastructureAccess(t *testing.T) {
 		}
 	}
 }
+
+// TestReadInfrastructureReferenceResourceCachesAccessReview verifies that both
+// allowed and denied SelfSubjectAccessReview decisions are cached across node
+// groups and wrapper rebuilds within infraAccessCacheTTL, and refreshed once
+// the TTL expires.
+func TestReadInfrastructureReferenceResourceCachesAccessReview(t *testing.T) {
+	for _, allowed := range []bool{true, false} {
+		t.Run(fmt.Sprintf("allowed=%v", allowed), func(t *testing.T) {
+			mdTestConfigs := NewTestConfigBuilder().
+				ForMachineDeployment().
+				WithNodeCount(0).
+				WithAnnotations(map[string]string{cpuKey: "2", memoryKey: "4Gi"}).
+				WithCapacity(map[string]string{cpuStatusKey: "4", memoryStatusKey: "8Gi"}).
+				BuildMultiple(5)
+
+			controller := NewTestMachineController(t)
+			defer controller.Stop()
+			if err := controller.AddTestConfigs(mdTestConfigs...); err != nil {
+				t.Fatal(err)
+			}
+
+			var sarCalls int
+			controller.managementClientset.PrependReactor("create", "selfsubjectaccessreviews", func(action clientgotesting.Action) (bool, runtime.Object, error) {
+				sarCalls++
+				createAction, ok := action.(clientgotesting.CreateAction)
+				if !ok {
+					return false, nil, nil
+				}
+				sar, ok := createAction.GetObject().(*authv1.SelfSubjectAccessReview)
+				if !ok {
+					return false, nil, nil
+				}
+				sar = sar.DeepCopy()
+				sar.Status.Allowed = allowed
+				return true, sar, nil
+			})
+
+			for iter := 0; iter < 2; iter++ {
+				for _, cfg := range mdTestConfigs {
+					sr, err := newUnstructuredScalableResource(controller.machineController, cfg.machineDeployment)
+					if err != nil {
+						t.Fatal(err)
+					}
+					if !sr.CanScaleFromZero() {
+						t.Fatal("expected node group to scale from zero")
+					}
+				}
+			}
+
+			expectedPerRound := 1
+			if allowed {
+				expectedPerRound = 2 // "list" and "watch"
+			}
+			if sarCalls != expectedPerRound {
+				t.Fatalf("expected %d SelfSubjectAccessReview calls across 5 node groups and 2 iterations, got %d", expectedPerRound, sarCalls)
+			}
+
+			// Expire the cache entry and verify the next lookup refreshes it.
+			controller.machineController.infraAccessCache.Range(func(key, value any) bool {
+				entry := value.(infraAccessCacheEntry)
+				entry.cachedAt = time.Now().Add(-2 * infraAccessCacheTTL)
+				controller.machineController.infraAccessCache.Store(key, entry)
+				return true
+			})
+
+			sr, err := newUnstructuredScalableResource(controller.machineController, mdTestConfigs[0].machineDeployment)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !sr.CanScaleFromZero() {
+				t.Fatal("expected node group to scale from zero after cache refresh")
+			}
+			if sarCalls != 2*expectedPerRound {
+				t.Fatalf("expected %d SelfSubjectAccessReview calls after TTL expiration, got %d", 2*expectedPerRound, sarCalls)
+			}
+		})
+	}
+}

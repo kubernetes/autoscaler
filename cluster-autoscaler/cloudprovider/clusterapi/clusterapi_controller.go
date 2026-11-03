@@ -72,10 +72,21 @@ const (
 
 	machinePhaseFailed  = "Failed"
 	kindVersionCacheTTL = time.Minute
+	infraAccessCacheTTL = time.Minute
 )
 
 type kindVersionCacheEntry struct {
 	version  string
+	cachedAt time.Time
+}
+
+type infraAccessCacheKey struct {
+	resource  schema.GroupVersionResource
+	namespace string
+}
+
+type infraAccessCacheEntry struct {
+	allowed  bool
 	cachedAt time.Time
 }
 
@@ -96,6 +107,7 @@ type machineController struct {
 	managementScaleClient       scale.ScalesGetter
 	managementDiscoveryClient   discovery.DiscoveryInterface
 	kindVersionCache            sync.Map
+	infraAccessCache            sync.Map
 	machineSetResource          schema.GroupVersionResource
 	machineResource             schema.GroupVersionResource
 	machinePoolResource         schema.GroupVersionResource
@@ -1067,9 +1079,24 @@ func (c *machineController) allowedByAutoDiscoverySpecs(r *unstructured.Unstruct
 
 // allowedAccessToInfrastructureResource checks whether the management client has
 // RBAC permissions to list and watch the given infrastructure resource in the
-// namespace scope used by managementInformerFactory.
+// namespace scope used by managementInformerFactory, caching allowed and denied
+// decisions for infraAccessCacheTTL so repeated wrapper rebuilds across node
+// groups do not issue redundant SelfSubjectAccessReview calls.
 func (c *machineController) allowedAccessToInfrastructureResource(resource schema.GroupVersionResource) (bool, error) {
 	watchNamespace := namespaceToWatch(c.autoDiscoverySpecs)
+	key := infraAccessCacheKey{
+		resource:  resource,
+		namespace: watchNamespace,
+	}
+
+	if cached, ok := c.infraAccessCache.Load(key); ok {
+		entry := cached.(infraAccessCacheEntry)
+		if time.Since(entry.cachedAt) < infraAccessCacheTTL {
+			return entry.allowed, nil
+		}
+		c.infraAccessCache.Delete(key)
+	}
+
 	for _, verb := range []string{"list", "watch"} {
 		sar := &authv1.SelfSubjectAccessReview{
 			Spec: authv1.SelfSubjectAccessReviewSpec{
@@ -1089,9 +1116,18 @@ func (c *machineController) allowedAccessToInfrastructureResource(resource schem
 			return false, err
 		}
 		if !resp.Status.Allowed {
+			c.infraAccessCache.Store(key, infraAccessCacheEntry{
+				allowed:  false,
+				cachedAt: time.Now(),
+			})
 			return false, nil
 		}
 	}
+
+	c.infraAccessCache.Store(key, infraAccessCacheEntry{
+		allowed:  true,
+		cachedAt: time.Now(),
+	})
 	return true, nil
 }
 
