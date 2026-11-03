@@ -23,13 +23,18 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	authv1 "k8s.io/api/authorization/v1"
 	v1 "k8s.io/api/core/v1"
 	resourceapi "k8s.io/api/resource/v1"
 	storagev1 "k8s.io/api/storage/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
+	clientgotesting "k8s.io/client-go/testing"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/dynamic-resource-allocation/cel"
 	"k8s.io/dynamic-resource-allocation/structured"
@@ -1141,5 +1146,130 @@ func TestReadInfrastructureReferenceResourceScalesWithoutExtraDiscovery(t *testi
 	if discoveryCalls != 2 {
 		t.Errorf("expected exactly one discovery round (2 actions) for %d node groups across %d loop iterations, got %d actions",
 			nodeGroups, loopIterations, discoveryCalls)
+	}
+}
+
+func TestCanScaleFromZeroWithoutInfrastructureAccess(t *testing.T) {
+	testCases := []struct {
+		name        string
+		annotations map[string]string
+		deniedVerb  string
+		sarErr      error
+		canScale    bool
+	}{
+		{
+			name: "with CPU and memory annotations can scale from zero when list access is denied",
+			annotations: map[string]string{
+				cpuKey:    "2",
+				memoryKey: "4Gi",
+			},
+			deniedVerb: "list",
+			canScale:   true,
+		},
+		{
+			name: "with CPU and memory annotations can scale from zero when watch access is denied",
+			annotations: map[string]string{
+				cpuKey:    "2",
+				memoryKey: "4Gi",
+			},
+			deniedVerb: "watch",
+			canScale:   true,
+		},
+		{
+			name: "with CPU and memory annotations can scale from zero when SelfSubjectAccessReview errors",
+			annotations: map[string]string{
+				cpuKey:    "2",
+				memoryKey: "4Gi",
+			},
+			sarErr:   fmt.Errorf("sar request failed"),
+			canScale: true,
+		},
+		{
+			name:        "without capacity annotations cannot scale from zero and does not block when list access is denied",
+			annotations: map[string]string{},
+			deniedVerb:  "list",
+			canScale:    false,
+		},
+	}
+
+	for _, tc := range testCases {
+		for _, scalableType := range []string{"MachineSet", "MachineDeployment"} {
+			t.Run(fmt.Sprintf("%s %s", scalableType, tc.name), func(t *testing.T) {
+				builder := NewTestConfigBuilder()
+				if scalableType == "MachineSet" {
+					builder = builder.ForMachineSet()
+				} else {
+					builder = builder.ForMachineDeployment()
+				}
+				testConfig := builder.
+					WithNodeCount(0).
+					WithAnnotations(tc.annotations).
+					WithCapacity(map[string]string{cpuStatusKey: "4", memoryStatusKey: "8Gi"}).
+					Build()
+
+				controller := NewTestMachineController(t)
+				defer controller.Stop()
+				if err := controller.AddTestConfigs(testConfig); err != nil {
+					t.Fatal(err)
+				}
+
+				// Simulate RBAC Forbidden on machinetemplates so starting an informer would block WaitForCacheSync forever.
+				controller.dynamicClientset.PrependReactor("list", "machinetemplates", func(action clientgotesting.Action) (bool, runtime.Object, error) {
+					return true, nil, apierrors.NewForbidden(
+						schema.GroupResource{Group: "infrastructure.cluster.x-k8s.io", Resource: "machinetemplates"},
+						"",
+						fmt.Errorf("machinetemplates is forbidden"),
+					)
+				})
+				controller.managementClientset.PrependReactor("create", "selfsubjectaccessreviews", func(action clientgotesting.Action) (bool, runtime.Object, error) {
+					if tc.sarErr != nil {
+						return true, nil, tc.sarErr
+					}
+					createAction, ok := action.(clientgotesting.CreateAction)
+					if !ok {
+						return false, nil, nil
+					}
+					sar, ok := createAction.GetObject().(*authv1.SelfSubjectAccessReview)
+					if !ok {
+						return false, nil, nil
+					}
+					sar = sar.DeepCopy()
+					sar.Status.Allowed = sar.Spec.ResourceAttributes.Verb != tc.deniedVerb
+					return true, sar, nil
+				})
+
+				testResource := testConfig.machineSet
+				if scalableType == "MachineDeployment" {
+					testResource = testConfig.machineDeployment
+				}
+
+				sr, err := newUnstructuredScalableResource(controller.machineController, testResource)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				canScale := sr.CanScaleFromZero()
+				if canScale != tc.canScale {
+					t.Errorf("expected CanScaleFromZero=%v, got %v", tc.canScale, canScale)
+				}
+				if tc.canScale {
+					capacity, err := sr.InstanceCapacity()
+					if err != nil {
+						t.Fatalf("unexpected error getting InstanceCapacity: %v", err)
+					}
+					expectedCPU := resource.MustParse("2")
+					expectedMem := resource.MustParse("4Gi")
+					if gotCPU := capacity[v1.ResourceCPU]; expectedCPU.Cmp(gotCPU) != 0 {
+						t.Errorf("expected CPU capacity %v from annotations, got %v", expectedCPU, gotCPU)
+					}
+					if gotMem := capacity[v1.ResourceMemory]; expectedMem.Cmp(gotMem) != 0 {
+						t.Errorf("expected memory capacity %v from annotations, got %v", expectedMem, gotMem)
+					}
+				}
+				if sysInfo := sr.InstanceSystemInfo(); sysInfo != nil {
+					t.Errorf("expected nil InstanceSystemInfo when infrastructure access is denied, got %+v", sysInfo)
+				}
+			})
+		}
 	}
 }

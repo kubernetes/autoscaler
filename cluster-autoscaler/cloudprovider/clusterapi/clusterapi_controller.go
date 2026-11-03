@@ -25,6 +25,7 @@ import (
 	"sync"
 	"time"
 
+	authv1 "k8s.io/api/authorization/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -91,6 +92,7 @@ type machineController struct {
 	machinePoolInformer         informers.GenericInformer
 	nodeInformer                cache.SharedIndexInformer
 	managementClient            dynamic.Interface
+	managementClientset         kubeclient.Interface
 	managementScaleClient       scale.ScalesGetter
 	managementDiscoveryClient   discovery.DiscoveryInterface
 	kindVersionCache            sync.Map
@@ -453,6 +455,7 @@ func getCAPIVersion() string {
 // the cluster.
 func newMachineController(
 	managementClient dynamic.Interface,
+	managementClientset kubeclient.Interface,
 	workloadClient kubeclient.Interface,
 	managementDiscoveryClient discovery.DiscoveryInterface,
 	managementScaleClient scale.ScalesGetter,
@@ -572,6 +575,7 @@ func newMachineController(
 		machinePoolInformer:         machinePoolInformer,
 		nodeInformer:                nodeInformer,
 		managementClient:            managementClient,
+		managementClientset:         managementClientset,
 		managementScaleClient:       managementScaleClient,
 		managementDiscoveryClient:   managementDiscoveryClient,
 		machineSetResource:          gvrMachineSet,
@@ -1061,8 +1065,40 @@ func (c *machineController) allowedByAutoDiscoverySpecs(r *unstructured.Unstruct
 	return false
 }
 
+func (c *machineController) allowedAccessToInfrastructureResource(resource schema.GroupVersionResource, namespace string) (bool, error) {
+	for _, verb := range []string{"list", "watch"} {
+		sar := &authv1.SelfSubjectAccessReview{
+			Spec: authv1.SelfSubjectAccessReviewSpec{
+				ResourceAttributes: &authv1.ResourceAttributes{
+					Namespace: namespace,
+					Verb:      verb,
+					Group:     resource.Group,
+					Version:   resource.Version,
+					Resource:  resource.Resource,
+				},
+			},
+		}
+		resp, err := c.managementClientset.AuthorizationV1().
+			SelfSubjectAccessReviews().
+			Create(context.TODO(), sar, metav1.CreateOptions{})
+		if err != nil {
+			return false, err
+		}
+		if !resp.Status.Allowed {
+			return false, nil
+		}
+	}
+	return true, nil
+}
+
 // Get an infrastructure machine template given its GVR, name, and namespace.
 func (c *machineController) getInfrastructureResource(resource schema.GroupVersionResource, name string, namespace string) (*unstructured.Unstructured, error) {
+	allowed, err := c.allowedAccessToInfrastructureResource(resource, namespace)
+	if err != nil || !allowed {
+		klog.V(4).Infof("Unable to validate infrastructure reference authorization, error: %v", err)
+		return nil, err
+	}
+
 	// get an informer for this type, this will create the informer if it does not exist
 	informer := c.managementInformerFactory.ForResource(resource)
 	// since this may be a new informer, we need to restart the informer factory
