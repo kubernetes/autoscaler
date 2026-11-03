@@ -157,11 +157,24 @@ func getLabelSelector(informer cache.SharedIndexInformer, kind, namespace, name 
 	case (*batchv1.Job):
 		return metav1.LabelSelectorAsSelector(apiObj.Spec.Selector)
 	case (*batchv1.CronJob):
-		return metav1.LabelSelectorAsSelector(metav1.SetAsLabelSelector(apiObj.Spec.JobTemplate.Spec.Template.Labels))
+		return getLabelSelectorFromCronJob(apiObj)
 	case (*corev1.ReplicationController):
 		return metav1.LabelSelectorAsSelector(metav1.SetAsLabelSelector(apiObj.Spec.Selector))
 	}
 	return nil, errors.New("don't know how to read label selector")
+}
+
+// getLabelSelectorFromCronJob returns the selector used to match pods for a VPA targeting this CronJob.
+// Omitted template labels deserialize as nil; SetAsLabelSelector(nil) yields a nil LabelSelector and
+// LabelSelectorAsSelector(nil) is labels.Nothing(), which matches no pods (issue #9483). Controller
+// identity is already enforced by targetRef name/kind elsewhere, so an empty template label set
+// means any pod labels for this CronJob's workload.
+func getLabelSelectorFromCronJob(apiObj *batchv1.CronJob) (labels.Selector, error) {
+	templateLabels := apiObj.Spec.JobTemplate.Spec.Template.Labels
+	if len(templateLabels) == 0 {
+		return labels.Everything(), nil
+	}
+	return metav1.LabelSelectorAsSelector(metav1.SetAsLabelSelector(templateLabels))
 }
 
 func (f *vpaTargetSelectorFetcher) getLabelSelectorFromResource(
