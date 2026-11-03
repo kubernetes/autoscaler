@@ -2,7 +2,7 @@
 
 Measures VPA component latencies using KWOK (Kubernetes WithOut Kubelet) to simulate pods without real resource consumption.
 
-> **Note:** Currently only updater metrics are collected. Recommender metrics are planned for the future.
+> **Note:** The cluster benchmark currently only collects updater metrics. Recommender metrics are planned for the future. The hot paths of the recommender and the admission-controller are covered by [Go micro-benchmarks](#micro-benchmarks-no-cluster-required) that run without a cluster.
 
 <!-- toc -->
 - [Prerequisites](#prerequisites)
@@ -15,6 +15,7 @@ Measures VPA component latencies using KWOK (Kubernetes WithOut Kubelet) to simu
   - [Updater Metrics](#updater-metrics)
 - [Scripts](#scripts)
 - [Cleanup](#cleanup)
+- [Micro-benchmarks (No Cluster Required)](#micro-benchmarks-no-cluster-required)
 - [Notes](#notes)
   - [Performance Optimizations](#performance-optimizations)
   - [Caveats](#caveats)
@@ -154,6 +155,40 @@ Environment variables accepted by the scripts:
 
 ```bash
 kind delete cluster
+```
+
+## Micro-benchmarks (No Cluster Required)
+
+Standard Go benchmarks (`testing.B`) cover the recommender and
+admission-controller hot paths with synthetic VPA and pod fixtures. They run in
+seconds on a developer machine, need no cluster, and are the quickest way to
+check whether a code change regresses these code paths.
+
+| Package | Benchmark | What it measures |
+| ------- | --------- | ---------------- |
+| `pkg/recommender/model` | `BenchmarkClusterStateAddOrUpdatePod` | Feeding pods into the cluster state: steady-state resync of tracked pods and pod churn scaling with the number of VPAs |
+| `pkg/recommender/model` | `BenchmarkClusterStateAddSample` | Aggregating a single CPU/memory usage sample (runs for every container on every metrics resync) |
+| `pkg/recommender/model` | `BenchmarkVpaAggregateStateByContainerName` | Merging the aggregations contributing to a VPA (runs for every VPA on every recommender loop) |
+| `pkg/recommender/logic` | `BenchmarkGetRecommendedPodResources` | Computing the recommendation for one VPA from aggregated usage histograms, with the default production estimator chain |
+| `pkg/admission-controller/logic` | `BenchmarkAdmissionServerServe` | Full per-request cost of the pod admission webhook: request decoding, VPA matching, patch calculation and response encoding |
+
+Run all of them:
+
+```bash
+cd vertical-pod-autoscaler
+go test -run='^$' -bench=. -benchmem \
+  ./pkg/recommender/model/ ./pkg/recommender/logic/ ./pkg/admission-controller/logic/
+```
+
+To compare a change against `master`, collect repeated runs of the relevant
+benchmark on both branches and feed them to
+[benchstat](https://pkg.go.dev/golang.org/x/perf/cmd/benchstat):
+
+```bash
+go test -run='^$' -bench=BenchmarkAdmissionServerServe -benchmem -count=10 \
+  ./pkg/admission-controller/logic/ | tee /tmp/new.txt
+# ... check out the baseline, repeat with | tee /tmp/old.txt ...
+benchstat /tmp/old.txt /tmp/new.txt
 ```
 
 ## Notes
