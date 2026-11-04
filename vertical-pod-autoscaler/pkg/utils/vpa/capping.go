@@ -137,6 +137,11 @@ func getCappedRecommendationForContainer(
 		}
 		// TODO: If limits and policy are conflicting, set some condition on the VPA.
 		if containerControlledValues == vpa_types.ContainerControlledValuesRequestsOnly {
+			// The limits applied to the container can be higher than the limits declared in the Pod
+			// spec because fractional values are rounded up before being passed to the container
+			// runtime; to avoid API server validation errors we ensure that recommendations are
+			// capped to the limits in the Pod spec
+			resourcehelpers.CapResources(containerLimits, container.Resources.Limits)
 			annotations = capRecommendationToContainerLimit(recommendation, containerLimits)
 			if genAnnotations {
 				cappingAnnotations = append(cappingAnnotations, annotations...)
@@ -158,7 +163,7 @@ func capRecommendationToContainerLimit(recommendation corev1.ResourceList, conta
 	// Iterate over limits set in the container. Unset means Infinite limit.
 	for resourceName, limit := range containerLimits {
 		recommendedValue, found := recommendation[resourceName]
-		if found && recommendedValue.MilliValue() > limit.MilliValue() {
+		if found && recommendedValue.Cmp(limit) > 0 {
 			recommendation[resourceName] = limit
 			annotations = append(annotations, toCappingAnnotation(resourceName, cappedToLimit))
 		}
