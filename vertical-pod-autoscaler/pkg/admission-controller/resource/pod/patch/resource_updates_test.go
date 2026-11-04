@@ -80,7 +80,7 @@ func addResourceRequestPatch(index int, res, amount string) resource_admission.P
 	return resource_admission.PatchRecord{
 		Op:    "add",
 		Path:  fmt.Sprintf("/spec/containers/%d/resources/requests/%s", index, res),
-		Value: resource.MustParse(amount),
+		Value: amount,
 	}
 }
 
@@ -88,7 +88,7 @@ func addResourceLimitPatch(index int, res, amount string) resource_admission.Pat
 	return resource_admission.PatchRecord{
 		Op:    "add",
 		Path:  fmt.Sprintf("/spec/containers/%d/resources/limits/%s", index, res),
-		Value: resource.MustParse(amount),
+		Value: amount,
 	}
 }
 
@@ -319,9 +319,7 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 			}
 			if assert.Len(t, patches, len(tc.expectPatches), fmt.Sprintf("got %+v, want %+v", patches, tc.expectPatches)) {
 				for i, gotPatch := range patches {
-					if !test.EqPatch(gotPatch, tc.expectPatches[i]) {
-						t.Errorf("Expected patch at position %d to be %+v, got %+v", i, tc.expectPatches[i], gotPatch)
-					}
+					assert.Equal(t, tc.expectPatches[i], gotPatch, "patch at position %d", i)
 				}
 			}
 		})
@@ -357,12 +355,10 @@ func TestGetPatches_TwoReplacementResources(t *testing.T) {
 	if assert.Len(t, patches, 3, "unexpected number of patches") {
 		cpuUpdate := addResourceRequestPatch(0, cpu, "1")
 		unobtaniumUpdate := addResourceRequestPatch(0, unobtanium, "2")
-		test.AssertPatchOneOf(t, patches[0], []resource_admission.PatchRecord{cpuUpdate, unobtaniumUpdate})
-		test.AssertPatchOneOf(t, patches[1], []resource_admission.PatchRecord{cpuUpdate, unobtaniumUpdate})
-		assert.False(t, test.EqPatch(patches[0], patches[1]))
+		assert.ElementsMatch(t, []resource_admission.PatchRecord{cpuUpdate, unobtaniumUpdate}, patches[:2])
 		cpuFirstUnobtaniumSecond := addAnnotationRequest([][]string{{cpu, unobtanium}}, request)
 		unobtaniumFirstCpuSecond := addAnnotationRequest([][]string{{unobtanium, cpu}}, request)
-		test.AssertPatchOneOf(t, patches[2], []resource_admission.PatchRecord{cpuFirstUnobtaniumSecond, unobtaniumFirstCpuSecond})
+		assert.Contains(t, []resource_admission.PatchRecord{cpuFirstUnobtaniumSecond, unobtaniumFirstCpuSecond}, patches[2])
 	}
 }
 
@@ -920,9 +916,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 			}
 			if assert.Len(t, patches, len(tc.expectPatches), fmt.Sprintf("got %+v, want %+v", patches, tc.expectPatches)) {
 				for i, gotPatch := range patches {
-					if !test.EqPatch(gotPatch, tc.expectPatches[i]) {
-						t.Errorf("Expected patch at position %d to be %+v, got %+v", i, tc.expectPatches[i], gotPatch)
-					}
+					assert.Equal(t, tc.expectPatches[i], gotPatch, "patch at position %d", i)
 				}
 			}
 		})
