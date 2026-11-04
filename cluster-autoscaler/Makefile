@@ -73,6 +73,8 @@ make-image: make-image-arch-$(GOARCH)
 make-image-arch-%:
 	GOOS=$(GOOS) docker buildx build --pull --platform linux/$* \
 		--build-arg "GOARCH=$*" \
+		--build-arg "LDFLAGS_FLAG=${LDFLAGS_FLAG}" \
+		--build-arg "TAGS_FLAG=${TAGS_FLAG}" \
 		-t ${IMAGE}-$*:${TAG} \
 		-f Dockerfile .
 	@echo "Image ${TAG}${FOR_PROVIDER}-$* completed"
