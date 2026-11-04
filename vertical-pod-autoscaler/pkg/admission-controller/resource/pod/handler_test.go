@@ -200,7 +200,7 @@ func TestGetPatches(t *testing.T) {
 			}
 			if assert.Equal(t, len(tc.expectPatches), len(patches), fmt.Sprintf("got %+v, want %+v", patches, tc.expectPatches)) {
 				for i, gotPatch := range patches {
-					if !patch.EqPatch(gotPatch, tc.expectPatches[i]) {
+					if !test.EqPatch(gotPatch, tc.expectPatches[i]) {
 						t.Errorf("Expected patch at position %d to be %+v, got %+v", i, tc.expectPatches[i], gotPatch)
 					}
 				}
