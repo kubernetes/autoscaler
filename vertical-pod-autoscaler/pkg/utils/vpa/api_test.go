@@ -255,6 +255,8 @@ func TestGetContainerControlledResources(t *testing.T) {
 	}
 }
 
+// TestFindParentControllerForPod checks controlling-owner selection, UID
+// propagation, unowned Pods and the special handling of Node owners.
 func TestFindParentControllerForPod(t *testing.T) {
 	for _, tc := range []struct {
 		name        string

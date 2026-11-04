@@ -147,6 +147,8 @@ func NewControllerFetcher(config *rest.Config, kubeClient kube_client.Interface,
 	}
 }
 
+// getOwnerController returns the controlling owner's key, including its expected UID.
+// It returns nil when none of the references designates a controller.
 func getOwnerController(owners []metav1.OwnerReference, namespace string) *ControllerKeyWithAPIVersion {
 	for _, owner := range owners {
 		if owner.Controller != nil && *owner.Controller {
@@ -164,6 +166,9 @@ func getOwnerController(owners []metav1.OwnerReference, namespace string) *Contr
 	return nil
 }
 
+// getParentOfWellKnownController reads a controller from its informer, falling back
+// to one API GET on a cache miss. It validates the UID and propagates lookup errors
+// without updating the informer store.
 func (f *controllerFetcher) getParentOfWellKnownController(ctx context.Context, informer cache.SharedIndexInformer, controllerKey ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error) {
 	namespace := controllerKey.Namespace
 	name := controllerKey.Name
@@ -187,6 +192,8 @@ func (f *controllerFetcher) getParentOfWellKnownController(ctx context.Context, 
 	return getOwnerControllerForObject(apiObj, controllerKey)
 }
 
+// getOwnerControllerForObject rejects a different UID when the key identifies a
+// specific object, then returns its controlling owner. Target references may omit UID.
 func getOwnerControllerForObject(obj metav1.Object, key ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error) {
 	if key.UID != "" && obj.GetUID() != key.UID {
 		return nil, fmt.Errorf("%s %s/%s has UID %q, expected %q", key.Kind, key.Namespace, key.Name, obj.GetUID(), key.UID)
@@ -194,6 +201,8 @@ func getOwnerControllerForObject(obj metav1.Object, key ControllerKeyWithAPIVers
 	return getOwnerController(obj.GetOwnerReferences(), key.Namespace), nil
 }
 
+// getWellKnownController reads a supported controller through its typed client
+// using the caller's context, without API discovery or retries at this layer.
 func (f *controllerFetcher) getWellKnownController(ctx context.Context, key ControllerKeyWithAPIVersion) (metav1.Object, error) {
 	switch wellKnownController(key.Kind) {
 	case daemonSet:
@@ -215,6 +224,8 @@ func (f *controllerFetcher) getWellKnownController(ctx context.Context, key Cont
 	}
 }
 
+// getParentOfController resolves a well-known controller's owner or reads the scale
+// subresource for other kinds. An absent scale subresource ends that ownership chain.
 func (f *controllerFetcher) getParentOfController(ctx context.Context, controllerKey ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error) {
 	kind := wellKnownController(controllerKey.Kind)
 	informer, exists := f.informersMap[kind]
@@ -301,6 +312,8 @@ func (f *controllerFetcher) isWellKnownOrScalable(ctx context.Context, key *Cont
 	return false
 }
 
+// getOwnerForScaleResource finds a scale subresource through the REST mappings and
+// validates its UID before returning its owner. Nodes cannot be controller owners.
 func (f *controllerFetcher) getOwnerForScaleResource(ctx context.Context, groupKind schema.GroupKind, key ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error) {
 	if wellKnownController(groupKind.Kind) == node {
 		// Some pods specify nodes as their owners. This causes performance problems

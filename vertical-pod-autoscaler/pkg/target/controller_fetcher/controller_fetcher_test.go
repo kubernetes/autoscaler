@@ -58,6 +58,8 @@ var (
 	trueVar              = true
 )
 
+// simpleControllerFetcher builds isolated informer stores and fake clients for
+// testing well-known controllers and resources with or without scale support.
 func simpleControllerFetcher() *controllerFetcher {
 	f := controllerFetcher{}
 	f.kubeClient = fake.NewClientset()
@@ -127,6 +129,7 @@ func addController(t *testing.T, controller *controllerFetcher, obj runtime.Obje
 	}
 }
 
+// TestControllerFetcher checks ownership traversal, unsupported owners and cycles.
 func TestControllerFetcher(t *testing.T) {
 	type testCase struct {
 		name          string
@@ -430,6 +433,8 @@ func TestControllerFetcher(t *testing.T) {
 	}
 }
 
+// TestWellKnownControllerCacheLookup verifies that each supported kind uses a
+// cache hit locally and recovers a miss with one correctly addressed API read.
 func TestWellKnownControllerCacheLookup(t *testing.T) {
 	meta := metav1.ObjectMeta{Name: "controller", Namespace: testNamespace, UID: "owner-uid"}
 	for _, tc := range []struct {
@@ -476,6 +481,8 @@ func TestWellKnownControllerCacheLookup(t *testing.T) {
 	}
 }
 
+// TestJobControllerOwnershipChain verifies Job-to-CronJob resolution with lag at
+// either informer and rejects deleted or replaced owners at both ownership hops.
 func TestJobControllerOwnershipChain(t *testing.T) {
 	for _, tc := range []struct {
 		name       string
@@ -572,6 +579,8 @@ func TestJobControllerOwnershipChain(t *testing.T) {
 	}
 }
 
+// TestScaleControllerOwnerUID permits omitted or matching UIDs and rejects
+// same-name replacements returned by a scale subresource.
 func TestScaleControllerOwnerUID(t *testing.T) {
 	for _, uid := range []types.UID{"", "scale-uid", "deleted-uid"} {
 		t.Run(string(uid), func(t *testing.T) {
@@ -595,6 +604,8 @@ func TestScaleControllerOwnerUID(t *testing.T) {
 	}
 }
 
+// TestWellKnownControllerAPIErrors verifies that fallback preserves API failures
+// and cancellation without retrying or returning a successful parent lookup.
 func TestWellKnownControllerAPIErrors(t *testing.T) {
 	for _, kind := range []wellKnownController{job, cronJob} {
 		resource := "jobs"

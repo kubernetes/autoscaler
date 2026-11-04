@@ -40,6 +40,9 @@ import (
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 )
 
+// TestFindParentControllerForPodDuringCacheLag holds a Job's watch event after
+// informer synchronization and verifies CronJob resolution before and after
+// event delivery, with one fallback read and no discovery requests.
 func TestFindParentControllerForPodDuringCacheLag(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
