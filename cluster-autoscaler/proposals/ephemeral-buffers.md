@@ -53,7 +53,7 @@ e.g. `active-capacity`, GKE `standby-capacity`). The axis has three values:
 The `none` value gives batch its **completion semantics**: provision once, let the workload consume
 the capacity, then stop. This proposal contributes the `none` value, **monotonic shrink-as-fill** (a
 `consumedReplicas` high-water mark so a partially-filled buffer provisions only its unfilled
-remainder and never recreates consumed capacity), and an optional **`fillDeadline`** which time-bounds how
+remainder and never recreates consumed capacity), and an optional **`fillDeadlineSeconds`** which time-bounds how
 long an unfilled one-shot buffer will keep trying.
 
 Fill is tracked with a new, small resource, **`CapacityBufferBinding`**: one object per pod credited
@@ -89,7 +89,7 @@ one-shot GKE `standby-capacity` buffer, not just active capacity.
   `provisioningStrategy`, with a **`none`** value meaning "do not recreate consumed capacity"
   (one-shot).
 * Give one-shot buffers **completion semantics** (a terminal state; no refill after fill).
-* Add an optional **`fillDeadline`** so an unfilled one-shot buffer does not hold provisioning intent
+* Add an optional **`fillDeadlineSeconds`** so an unfilled one-shot buffer does not hold provisioning intent
   indefinitely.
 * Define how a buffer names the pods that fill it (**`matchingPodSelector`**) and how fill is
   recorded (**`CapacityBufferBinding`**): exclusive per pod, durable across pod deletion and
@@ -201,7 +201,13 @@ empty/underutilized, via normal consolidation. The buffer is marked terminal wit
 condition (reason `FillDeadlineExceeded`) — distinct from `Fulfilled`, so consumers can tell a
 timed-out buffer from a filled one (see [Status](#status-terminal-conditions-fulfilled-vs-expired)).
 
-`fillDeadline` is meaningful only for `refillStrategy: none` (a recreate/capped buffer has no
+Before setting `Expired`, the autoscaler MUST credit every matching pod it has seen bind before the
+deadline, so a pod that bound in time but hasn't been credited yet (for example, because the
+watch event is still being processed) still counts. If that crediting fills the buffer, the buffer
+becomes `Fulfilled` instead. Once `Expired` is set it is final: a pod that bound before the deadline
+but that the autoscaler first sees afterward (because its cache was behind) will not be credited.
+
+`fillDeadlineSeconds` is meaningful only for `refillStrategy: none` (a recreate/capped buffer has no
 "unfilled forever" state to bound).
 
 ## Status: terminal conditions (`Fulfilled` vs `Expired`)
@@ -271,6 +277,8 @@ consumedChunks = min over each resource r in perChunk, with perChunk[r] > 0, of
 * **`floor`** — partial chunks do not count.
 * **Zero / missing `perChunk[r]`** — dimensions whose per-chunk request is zero (or absent) are
   skipped, not divided by. If *no* dimension has a positive per-chunk request, the result is 0.
+* **Missing `boundSum[r]`** — a resource the chunk requests but the bound pods don't, is counted as
+  zero, so the result is 0. For example, pods that request no GPU never fill a GPU-sized chunk.
 * **Clamp to `replicas`** — a workload larger than the buffer cannot consume more than the buffer's
   target (see [snapshotting the target](#snapshotting-the-target-for-mutable-target-buffers)).
 
@@ -294,7 +302,7 @@ autoscaler MUST use the same order:
 ones that cannot. A `recreate` buffer refills whatever is consumed regardless of who is credited;
 if it were credited for a pod that also matched a one-shot buffer, the `recreate` buffer would
 re-provision that capacity anyway *and* the one-shot buffer would never fill — it would hold its
-full empty size until `fillDeadline`, defeating its completion semantics and double-provisioning.
+full empty size until `fillDeadlineSeconds`, defeating its completion semantics and double-provisioning.
 Crediting the latching buffer first is the only assignment under which `refillStrategy: none` works
 in the presence of overlap. The same argument places capped (bounded, can latch) before `recreate`
 (unbounded, never latches), and it makes the latching buffers' credit independent of a steady-state
@@ -351,8 +359,10 @@ spec:                                 # immutable
 * **Owned by the buffer, not the pod.** A binding outlives its pod, so a pod that ran and completed
   still counts, and all of a buffer's bindings are garbage-collected when the buffer is deleted
   (which also starts a new one-shot cycle cleanly, because the label and `bufferRef` carry the UID).
-* **Rebuildable.** `consumedReplicas` can be recomputed from a buffer's bindings at any time, so it
-  is level-based: an autoscaler restart, or a different autoscaler taking over, loses nothing.
+* **Rebuildable.** `consumedReplicas` can be recomputed from a buffer's bindings at any time, so an
+  autoscaler restart, or a different autoscaler taking over, loses nothing. Two rules keep a
+  recompute from lowering it: the autoscaler recomputes only after its informer cache has synced,
+  and it writes the larger of the stored value and the recomputed value.
 * **Observable.** `kubectl get capacitybufferbindings -l autoscaling.x-k8s.io/capacity-buffer-uid=<uid>`
   lists the pods that filled a buffer; `kubectl get capacitybufferbinding <pod-uid>` shows which
   buffer a pod filled.
@@ -376,12 +386,15 @@ A buffer's placeholder (virtual) pods exist only in the autoscaler's scheduling 
 schedulers never see them. Two rules keep the simulation from provisioning extra nodes while the
 workload binds onto the buffer's capacity:
 
-* **Pending matching pods fill placeholders.** A matching pod that is pending (not bound, no
-  scheduling gates) is about to bind onto the buffer's capacity. For the simulation only, each chunk
-  that pending matching pods will fill (assigned in fill order, up to the buffer's remaining
-  placeholders) drops one placeholder, so the pending pods are scheduled into the buffer's capacity
-  instead of on top of it. Nothing is written; pods are credited only when they bind. Gated pods
-  (e.g. not yet admitted by Kueue) do not count, because they cannot be scheduled yet.
+* **Pending matching pods fill placeholders.** A matching pod that is pending is
+  about to bind onto the buffer's capacity. For the simulation only, each chunk that pending 
+  matching pods will fill (assigned in fill order, counted with the same
+  [chunk rule](#multi-resource-chunk-accounting-deterministic-rule) as bound pods, up to the
+  buffer's remaining placeholders) drops one placeholder, so the pending pods are scheduled **into** the
+  buffer's capacity instead of on top of it. Nothing is written; pods are credited only when they
+  bind. Gated pods (e.g. not yet admitted by Kueue) do not count, because they cannot be scheduled
+  yet. The autoscaler doesn't check whether a pending pod fits on the buffer's nodes: a matching pod
+  uses up a chunk when it binds wherever it lands, so its placeholder is dropped either way.
 * **Placeholders match the cluster snapshot.** When building a scheduling pass, the consumer credits
   every matching pod already bound in its cluster-state snapshot before counting placeholders, so
   the snapshot and the placeholder set agree on which chunks are taken.
@@ -460,6 +473,7 @@ consumer serialize and interpret them identically. Protobuf numbers continue the
 (`matchingPodSelector`) replaces its interim annotation.
 
 ```go
+// +kubebuilder:validation:XValidation:rule="!has(self.refillStrategy) || self.refillStrategy != 'none' || has(self.matchingPodSelector)",message="matchingPodSelector is required when refillStrategy is none"
 type CapacityBufferSpec struct {
     // ... existing fields: provisioningStrategy (1), podTemplateRef (2), scalableRef (3),
     // replicas (4), percentage (5), limits (6) ...
@@ -476,9 +490,13 @@ type CapacityBufferSpec struct {
     RefillStrategy *string `json:"refillStrategy,omitempty" protobuf:"bytes,7,opt,name=refillStrategy"`
     // NOTE ON THE ENUM: the enum above lists all three shared values. This proposal defines only
     // "none"; "recreateUpToLimit" is defined by the capped-buffers proposal. If the two proposals
-    // land separately, each consumer's transitional schema validates the subset it implements
-    // (Karpenter's reference impl currently validates recreate;none) and the full enum is unioned
-    // once both merge. The default marker uses the +kubebuilder:default form to match the existing
+    // land separately, the shared schema may accept a value that a given autoscaler doesn't
+    // implement yet (Karpenter's reference impl implements recreate and none). An autoscaler that
+    // sees a refillStrategy it doesn't implement MUST NOT provision for the buffer (rather than
+    // silently treating it as another value) and SHOULD report it with a Warning event, reason
+    // UnsupportedRefillStrategy. It does not change ReadyForProvisioning, which belongs to the
+    // buffer controller.
+    // The default marker uses the +kubebuilder:default form to match the existing
     // CapacityBuffer fields (e.g. provisioningStrategy). Consumers that do not server-side default
     // (e.g. Karpenter, which treats a nil value as "recreate" in code) need no schema default.
 
@@ -494,7 +512,8 @@ type CapacityBufferSpec struct {
     FillDeadlineSeconds *int32 `json:"fillDeadlineSeconds,omitempty" protobuf:"varint,8,opt,name=fillDeadlineSeconds"`
 
     // matchingPodSelector selects the pods, in the buffer's namespace, that fill the buffer when
-    // they bind. Required for refillStrategy=none. Intended to be shared with capped buffers.
+    // they bind. Required for refillStrategy=none (enforced by the CEL rule on the spec).
+    // Intended to be shared with capped buffers.
     // +optional
     MatchingPodSelector *metav1.LabelSelector `json:"matchingPodSelector,omitempty" protobuf:"bytes,9,opt,name=matchingPodSelector"`
 }
@@ -557,7 +576,20 @@ Consistent with the base proposal: the **buffer controller** resolves pod spec /
 `ReadyForProvisioning`, strategy-agnostic. The **autoscaler (consumer)** honors `refillStrategy`:
 for `none`, it creates `CapacityBufferBinding`s as matching pods bind, derives `consumedReplicas`
 from them, does not recreate consumed capacity, sets `Fulfilled` when filled (or `Expired` when
-`fillDeadline` elapses unfilled), and stops contributing virtual pods for a terminal buffer.
+`fillDeadlineSeconds` elapses unfilled), and stops contributing virtual pods for a terminal buffer.
+
+Both writers update the same `CapacityBufferStatus`, and each owns its own fields:
+
+| Writer | Fields |
+| --- | --- |
+| Buffer controller | `podTemplateRef`, `replicas`, `podTemplateGeneration`, `ReadyForProvisioning` condition |
+| Autoscaler | `consumedReplicas`, `fillStartTime`, `Fulfilled` and `Expired` conditions |
+
+Each writer MUST change only its own fields, using a status merge patch with an optimistic lock
+(`resourceVersion` precondition). On a conflict it re-reads the buffer and retries, so neither
+writer overwrites the other's fields from a stale copy. Server-side apply with a separate field
+manager per writer is an acceptable alternative. The Karpenter reference implementation uses the
+merge patch with an optimistic lock for all of its status writes.
 
 ## Why a separate `refillStrategy` field (not a `provisioningStrategy` value)
 
@@ -637,7 +669,7 @@ maintenance and cost drawbacks the base proposal already documents.
    capped buffers proposal and @jbtk so all three behaviors share one field.
 2. **Ownership of the default:** does `refillStrategy` default to `recreate` (preserving current
    behavior), and is the current behavior retconned as `recreate` explicitly?
-3. **`fillDeadline` scope and clock:** confirm it applies only to `none`, and that the deadline is
+3. **`fillDeadlineSeconds` scope and clock:** confirm it applies only to `none`, and that the deadline is
    measured from `status.fillStartTime` (the first `ReadyForProvisioning` transition). On expiry:
    withdraw provisioning intent (delete virtual pods) and mark `Expired/FillDeadlineExceeded` (distinct from `Fulfilled`), without force-deleting
    already-provisioned nodes.
