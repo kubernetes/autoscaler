@@ -198,11 +198,9 @@ func TestGetPatches(t *testing.T) {
 				assert.NotEmpty(t, errs)
 				assert.Equal(t, tc.expectError.Error(), errs[0].Error())
 			}
-			if assert.Equal(t, len(tc.expectPatches), len(patches), fmt.Sprintf("got %+v, want %+v", patches, tc.expectPatches)) {
+			if assert.Len(t, patches, len(tc.expectPatches), fmt.Sprintf("got %+v, want %+v", patches, tc.expectPatches)) {
 				for i, gotPatch := range patches {
-					if !patch.EqPatch(gotPatch, tc.expectPatches[i]) {
-						t.Errorf("Expected patch at position %d to be %+v, got %+v", i, tc.expectPatches[i], gotPatch)
-					}
+					assert.Equal(t, tc.expectPatches[i], gotPatch, "patch at position %d", i)
 				}
 			}
 		})

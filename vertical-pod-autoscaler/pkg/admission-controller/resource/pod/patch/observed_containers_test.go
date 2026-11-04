@@ -59,7 +59,7 @@ func TestCalculatePatches_ObservedContainers(t *testing.T) {
 			patches, err := c.CalculatePatches(tc.pod, nil)
 			assert.NoError(t, err)
 			if assert.Len(t, patches, 1, "Unexpected number of patches.") {
-				AssertEqPatch(t, tc.expectedPatch, patches[0])
+				assert.Equal(t, tc.expectedPatch, patches[0])
 			}
 		})
 	}

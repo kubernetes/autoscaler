@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package util
+package test
 
 import (
 	"time"
@@ -22,9 +22,10 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/util"
 )
 
-// MockHistogram is a mock implementation of Histogram interface.
+// MockHistogram is a mock implementation of util.Histogram interface.
 type MockHistogram struct {
 	mock.Mock
 }
@@ -52,13 +53,13 @@ func (m *MockHistogram) IsEmpty() bool {
 }
 
 // Equals is a mock implementation of Histogram.Equals.
-func (m *MockHistogram) Equals(other Histogram) bool {
+func (m *MockHistogram) Equals(other util.Histogram) bool {
 	args := m.Called()
 	return args.Bool(0)
 }
 
 // Merge is a mock implementation of Histogram.Merge.
-func (m *MockHistogram) Merge(other Histogram) {
+func (m *MockHistogram) Merge(other util.Histogram) {
 	m.Called(other)
 }
 

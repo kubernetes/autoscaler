@@ -19,13 +19,12 @@ package spec
 import (
 	"fmt"
 
-	"github.com/stretchr/testify/mock"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	listersv1 "k8s.io/client-go/listers/core/v1"
+	"k8s.io/client-go/tools/cache"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 )
@@ -119,20 +118,6 @@ spec:
         cpu: "1m"
 `
 
-type podListerMock struct {
-	mock.Mock
-}
-
-func (m *podListerMock) List(selector labels.Selector) (ret []*corev1.Pod, err error) {
-	args := m.Called()
-	return args.Get(0).([]*corev1.Pod), args.Error(1)
-}
-
-func (m *podListerMock) Pods(namespace string) listersv1.PodNamespaceLister {
-	args := m.Called()
-	return args.Get(0).(listersv1.PodNamespaceLister)
-}
-
 type specClientTestCase struct {
 	podSpecs []*BasicPodSpec
 	podYamls []string
@@ -190,10 +175,11 @@ func newTestPodSpec(podId model.PodID, containerSpecs []BasicContainerSpec, init
 }
 
 func (tc *specClientTestCase) createFakeSpecClient() SpecClient {
-	podListerMock := new(podListerMock)
-	podListerMock.On("List").Return(tc.getFakePods(), nil)
-
-	return NewSpecClient(podListerMock)
+	indexer := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{})
+	for _, pod := range tc.getFakePods() {
+		utilruntime.Must(indexer.Add(pod))
+	}
+	return NewSpecClient(listersv1.NewPodLister(indexer))
 }
 
 func (tc *specClientTestCase) getFakePods() []*corev1.Pod {

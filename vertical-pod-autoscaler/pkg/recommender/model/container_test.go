@@ -22,7 +22,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/util"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
 
 var (
@@ -49,15 +49,15 @@ func newUsageSample(timestamp time.Time, usage int64, resource ResourceName) *Co
 }
 
 type ContainerTest struct {
-	mockCPUHistogram        *util.MockHistogram
-	mockMemoryHistogram     *util.MockHistogram
+	mockCPUHistogram        *test.MockHistogram
+	mockMemoryHistogram     *test.MockHistogram
 	aggregateContainerState *AggregateContainerState
 	container               *ContainerState
 }
 
 func newContainerTest() ContainerTest {
-	mockCPUHistogram := new(util.MockHistogram)
-	mockMemoryHistogram := new(util.MockHistogram)
+	mockCPUHistogram := new(test.MockHistogram)
+	mockMemoryHistogram := new(test.MockHistogram)
 	aggregateContainerState := &AggregateContainerState{
 		AggregateCPUUsage:                 mockCPUHistogram,
 		AggregateMemoryPeaks:              mockMemoryHistogram,
