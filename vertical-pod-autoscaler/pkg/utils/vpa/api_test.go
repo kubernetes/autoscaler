@@ -317,6 +317,7 @@ func TestFindParentControllerForPod(t *testing.T) {
 							Controller: ptr.To(true),
 							Kind:       "ReplicaSet",
 							Name:       "foo",
+							UID:        "replicaset-uid",
 						},
 					},
 				},
@@ -329,6 +330,7 @@ func TestFindParentControllerForPod(t *testing.T) {
 					Name:      "foo",
 				},
 				ApiVersion: "apps/v1",
+				UID:        "replicaset-uid",
 			},
 		},
 		{

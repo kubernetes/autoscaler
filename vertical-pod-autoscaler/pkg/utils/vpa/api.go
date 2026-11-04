@@ -223,6 +223,7 @@ func FindParentControllerForPod(ctx context.Context, pod *corev1.Pod, ctrlFetche
 			Name:      ownerRefrence.Name,
 		},
 		ApiVersion: ownerRefrence.APIVersion,
+		UID:        ownerRefrence.UID,
 	}
 	controller, err := ctrlFetcher.FindTopMostWellKnownOrScalable(ctx, k)
 
