@@ -80,6 +80,12 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *corev1.Pod, now time.Time, inf
 		return
 	}
 
+	// Check for processedRecommendation == nil to avoid nil ptr panic.
+	if processedRecommendation == nil {
+		klog.V(4).InfoS("Skipping pod, recommendation is nil.", "pod", klog.KObj(pod))
+		return
+	}
+
 	// Check if this recommendation was already tried and failed as infeasible
 	// only for InPlace update mode
 	if vpa_api_util.GetUpdateMode(calc.vpa) == vpa_types.UpdateModeInPlace {
