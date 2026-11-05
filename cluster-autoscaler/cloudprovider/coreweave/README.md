@@ -26,12 +26,12 @@ To build and test the CoreWeave provider in k8s:
 
 1. **Build the `cluster-autoscaler` docker image:**
     ```sh
-    REGISTRY=gcr.io/k8s-staging-autoscaling TAG=dev make make-image
+    REGISTRY=us-central1-docker.pkg.dev/k8s-staging-images/autoscaling GOARCH=arm64 TAG=dev make make-image
     ```
 
 2. **Push the Docker image to your registry:**
     ```sh
-    REGISTRY=gcr.io/k8s-staging-autoscaling TAG=dev make push-image
+    REGISTRY=us-central1-docker.pkg.dev/k8s-staging-images/autoscaling GOARCH=arm64 TAG=dev make push-image
     ```
 
 ## Usage
@@ -61,7 +61,7 @@ Below are the basic steps:
     - Set `cloudProvider: coreweave`
     - Set `autoDiscovery.clusterName: cluster.local`
     - Set `image.tag: dev`
-    - Set `image.repository: gcr.io/k8s-staging-autoscaling/cluster-autoscaler-arm64`
+    - Set `image.repository: us-central1-docker.pkg.dev/k8s-staging-images/autoscaling/cluster-autoscaler-arm64`
     - Set any desired `extraArgs` as shown [parameters](../../FAQ.md#what-are-the-parameters-to-ca)
     - Optionally adjust resources, tolerations, nodeSelector, etc.
 
