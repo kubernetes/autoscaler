@@ -115,6 +115,31 @@ func TestUpdateNotRequired(t *testing.T) {
 	assert.Exactly(t, []*corev1.Pod{}, result, "Pod should not be updated")
 }
 
+func TestAddPodWithNilRecommendation(t *testing.T) {
+	for _, updateMode := range []vpa_types.UpdateMode{vpa_types.UpdateModeRecreate, vpa_types.UpdateModeInPlace} {
+		t.Run(string(updateMode), func(t *testing.T) {
+			pod := test.Pod().WithName("POD1").AddContainer(test.Container().WithName(containerName).Get()).Get()
+			vpa := test.VerticalPodAutoscaler().WithContainer(containerName).WithTarget("4", "10M").WithUpdateMode(updateMode).Get()
+
+			recommendationProcessor := &test.RecommendationProcessorMock{}
+			recommendationProcessor.On("Apply").Return(nil, nil).Once()
+			// No priority should be calculated when the processed recommendation is nil.
+			priorityProcessor := NewFakeProcessor(map[string]PodPriority{})
+			calculator := NewUpdatePriorityCalculator(vpa, updateconfig, recommendationProcessor, priorityProcessor)
+
+			infeasibleAttempts := map[types.UID]*vpa_types.RecommendedPodResources{
+				pod.UID: test.Recommendation().WithContainer(containerName).WithTarget("4", "10M").Get(),
+			}
+			timestampNow := pod.Status.StartTime.Add(time.Hour * 24)
+			assert.NotPanics(t, func() {
+				calculator.AddPod(pod, timestampNow, infeasibleAttempts)
+			})
+			assert.Empty(t, calculator.GetSortedPods(NewDefaultPodEvictionAdmission()), "Pod without a recommendation should not be updated")
+			recommendationProcessor.AssertExpectations(t)
+		})
+	}
+}
+
 // TODO: add expects to fake processor
 func TestUseProcessor(t *testing.T) {
 	processedRecommendation := test.Recommendation().WithContainer(containerName).WithTarget("4", "10M").Get()
