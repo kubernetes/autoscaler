@@ -276,7 +276,7 @@ func TestEstimateResources(t *testing.T) {
 	}
 }
 
-func TestComputeResourceOverheadValueString(t *testing.T) {
+func TestComputeResourceOverhead(t *testing.T) {
 	testCases := []struct {
 		clusterSize      uint64
 		resource         Resource
@@ -286,12 +286,24 @@ func TestComputeResourceOverheadValueString(t *testing.T) {
 		{1, Resource{ExtraPerResource: resource.MustParse("1m"), Name: "cpu"}, "1.000000m"},
 		{1, Resource{ExtraPerResource: resource.MustParse("0.5m"), Name: "cpu"}, "500.000000u"},
 		{3, Resource{ExtraPerResource: resource.MustParse("0.5m"), Name: "cpu"}, "1500.000000u"},
+		{0, Resource{ExtraPerResource: resource.MustParse("0.5m"), Name: "cpu"}, "0"},
+		{10000, Resource{ExtraPerResource: resource.MustParse("4.5Mi"), Name: "memory"}, "45000Mi"},
+		{3, Resource{ExtraPerResource: resource.MustParse("1e3"), Name: "cpu"}, "3e3"},
+		{1<<63 - 1, Resource{ExtraPerResource: resource.MustParse("1"), Name: "cpu"}, "9223372036854775807"},
+		{1 << 63, Resource{ExtraPerResource: resource.MustParse("1"), Name: "cpu"}, "9223372036854775808"},
+		{^uint64(0), Resource{ExtraPerResource: resource.MustParse("1"), Name: "cpu"}, "18446744073709551615"},
+		{3, Resource{ExtraPerResource: resource.MustParse("0.1Gi"), Name: "memory"}, "322122547.2"},
 	}
 
 	for _, tc := range testCases {
-		got := computeResourceOverheadValueString(tc.clusterSize, tc.resource)
-		if got != tc.expectedOverhead {
-			t.Errorf("Overhead is incorrect, got: '%s', want: '%s'", got, tc.expectedOverhead)
+		original := tc.resource.ExtraPerResource.DeepCopy()
+		got := computeResourceOverhead(tc.clusterSize, tc.resource.ExtraPerResource)
+		want := resource.MustParse(tc.expectedOverhead)
+		if got.Cmp(want) != 0 {
+			t.Errorf("Overhead is incorrect, got: '%s', want: '%s'", got.String(), tc.expectedOverhead)
+		}
+		if tc.resource.ExtraPerResource.Cmp(original) != 0 {
+			t.Errorf("ExtraPerResource was mutated for cluster size %d, got: '%s', want: '%s'", tc.clusterSize, tc.resource.ExtraPerResource.String(), original.String())
 		}
 	}
 }
