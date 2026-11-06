@@ -41,4 +41,8 @@ To promote a staged chart version to `oci://registry.k8s.io/autoscaling/charts/c
 
 1. Obtain the chart's `sha256` digest from the `post-autoscaler-push-cluster-autoscaler-chart` build log (or run `gcloud artifacts docker images describe us-central1-docker.pkg.dev/k8s-staging-images/autoscaling/charts/cluster-autoscaler:<chart-version> --format='value(image_summary.digest)'`).
 2. Open a PR in [`kubernetes/k8s.io`](https://github.com/kubernetes/k8s.io) adding the digest and chart version under `charts/cluster-autoscaler` in [`registry.k8s.io/images/k8s-staging-autoscaling/images.yaml`](https://github.com/kubernetes/k8s.io/blob/main/registry.k8s.io/images/k8s-staging-autoscaling/images.yaml).
-3. Once merged and promoted by `post-k8sio-image-promo`, the chart is available at `oci://registry.k8s.io/autoscaling/charts/cluster-autoscaler`.
+3. Once merged and promoted by `post-k8sio-image-promo`, the chart is available at `oci://registry.k8s.io/autoscaling/charts/cluster-autoscaler`:
+
+```shell
+$ helm install my-release oci://registry.k8s.io/autoscaling/charts/cluster-autoscaler --version 9.60.0
+```
