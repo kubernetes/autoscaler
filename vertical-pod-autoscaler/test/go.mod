@@ -10,17 +10,17 @@ require (
 	github.com/onsi/ginkgo/v2 v2.34.0
 	github.com/onsi/gomega v1.44.0
 	golang.org/x/sync v0.24.0
-	k8s.io/api v0.38.0-alpha.3
-	k8s.io/apiextensions-apiserver v0.38.0-alpha.3
-	k8s.io/apimachinery v0.38.0-alpha.3
-	k8s.io/apiserver v0.38.0-alpha.3
+	k8s.io/api v0.38.0-beta.0
+	k8s.io/apiextensions-apiserver v0.38.0-beta.0
+	k8s.io/apimachinery v0.38.0-beta.0
+	k8s.io/apiserver v0.38.0-beta.0
 	k8s.io/autoscaler/vertical-pod-autoscaler v0.0.0-00010101000000-000000000000
-	k8s.io/client-go v0.38.0-alpha.3
-	k8s.io/component-base v0.38.0-alpha.3
+	k8s.io/client-go v0.38.0-beta.0
+	k8s.io/component-base v0.38.0-beta.0
 	k8s.io/klog/v2 v2.140.0
-	k8s.io/ktesting v0.38.0-alpha.3
-	k8s.io/kubernetes v1.38.0-alpha.3
-	k8s.io/pod-security-admission v0.38.0-alpha.3
+	k8s.io/ktesting v0.38.0-beta.0
+	k8s.io/kubernetes v1.38.0-beta.0
+	k8s.io/pod-security-admission v0.38.0-beta.0
 	k8s.io/utils v0.0.0-20260707023825-cf1189d6abe3
 )
 
@@ -32,6 +32,7 @@ exclude (
 )
 
 require (
+	cel.dev/cel-go v0.33.2 // indirect
 	cel.dev/expr v0.25.3 // indirect
 	cyphar.com/go-pathrs v0.2.6 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20261013165250-51075c6ea6bc // indirect
@@ -67,7 +68,7 @@ require (
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.10.0 // indirect
 	github.com/go-errors/errors v1.5.1 // indirect
-	github.com/go-jose/go-jose/v4 v4.1.8 // indirect
+	github.com/go-jose/go-jose/v4 v4.1.9 // indirect
 	github.com/go-logr/logr v1.4.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/jsonpointer v1.0.2 // indirect
@@ -82,7 +83,6 @@ require (
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/btree v1.1.3 // indirect
 	github.com/google/cadvisor/lib v0.60.6 // indirect
-	github.com/google/cel-go v0.30.0 // indirect
 	github.com/google/gnostic-models v0.7.1 // indirect
 	github.com/google/pprof v0.0.0-20261102214848-0031fcd306b0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
@@ -168,31 +168,33 @@ require (
 	gopkg.in/evanphx/json-patch.v4 v4.13.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
-	k8s.io/cli-runtime v0.38.0-alpha.3 // indirect
-	k8s.io/cloud-provider v0.38.0-alpha.3 // indirect
-	k8s.io/cluster-bootstrap v0.38.0-alpha.3 // indirect
-	k8s.io/component-helpers v0.38.0-alpha.3 // indirect
-	k8s.io/controller-manager v0.38.0-alpha.3 // indirect
-	k8s.io/cri-api v0.38.0-alpha.3 // indirect
-	k8s.io/cri-client v0.38.0-alpha.3 // indirect
-	k8s.io/cri-streaming v0.38.0-alpha.3 // indirect
-	k8s.io/csi-translation-lib v0.38.0-alpha.3 // indirect
-	k8s.io/dynamic-resource-allocation v0.38.0-alpha.3 // indirect
-	k8s.io/endpointslice v0.38.0-alpha.3 // indirect
-	k8s.io/externaljwt v0.38.0-alpha.3 // indirect
-	k8s.io/kms v0.38.0-alpha.3 // indirect
-	k8s.io/kube-aggregator v0.38.0-alpha.3 // indirect
-	k8s.io/kube-controller-manager v0.38.0-alpha.3 // indirect
+	k8s.io/apiextensions-api v0.38.0-beta.0 // indirect
+	k8s.io/cli-runtime v0.38.0-beta.0 // indirect
+	k8s.io/cloud-provider v0.38.0-beta.0 // indirect
+	k8s.io/cluster-bootstrap v0.38.0-beta.0 // indirect
+	k8s.io/component-helpers v0.38.0-beta.0 // indirect
+	k8s.io/controller-manager v0.38.0-beta.0 // indirect
+	k8s.io/cri-api v0.38.0-beta.0 // indirect
+	k8s.io/cri-client v0.38.0-beta.0 // indirect
+	k8s.io/cri-streaming v0.38.0-beta.0 // indirect
+	k8s.io/csi-translation-lib v0.38.0-beta.0 // indirect
+	k8s.io/dynamic-resource-allocation v0.38.0-beta.0 // indirect
+	k8s.io/endpointslice v0.38.0-beta.0 // indirect
+	k8s.io/externaljwt v0.38.0-beta.0 // indirect
+	k8s.io/kms v0.38.0-beta.0 // indirect
+	k8s.io/kube-aggregator v0.38.0-beta.0 // indirect
+	k8s.io/kube-controller-manager v0.38.0-beta.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20261014044854-ca3452a79603 // indirect
-	k8s.io/kube-proxy v0.38.0-alpha.3 // indirect
-	k8s.io/kube-scheduler v0.38.0-alpha.3 // indirect
-	k8s.io/kubectl v0.38.0-alpha.3 // indirect
-	k8s.io/kubelet v0.38.0-alpha.3 // indirect
-	k8s.io/metrics v0.38.0-alpha.3 // indirect
-	k8s.io/mount-utils v0.38.0-alpha.3 // indirect
-	k8s.io/sample-apiserver v0.38.0-alpha.3 // indirect
-	k8s.io/streaming v0.38.0-alpha.3 // indirect
+	k8s.io/kube-proxy v0.38.0-beta.0 // indirect
+	k8s.io/kube-scheduler v0.38.0-beta.0 // indirect
+	k8s.io/kubectl v0.38.0-beta.0 // indirect
+	k8s.io/kubelet v0.38.0-beta.0 // indirect
+	k8s.io/metrics v0.38.0-beta.0 // indirect
+	k8s.io/mount-utils v0.38.0-beta.0 // indirect
+	k8s.io/sample-apiserver v0.38.0-beta.0 // indirect
+	k8s.io/streaming v0.38.0-beta.0 // indirect
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.37.0 // indirect
+	sigs.k8s.io/iptables-wrappers v1.0.0 // indirect
 	sigs.k8s.io/json v0.0.0-20260909141634-11ed52e25bc5 // indirect
 	sigs.k8s.io/kustomize/api v0.21.3 // indirect
 	sigs.k8s.io/kustomize/kyaml v0.21.3 // indirect
