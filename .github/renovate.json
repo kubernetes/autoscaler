@@ -158,8 +158,8 @@
       "groupName": "kubernetes go deps",
       "postUpgradeTasks": {
         "commands": [
-          "./vertical-pod-autoscaler/hack/update-codegen.sh",
-          "./vertical-pod-autoscaler/hack/generate-crd-yaml.sh"
+          "vertical-pod-autoscaler/hack/update-codegen.sh",
+          "vertical-pod-autoscaler/hack/generate-crd-yaml.sh"
         ],
         "executionMode": "branch",
         "installTools": {
