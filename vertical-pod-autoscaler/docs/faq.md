@@ -221,14 +221,15 @@ cluster. Two flags control this:
 | `--metric-for-pod-labels` | `up{job="kubernetes-pods"}` | The Prometheus query used to look up Pod labels. |
 | `--pod-label-prefix` | `pod_label_` | The prefix the recommender strips from each label of that metric to reconstruct the Pod's labels (e.g. `pod_label_app="foo"` becomes `app="foo"`). |
 
-The defaults assume your Pods expose their own labels (for example, via a `/metrics`
-endpoint scraped under `job=kubernetes-pods`). A common alternative is to source the
-labels from [kube-state-metrics](https://github.com/kubernetes/kube-state-metrics),
-which publishes Pod labels through the `kube_pod_labels` metric and prefixes each label
-with `label_`. To use it, override both flags. Note that the value of
+The default query looks for Pods that expose their own labels (for example, via a
+`/metrics` endpoint scraped under `job=kubernetes-pods`), but it has no range selector.
+The recommender expects this query to return a matrix, so the value of
 `--metric-for-pod-labels` must be a [range query](https://prometheus.io/docs/prometheus/latest/querying/basics/#range-vector-selectors)
-(it ends in a range selector such as `[8d]`); the recommender expects this query to
-return a matrix:
+ending in a range selector such as `[8d]`, and the default has to be overridden. A
+common choice is to source the labels from
+[kube-state-metrics](https://github.com/kubernetes/kube-state-metrics), which publishes
+Pod labels through the `kube_pod_labels` metric and prefixes each label with `label_`.
+To use it, override both flags:
 
 ```yaml
 spec:
@@ -242,9 +243,12 @@ spec:
 ```
 
 > [!IMPORTANT]
-> If the prefix or the metric is wrong, the recommender cannot reconstruct the Pod
-> labels, so the historical samples are loaded but never matched to a VPA object, and
-> recommendations will silently look as if there were no history at all.
+> If `--pod-label-prefix` is wrong, or the label query returns no series for a Pod, the
+> recommender cannot reconstruct the Pod labels, so the historical samples are loaded but
+> never matched to a VPA object, and recommendations will silently look as if there were
+> no history at all. If the label query fails, does not return a matrix, or returns series
+> without the Pod name and namespace labels, the recommender logs
+> `Cannot get cluster history` and starts with no history.
 
 #### Checkpoints are disabled when using Prometheus
 
@@ -256,7 +260,7 @@ this mode, so checkpoints are not needed. (Checkpoints are only used by the defa
 > [!NOTE]
 > History is loaded **once, at recommender startup**. If Prometheus cannot be reached at
 > that time, the error is logged (`Cannot get cluster history`) and the recommender
-> continues **without** any historical data — it does not retry, crash, or fall back to
+> continues **without** any historical data. It does not retry, crash, or fall back to
 > checkpoints. It will only have the live samples it gathers from the metrics server from
 > that point on. If you expect history to be loaded, confirm the recommender can reach
 > `--prometheus-address` at startup.
