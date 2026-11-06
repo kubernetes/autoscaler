@@ -134,7 +134,10 @@ func main() {
 	var nannyConfigUpdater nanny.NannyConfigUpdater
 
 	if *nannyConfigMapName != "" {
-		nannyConfigUpdater = newNannyConfigUpdater(clientset, nannyConfigurationFromFlags, *podNamespace, *nannyConfigMapName, *baseStorage)
+		nannyConfigUpdater, err = newNannyConfigUpdater(clientset, nannyConfigurationFromFlags, *podNamespace, *nannyConfigMapName, *baseStorage)
+		if err != nil {
+			klog.Fatal(err)
+		}
 	} else {
 		nannycfg, err := loadNannyConfiguration(*configDir, nannyConfigurationFromFlags)
 		if err != nil {
@@ -280,6 +283,7 @@ func updateResources(nannycfg *nannyconfig.NannyConfiguration, baseStorage strin
 }
 
 type nannyConfigUpdater struct {
+	codecs             *serializer.CodecFactory
 	clientset          kubernetes.Interface
 	defaultConfig      *nannyconfigalpha.NannyConfiguration
 	namespace          string
@@ -289,24 +293,25 @@ type nannyConfigUpdater struct {
 
 // newNannyConfigUpdater gives a NannyConfigUpdater
 // with the given dependencies.
-func newNannyConfigUpdater(clientset kubernetes.Interface, defaultConfig *nannyconfigalpha.NannyConfiguration, namespace, nannyConfigMapName, baseStorage string) nanny.NannyConfigUpdater {
+func newNannyConfigUpdater(clientset kubernetes.Interface, defaultConfig *nannyconfigalpha.NannyConfiguration, namespace, nannyConfigMapName, baseStorage string) (nanny.NannyConfigUpdater, error) {
+	_, codecs, err := nannyscheme.NewSchemeAndCodecs()
+	if err != nil {
+		return nil, err
+	}
 	result := &nannyConfigUpdater{
+		codecs:             codecs,
 		clientset:          clientset,
 		defaultConfig:      defaultConfig,
 		namespace:          namespace,
 		nannyConfigMapName: nannyConfigMapName,
 		baseStorage:        baseStorage,
 	}
-	return result
+	return result, nil
 }
 
 // CurrentResources fetches latest data from NannyConfiguration
 // through API calls and returns required resources.
 func (n *nannyConfigUpdater) CurrentResources() ([]nanny.Resource, error) {
-	_, codecs, err := nannyscheme.NewSchemeAndCodecs()
-	if err != nil {
-		return nil, err
-	}
 	// overwrite defaults with flag-specified parameters
 	nannyconfigalpha.SetDefaults_NannyConfiguration(n.defaultConfig)
 	// retrieve config map parameters if present
@@ -317,7 +322,7 @@ func (n *nannyConfigUpdater) CurrentResources() ([]nanny.Resource, error) {
 		klog.V(0).Infof("Failed to get config map %s: %v, using default parameters", n.nannyConfigMapName, err)
 	} else {
 		data := []byte(nannycfg.Data["NannyConfiguration"])
-		configMapConfig, err = decodeNannyConfiguration(data, codecs)
+		configMapConfig, err = decodeNannyConfiguration(data, n.codecs)
 		if err != nil {
 			configMapConfig = &nannyconfigalpha.NannyConfiguration{}
 			klog.V(0).Infof("Unable to decode Nanny Configuration from config map, using default parameters: %v", err)
