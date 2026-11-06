@@ -225,11 +225,25 @@ The default query looks for Pods that expose their own labels (for example, via 
 `/metrics` endpoint scraped under `job=kubernetes-pods`), but it has no range selector.
 The recommender expects this query to return a matrix, so the value of
 `--metric-for-pod-labels` must be a [range query](https://prometheus.io/docs/prometheus/latest/querying/basics/#range-vector-selectors)
-ending in a range selector such as `[8d]`, and the default has to be overridden. A
-common choice is to source the labels from
+ending in a range selector such as `[8d]`, and the default has to be overridden. Make
+the range at least as long as `--history-length` (default `8d`), so that every Pod with
+samples in the history window also has a label series.
+
+A common choice is to source the labels from
 [kube-state-metrics](https://github.com/kubernetes/kube-state-metrics), which publishes
 Pod labels through the `kube_pod_labels` metric and prefixes each label with `label_`.
-To use it, override both flags:
+kube-state-metrics only exports the Pod labels you allow with its
+`--metric-labels-allowlist` flag (for example `pods=[app]`), so include every label key
+used in the selectors of the workloads your VPAs target. It also rewrites label keys
+into valid Prometheus label names, for example `app.kubernetes.io/name` becomes
+`label_app_kubernetes_io_name`. The recommender only strips the prefix, so a selector
+that uses a key containing `.`, `/`, `-` or upper-case letters does not match the
+historical samples.
+
+kube-state-metrics publishes the Pod's namespace and name as `namespace` and `pod`,
+while the recommender looks for `kubernetes_namespace` and `kubernetes_pod_name` by
+default. If your Prometheus keeps the kube-state-metrics label names, set
+`--pod-namespace-label` and `--pod-name-label` as well:
 
 ```yaml
 spec:
@@ -240,15 +254,18 @@ spec:
     - --prometheus-address=http://prometheus.default.svc.cluster.local:9090
     - --metric-for-pod-labels=kube_pod_labels{job="kube-state-metrics"}[8d]
     - --pod-label-prefix=label_
+    - --pod-namespace-label=namespace
+    - --pod-name-label=pod
 ```
 
 > [!IMPORTANT]
 > If `--pod-label-prefix` is wrong, or the label query returns no series for a Pod, the
 > recommender cannot reconstruct the Pod labels, so the historical samples are loaded but
-> never matched to a VPA object, and recommendations will silently look as if there were
-> no history at all. If the label query fails, does not return a matrix, or returns series
-> without the Pod name and namespace labels, the recommender logs
-> `Cannot get cluster history` and starts with no history.
+> not matched to the VPA that targets the Pod, and recommendations will silently look as
+> if there were no history at all. If the label query fails, does not return a matrix, or
+> returns series without the labels named by `--pod-namespace-label` and
+> `--pod-name-label`, the recommender logs `Cannot get cluster history` and starts with
+> no history.
 
 #### Checkpoints are disabled when using Prometheus
 
