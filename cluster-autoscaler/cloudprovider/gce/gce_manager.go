@@ -314,6 +314,7 @@ func (m *gceManagerImpl) Refresh(ctx context.Context) error {
 	m.cache.InvalidateAllMigBasenames()
 	m.cache.InvalidateAllListManagedInstancesResults()
 	m.cache.InvalidateAllMigInstanceTemplateNames(ctx)
+	m.cache.InvalidateMigListingErrors()
 	if m.lastRefresh.Add(refreshInterval).After(time.Now()) {
 		return nil
 	}
