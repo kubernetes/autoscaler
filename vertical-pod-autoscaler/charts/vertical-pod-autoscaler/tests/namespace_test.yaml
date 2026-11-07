@@ -1,16 +1,16 @@
 suite: namespace override
 templates:
-  - recommender-deployment.yaml
-  - recommender-serviceaccount.yaml
-  - recommender-clusterrolebindings.yaml
-  - recommender-leader-election-rbac.yaml
-  - updater-role.yaml
-  - updater-rolebinding.yaml
-  - admission-controller-service.yaml
-  - admission-controller-webhook.yaml
   - admission-controller-certgen.yaml
   - admission-controller-deployment.yaml
+  - admission-controller-service.yaml
+  - admission-controller-webhook.yaml
+  - recommender-clusterrolebindings.yaml
+  - recommender-deployment.yaml
+  - recommender-leader-election-rbac.yaml
+  - recommender-serviceaccount.yaml
   - updater-deployment.yaml
+  - updater-role.yaml
+  - updater-rolebinding.yaml
 tests:
   - it: uses the release namespace when namespaceOverride is empty
     release:
