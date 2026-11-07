@@ -22,14 +22,12 @@ import (
 	"fmt"
 	"time"
 
-	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
-	batchv1 "k8s.io/api/batch/v1"
-	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/discovery"
 	cacheddiscovery "k8s.io/client-go/discovery/cached/memory"
@@ -74,6 +72,8 @@ type ControllerKey struct {
 type ControllerKeyWithAPIVersion struct {
 	ControllerKey
 	ApiVersion string
+	// UID is set for owner references, but may be empty for VPA target references.
+	UID types.UID
 }
 
 // ControllerFetcher is responsible for finding the topmost well-known or scalable controller
@@ -83,6 +83,7 @@ type ControllerFetcher interface {
 }
 
 type controllerFetcher struct {
+	kubeClient                   kube_client.Interface
 	scaleNamespacer              scale.ScalesGetter
 	mapper                       apimeta.RESTMapper
 	informersMap                 map[wellKnownController]cache.SharedIndexInformer
@@ -138,6 +139,7 @@ func NewControllerFetcher(config *rest.Config, kubeClient kube_client.Interface,
 
 	scaleNamespacer := scale.New(restClient, mapper, dynamic.LegacyAPIPathResolverFunc, resolver)
 	return &controllerFetcher{
+		kubeClient:                   kubeClient,
 		scaleNamespacer:              scaleNamespacer,
 		mapper:                       mapper,
 		informersMap:                 informersMap,
@@ -145,6 +147,8 @@ func NewControllerFetcher(config *rest.Config, kubeClient kube_client.Interface,
 	}
 }
 
+// getOwnerController returns the controlling owner's key, including its expected UID.
+// It returns nil when none of the references designates a controller.
 func getOwnerController(owners []metav1.OwnerReference, namespace string) *ControllerKeyWithAPIVersion {
 	for _, owner := range owners {
 		if owner.Controller != nil && *owner.Controller {
@@ -155,49 +159,78 @@ func getOwnerController(owners []metav1.OwnerReference, namespace string) *Contr
 					Name:      owner.Name,
 				},
 				ApiVersion: owner.APIVersion,
+				UID:        owner.UID,
 			}
 		}
 	}
 	return nil
 }
 
-func getParentOfWellKnownController(informer cache.SharedIndexInformer, controllerKey ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error) {
+// getParentOfWellKnownController reads a controller from its informer, falling back
+// to one API GET on a cache miss. It validates the UID and propagates lookup errors
+// without updating the informer store.
+func (f *controllerFetcher) getParentOfWellKnownController(ctx context.Context, informer cache.SharedIndexInformer, controllerKey ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error) {
 	namespace := controllerKey.Namespace
 	name := controllerKey.Name
-	kind := controllerKey.Kind
 
 	obj, exists, err := informer.GetStore().GetByKey(namespace + "/" + name)
 	if err != nil {
 		return nil, err
 	}
 	if !exists {
-		return nil, fmt.Errorf("%s %s/%s does not exist", kind, namespace, name)
+		// A synchronized informer can still lag behind the API. Read once on a
+		// cache miss, without discovery or modifying the informer's store.
+		obj, err = f.getWellKnownController(ctx, controllerKey)
+		if err != nil {
+			return nil, err
+		}
 	}
-	switch apiObj := obj.(type) {
-	case (*appsv1.DaemonSet):
-		return getOwnerController(apiObj.OwnerReferences, namespace), nil
-	case (*appsv1.Deployment):
-		return getOwnerController(apiObj.OwnerReferences, namespace), nil
-	case (*appsv1.StatefulSet):
-		return getOwnerController(apiObj.OwnerReferences, namespace), nil
-	case (*appsv1.ReplicaSet):
-		return getOwnerController(apiObj.OwnerReferences, namespace), nil
-	case (*batchv1.Job):
-		return getOwnerController(apiObj.OwnerReferences, namespace), nil
-	case (*batchv1.CronJob):
-		return getOwnerController(apiObj.OwnerReferences, namespace), nil
-	case (*corev1.ReplicationController):
-		return getOwnerController(apiObj.OwnerReferences, namespace), nil
+	apiObj, err := apimeta.Accessor(obj)
+	if err != nil {
+		return nil, err
 	}
-
-	return nil, errors.New("don't know how to read owner controller")
+	return getOwnerControllerForObject(apiObj, controllerKey)
 }
 
+// getOwnerControllerForObject rejects a different UID when the key identifies a
+// specific object, then returns its controlling owner. Target references may omit UID.
+func getOwnerControllerForObject(obj metav1.Object, key ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error) {
+	if key.UID != "" && obj.GetUID() != key.UID {
+		return nil, fmt.Errorf("%s %s/%s has UID %q, expected %q", key.Kind, key.Namespace, key.Name, obj.GetUID(), key.UID)
+	}
+	return getOwnerController(obj.GetOwnerReferences(), key.Namespace), nil
+}
+
+// getWellKnownController reads a supported controller through its typed client
+// using the caller's context, without API discovery or retries at this layer.
+func (f *controllerFetcher) getWellKnownController(ctx context.Context, key ControllerKeyWithAPIVersion) (metav1.Object, error) {
+	switch wellKnownController(key.Kind) {
+	case daemonSet:
+		return f.kubeClient.AppsV1().DaemonSets(key.Namespace).Get(ctx, key.Name, metav1.GetOptions{})
+	case deployment:
+		return f.kubeClient.AppsV1().Deployments(key.Namespace).Get(ctx, key.Name, metav1.GetOptions{})
+	case statefulSet:
+		return f.kubeClient.AppsV1().StatefulSets(key.Namespace).Get(ctx, key.Name, metav1.GetOptions{})
+	case replicaSet:
+		return f.kubeClient.AppsV1().ReplicaSets(key.Namespace).Get(ctx, key.Name, metav1.GetOptions{})
+	case job:
+		return f.kubeClient.BatchV1().Jobs(key.Namespace).Get(ctx, key.Name, metav1.GetOptions{})
+	case cronJob:
+		return f.kubeClient.BatchV1().CronJobs(key.Namespace).Get(ctx, key.Name, metav1.GetOptions{})
+	case replicationController:
+		return f.kubeClient.CoreV1().ReplicationControllers(key.Namespace).Get(ctx, key.Name, metav1.GetOptions{})
+	default:
+		return nil, fmt.Errorf("unknown controller kind %q", key.Kind)
+	}
+}
+
+// getParentOfController resolves a well-known controller's owner or reads the scale
+// subresource for other kinds. An absent scale subresource ends that ownership chain.
 func (f *controllerFetcher) getParentOfController(ctx context.Context, controllerKey ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error) {
 	kind := wellKnownController(controllerKey.Kind)
 	informer, exists := f.informersMap[kind]
 	if exists {
-		return getParentOfWellKnownController(informer, controllerKey)
+		return f.getParentOfWellKnownController(ctx, informer, controllerKey)
 	}
 
 	groupKind, err := controllerKey.groupKind()
@@ -205,7 +238,7 @@ func (f *controllerFetcher) getParentOfController(ctx context.Context, controlle
 		return nil, err
 	}
 
-	owner, err := f.getOwnerForScaleResource(ctx, groupKind, controllerKey.Namespace, controllerKey.Name)
+	owner, err := f.getOwnerForScaleResource(ctx, groupKind, controllerKey)
 	if apierrors.IsNotFound(err) {
 		return nil, nil
 	}
@@ -279,7 +312,9 @@ func (f *controllerFetcher) isWellKnownOrScalable(ctx context.Context, key *Cont
 	return false
 }
 
-func (f *controllerFetcher) getOwnerForScaleResource(ctx context.Context, groupKind schema.GroupKind, namespace, name string) (*ControllerKeyWithAPIVersion, error) {
+// getOwnerForScaleResource finds a scale subresource through the REST mappings and
+// validates its UID before returning its owner. Nodes cannot be controller owners.
+func (f *controllerFetcher) getOwnerForScaleResource(ctx context.Context, groupKind schema.GroupKind, key ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error) {
 	if wellKnownController(groupKind.Kind) == node {
 		// Some pods specify nodes as their owners. This causes performance problems
 		// in big clusters when VPA tries to get all nodes. We know nodes aren't
@@ -293,9 +328,9 @@ func (f *controllerFetcher) getOwnerForScaleResource(ctx context.Context, groupK
 	var lastError error
 	for _, mapping := range mappings {
 		groupResource := mapping.Resource.GroupResource()
-		scale, err := f.getScaleForResource(ctx, namespace, groupResource, name)
+		scale, err := f.getScaleForResource(ctx, key.Namespace, groupResource, key.Name)
 		if err == nil {
-			return getOwnerController(scale.OwnerReferences, namespace), nil
+			return getOwnerControllerForObject(scale, key)
 		}
 		lastError = err
 	}

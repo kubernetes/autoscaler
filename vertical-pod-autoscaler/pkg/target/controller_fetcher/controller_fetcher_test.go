@@ -24,14 +24,18 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/restmapper"
 	scalefake "k8s.io/client-go/scale/fake"
 	core "k8s.io/client-go/testing"
@@ -54,8 +58,11 @@ var (
 	trueVar              = true
 )
 
+// simpleControllerFetcher builds isolated informer stores and fake clients for
+// testing well-known controllers and resources with or without scale support.
 func simpleControllerFetcher() *controllerFetcher {
 	f := controllerFetcher{}
+	f.kubeClient = fake.NewClientset()
 	f.informersMap = make(map[wellKnownController]cache.SharedIndexInformer)
 	f.scaleSubresourceCacheStorage = newControllerCacheStorage(time.Second, time.Minute, 0.1)
 	versioned := map[string][]metav1.APIResource{
@@ -122,6 +129,7 @@ func addController(t *testing.T, controller *controllerFetcher, obj runtime.Obje
 	}
 }
 
+// TestControllerFetcher checks ownership traversal, unsupported owners and cycles.
 func TestControllerFetcher(t *testing.T) {
 	type testCase struct {
 		name          string
@@ -142,7 +150,7 @@ func TestControllerFetcher(t *testing.T) {
 			key: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
 				Name: testDeployment, Kind: "Deployment", Namespace: testNamespace}},
 			expectedKey:   nil,
-			expectedError: fmt.Errorf("Deployment %s/%s does not exist", testNamespace, testDeployment),
+			expectedError: apierrors.NewNotFound(schema.GroupResource{Group: "apps", Resource: "deployments"}, testDeployment),
 		},
 		{
 			name: "deployment no parent",
@@ -422,5 +430,211 @@ func TestControllerFetcher(t *testing.T) {
 				assert.Equal(t, tc.expectedError, err)
 			}
 		})
+	}
+}
+
+// TestWellKnownControllerCacheLookup verifies that each supported kind uses a
+// cache hit locally and recovers a miss with one correctly addressed API read.
+func TestWellKnownControllerCacheLookup(t *testing.T) {
+	meta := metav1.ObjectMeta{Name: "controller", Namespace: testNamespace, UID: "owner-uid"}
+	for _, tc := range []struct {
+		kind     wellKnownController
+		resource string
+		object   runtime.Object
+	}{
+		{daemonSet, "daemonsets", &appsv1.DaemonSet{ObjectMeta: meta}},
+		{deployment, "deployments", &appsv1.Deployment{ObjectMeta: meta}},
+		{statefulSet, "statefulsets", &appsv1.StatefulSet{ObjectMeta: meta}},
+		{replicaSet, "replicasets", &appsv1.ReplicaSet{ObjectMeta: meta}},
+		{job, "jobs", &batchv1.Job{ObjectMeta: meta}},
+		{cronJob, "cronjobs", &batchv1.CronJob{ObjectMeta: meta}},
+		{replicationController, "replicationcontrollers", &corev1.ReplicationController{ObjectMeta: meta}},
+	} {
+		for _, cached := range []bool{false, true} {
+			t.Run(fmt.Sprintf("%s/cached=%t", tc.kind, cached), func(t *testing.T) {
+				client := fake.NewClientset(tc.object)
+				f := simpleControllerFetcher()
+				f.kubeClient = client
+				store := f.informersMap[tc.kind].GetStore()
+				if cached {
+					require.NoError(t, store.Add(tc.object))
+				}
+				key := &ControllerKeyWithAPIVersion{
+					ControllerKey: ControllerKey{Namespace: meta.Namespace, Name: meta.Name, Kind: string(tc.kind)},
+					UID:           meta.UID,
+				}
+				parent, err := f.FindTopMostWellKnownOrScalable(context.Background(), key)
+				require.NoError(t, err)
+				require.Equal(t, key, parent)
+				if cached {
+					require.Empty(t, client.Actions())
+				} else {
+					actions := client.Actions()
+					require.Len(t, actions, 1)
+					require.True(t, actions[0].Matches("get", tc.resource))
+					require.Equal(t, meta.Namespace, actions[0].GetNamespace())
+					require.Equal(t, meta.Name, actions[0].(core.GetAction).GetName())
+					require.Empty(t, store.List(), "fallback must not populate the informer")
+				}
+			})
+		}
+	}
+}
+
+// TestJobControllerOwnershipChain verifies Job-to-CronJob resolution with lag at
+// either informer and rejects deleted or replaced owners at both ownership hops.
+func TestJobControllerOwnershipChain(t *testing.T) {
+	for _, tc := range []struct {
+		name       string
+		cachedJob  bool
+		cachedCron bool
+		mismatch   wellKnownController
+		deleted    wellKnownController
+	}{
+		{name: "both owners cached", cachedJob: true, cachedCron: true},
+		{name: "Job cache lags", cachedCron: true},
+		{name: "CronJob cache lags", cachedJob: true},
+		{name: "both caches lag"},
+		{name: "replaced Job in API", cachedCron: true, mismatch: job},
+		{name: "replaced CronJob in API", cachedJob: true, mismatch: cronJob},
+		{name: "replaced Job in cache", cachedJob: true, cachedCron: true, mismatch: job},
+		{name: "replaced CronJob in cache", cachedJob: true, cachedCron: true, mismatch: cronJob},
+		{name: "deleted Job", cachedCron: true, deleted: job},
+		{name: "deleted CronJob", cachedJob: true, deleted: cronJob},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			cron := &batchv1.CronJob{ObjectMeta: metav1.ObjectMeta{
+				Namespace: testNamespace, Name: testCronJob, UID: "cron-uid",
+			}}
+			jobObj := &batchv1.Job{ObjectMeta: metav1.ObjectMeta{
+				Namespace: testNamespace, Name: testJob, UID: "job-uid",
+				OwnerReferences: []metav1.OwnerReference{{APIVersion: "batch/v1", Kind: "CronJob",
+					Name: cron.Name, UID: cron.UID, Controller: &trueVar}},
+			}}
+			key := &ControllerKeyWithAPIVersion{
+				ControllerKey: ControllerKey{Namespace: testNamespace, Kind: "Job", Name: testJob},
+				ApiVersion:    "batch/v1", UID: jobObj.UID,
+			}
+			client := fake.NewClientset(jobObj, cron)
+			f := simpleControllerFetcher()
+			f.kubeClient = client
+			if tc.mismatch == job {
+				jobObj.UID = "replacement-uid"
+			}
+			if tc.mismatch == cronJob {
+				cron.UID = "replacement-uid"
+			}
+			for kind, obj := range map[wellKnownController]runtime.Object{job: jobObj, cronJob: cron} {
+				cached := kind == job && tc.cachedJob || kind == cronJob && tc.cachedCron
+				if cached {
+					require.NoError(t, f.informersMap[kind].GetStore().Add(obj))
+				} else {
+					// The API can contain a same-name replacement while an old
+					// owner reference still identifies the deleted object's UID.
+					meta, err := apimeta.Accessor(obj)
+					require.NoError(t, err)
+					resource := "jobs"
+					if kind == cronJob {
+						resource = "cronjobs"
+					}
+					require.NoError(t, client.Tracker().Update(batchv1.SchemeGroupVersion.WithResource(resource), obj, meta.GetNamespace()))
+				}
+			}
+			if tc.deleted != "" {
+				resource, name := "jobs", testJob
+				if tc.deleted == cronJob {
+					resource, name = "cronjobs", testCronJob
+				}
+				require.NoError(t, client.Tracker().Delete(batchv1.SchemeGroupVersion.WithResource(resource), testNamespace, name))
+			}
+			parent, err := f.FindTopMostWellKnownOrScalable(context.Background(), key)
+			if tc.deleted != "" {
+				require.True(t, apierrors.IsNotFound(err), "expected deletion error, got %v", err)
+				require.Nil(t, parent)
+				require.Len(t, client.Actions(), 1)
+				return
+			}
+			if tc.mismatch != "" {
+				require.ErrorContains(t, err, "has UID \"replacement-uid\", expected")
+				require.Nil(t, parent)
+				if tc.mismatch == job && tc.cachedJob || tc.mismatch == cronJob && tc.cachedCron {
+					require.Empty(t, client.Actions(), "UID mismatches must not trigger API recovery")
+				}
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, &ControllerKeyWithAPIVersion{
+				ControllerKey: ControllerKey{Namespace: testNamespace, Kind: "CronJob", Name: testCronJob},
+				ApiVersion:    "batch/v1", UID: cron.UID,
+			}, parent)
+			wantGets := 0
+			if !tc.cachedJob {
+				wantGets++
+			}
+			if !tc.cachedCron {
+				wantGets++
+			}
+			require.Len(t, client.Actions(), wantGets)
+		})
+	}
+}
+
+// TestScaleControllerOwnerUID permits omitted or matching UIDs and rejects
+// same-name replacements returned by a scale subresource.
+func TestScaleControllerOwnerUID(t *testing.T) {
+	for _, uid := range []types.UID{"", "scale-uid", "deleted-uid"} {
+		t.Run(string(uid), func(t *testing.T) {
+			f := simpleControllerFetcher()
+			f.scaleNamespacer.(*scalefake.FakeScaleClient).PrependReactor("get", "iCanScale", func(core.Action) (bool, runtime.Object, error) {
+				return true, &autoscalingv1.Scale{ObjectMeta: metav1.ObjectMeta{UID: "scale-uid"}}, nil
+			})
+			key := &ControllerKeyWithAPIVersion{
+				ControllerKey: ControllerKey{Namespace: testNamespace, Kind: "ScalingResource", Name: "iCanScale"},
+				ApiVersion:    "Foo/Foo", UID: uid,
+			}
+			parent, err := f.FindTopMostWellKnownOrScalable(context.Background(), key)
+			if uid == "deleted-uid" {
+				require.ErrorContains(t, err, "has UID \"scale-uid\", expected \"deleted-uid\"")
+				require.Nil(t, parent)
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, key, parent)
+		})
+	}
+}
+
+// TestWellKnownControllerAPIErrors verifies that fallback preserves API failures
+// and cancellation without retrying or returning a successful parent lookup.
+func TestWellKnownControllerAPIErrors(t *testing.T) {
+	for _, kind := range []wellKnownController{job, cronJob} {
+		resource := "jobs"
+		if kind == cronJob {
+			resource = "cronjobs"
+		}
+		gr := schema.GroupResource{Group: "batch", Resource: resource}
+		for _, apiErr := range []error{
+			apierrors.NewNotFound(gr, "deleted-owner"),
+			apierrors.NewForbidden(gr, "owner", errors.New("denied")),
+			apierrors.NewInternalError(errors.New("API unavailable")),
+			apierrors.NewTimeoutError("request timed out", 1),
+			context.Canceled,
+		} {
+			t.Run(string(kind)+"/"+apiErr.Error(), func(t *testing.T) {
+				client := fake.NewClientset()
+				client.PrependReactor("get", resource, func(core.Action) (bool, runtime.Object, error) {
+					return true, nil, apiErr
+				})
+				f := simpleControllerFetcher()
+				f.kubeClient = client
+				parent, err := f.FindTopMostWellKnownOrScalable(context.Background(), &ControllerKeyWithAPIVersion{
+					ControllerKey: ControllerKey{Namespace: testNamespace, Kind: string(kind), Name: "owner"},
+					ApiVersion:    "batch/v1",
+				})
+				require.ErrorIs(t, err, apiErr)
+				require.Nil(t, parent)
+				require.Len(t, client.Actions(), 1, "API errors must not be retried or suppressed")
+			})
+		}
 	}
 }
