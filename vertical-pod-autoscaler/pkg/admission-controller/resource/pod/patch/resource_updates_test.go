@@ -697,6 +697,97 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 			},
 		},
 		{
+			name: "startup boost factor skipped when container has no CPU request and no recommendation",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: "container1",
+							Resources: corev1.ResourceRequirements{
+								Requests: corev1.ResourceList{
+									corev1.ResourceMemory: resource.MustParse("100Mi"),
+								},
+							},
+						},
+					},
+				},
+			},
+			vpa:                test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, 10).Get(),
+			recommendResources: make([]vpa_api_util.ContainerResources, 1),
+			maxAllowedCpu:      resource.QuantityValue{},
+			featureGateEnabled: true,
+			expectPatches:      []resource_admission.PatchRecord{},
+		},
+		{
+			name: "startup boost quantity skipped when container has no CPU request and no recommendation",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: "container1",
+						},
+					},
+				},
+			},
+			vpa:                test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.QuantityStartupBoostType, nil, &quantity, 10).Get(),
+			recommendResources: make([]vpa_api_util.ContainerResources, 1),
+			maxAllowedCpu:      resource.QuantityValue{},
+			featureGateEnabled: true,
+			expectPatches:      []resource_admission.PatchRecord{},
+		},
+		{
+			name: "startup boost skipped when container has no CPU request and VPA is Off",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: "container1",
+						},
+					},
+				},
+			},
+			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithUpdateMode(vpa_types.UpdateModeOff).WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, 10).Get(),
+			recommendResources: []vpa_api_util.ContainerResources{
+				{
+					Requests: corev1.ResourceList{
+						cpu: resource.MustParse("100m"),
+					},
+				},
+			},
+			maxAllowedCpu:      resource.QuantityValue{},
+			featureGateEnabled: true,
+			expectPatches:      []resource_admission.PatchRecord{},
+		},
+		{
+			name: "startup boost from recommendation when container has no CPU request",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: "container1",
+						},
+					},
+				},
+			},
+			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, 10).Get(),
+			recommendResources: []vpa_api_util.ContainerResources{
+				{
+					Requests: corev1.ResourceList{
+						cpu: resource.MustParse("100m"),
+					},
+				},
+			},
+			maxAllowedCpu:      resource.QuantityValue{},
+			featureGateEnabled: true,
+			expectPatches: []resource_admission.PatchRecord{
+				GetAddAnnotationPatch(annotations.GetStartupCPUBoostAnnotationKey("container1"), "{\"requests\":{},\"limits\":{}}"),
+				GetPatchInitializingEmptyResources(0),
+				GetPatchInitializingEmptyResourcesSubfield(0, "requests"),
+				addResourceRequestPatch(0, cpu, "200m"),
+				GetAddAnnotationPatch(ResourceUpdatesAnnotation, "Pod resources updated by name: container 0: cpu request"),
+			},
+		},
+		{
 			name: "startup boost with ControlledValues=RequestsOnly",
 			pod: &corev1.Pod{
 				Spec: corev1.PodSpec{
