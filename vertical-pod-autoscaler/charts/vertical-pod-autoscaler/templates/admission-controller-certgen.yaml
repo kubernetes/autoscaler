@@ -3,7 +3,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: {{ include "vertical-pod-autoscaler.admissionController.certGen.fullname" . }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ include "common.names.namespace" . }}
   annotations:
     "helm.sh/hook": pre-install,pre-upgrade
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
@@ -33,8 +33,8 @@ spec:
           imagePullPolicy: {{ .Values.admissionController.certGen.image.pullPolicy }}
           args:
             - create
-            - --host={{ .Values.admissionController.service.name }},{{ .Values.admissionController.service.name }}.{{ .Release.Namespace }}.svc
-            - --namespace={{ .Release.Namespace }}
+            - --host={{ .Values.admissionController.service.name }},{{ .Values.admissionController.service.name }}.{{ include "common.names.namespace" . }}.svc
+            - --namespace={{ include "common.names.namespace" . }}
             - --secret-name={{ include "vertical-pod-autoscaler.admissionController.tls.secretName" . }}
           {{- with .Values.admissionController.certGen.env }}
           env:

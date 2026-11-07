@@ -4,7 +4,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: {{ include "vertical-pod-autoscaler.updater.fullname" . }}-leader-locking-binding
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ include "common.names.namespace" . }}
   labels:
     {{- include "vertical-pod-autoscaler.updater.labels" . | nindent 4 }}
 roleRef:
@@ -14,6 +14,6 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: {{ include "vertical-pod-autoscaler.updater.fullname" . }}
-    namespace: {{ .Release.Namespace }}
+    namespace: {{ include "common.names.namespace" . }}
 {{- end -}}
 {{- end -}}
