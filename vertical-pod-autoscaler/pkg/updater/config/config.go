@@ -53,6 +53,9 @@ type UpdaterConfig struct {
 	PodLifetimeUpdateThreshold time.Duration
 	EvictAfterOOMThreshold     time.Duration
 
+	PressureQuickUpdateWindow   time.Duration
+	PressureQuickUpdateFraction float64
+
 	ConcurrentCPUStartupBoostSyncs int
 }
 
@@ -74,9 +77,11 @@ func DefaultUpdaterConfig() *UpdaterConfig {
 		AdmissionControllerStatusLeaseNamespace: "",
 		AdmissionControllerStatusLeaseTimeout:   status.AdmissionControllerStatusTimeout,
 
-		DefaultUpdateThreshold:     0.1,
-		PodLifetimeUpdateThreshold: time.Hour * 12,
-		EvictAfterOOMThreshold:     10 * time.Minute,
+		DefaultUpdateThreshold:      0.1,
+		PodLifetimeUpdateThreshold:  time.Hour * 12,
+		EvictAfterOOMThreshold:      10 * time.Minute,
+		PressureQuickUpdateWindow:   10 * time.Minute,
+		PressureQuickUpdateFraction: 0.1,
 
 		ConcurrentCPUStartupBoostSyncs: 1,
 	}
@@ -103,6 +108,8 @@ func InitUpdaterFlags() *UpdaterConfig {
 	flag.Float64Var(&config.DefaultUpdateThreshold, "pod-update-threshold", config.DefaultUpdateThreshold, "Ignore updates that have priority lower than the value of this flag")
 	flag.DurationVar(&config.PodLifetimeUpdateThreshold, "in-recommendation-bounds-eviction-lifetime-threshold", config.PodLifetimeUpdateThreshold, "Pods that live for at least that long can be evicted even if their request is within the [MinRecommended...MaxRecommended] range")
 	flag.DurationVar(&config.EvictAfterOOMThreshold, "evict-after-oom-threshold", config.EvictAfterOOMThreshold, `The default duration to evict pods that have OOMed in less than evict-after-oom-threshold since start.`)
+	flag.DurationVar(&config.PressureQuickUpdateWindow, "pressure-quick-update-window", config.PressureQuickUpdateWindow, "[ALPHA] How long after an accepted memory pressure sample a Pod below its memory target is updated in place without waiting for the lifetime and minimum-change thresholds. Requires the ReactiveMemoryPressureDetection feature gate.")
+	flag.Float64Var(&config.PressureQuickUpdateFraction, "pressure-quick-update-fraction", config.PressureQuickUpdateFraction, "[ALPHA] Fraction of a VPA's Pods, at least one, that quick pressure may update in place per updater loop. Requires the ReactiveMemoryPressureDetection feature gate.")
 	flag.IntVar(&config.ConcurrentCPUStartupBoostSyncs, "concurrent-cpu-startup-boost-syncs", config.ConcurrentCPUStartupBoostSyncs, "The number of workers processing CPU startup boost unboosting concurrently.")
 
 	// These need to happen last. kube_flag.InitFlags() synchronizes and parses
@@ -129,6 +136,16 @@ func ValidateUpdaterConfig(config *UpdaterConfig) {
 
 	if config.AdmissionControllerStatusLeaseTimeout <= 0 {
 		klog.ErrorS(nil, "--admission-controller-status-lease-timeout must be positive.")
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+	}
+
+	if config.PressureQuickUpdateWindow <= 0 {
+		klog.ErrorS(nil, "--pressure-quick-update-window must be positive.")
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+	}
+
+	if config.PressureQuickUpdateFraction <= 0 || config.PressureQuickUpdateFraction > 1 {
+		klog.ErrorS(nil, "--pressure-quick-update-fraction must be in (0, 1].")
 		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 	}
 }

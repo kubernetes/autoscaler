@@ -50,6 +50,7 @@ _Appears in:_
 | `controlledValues` _[ContainerControlledValues](#containercontrolledvalues)_ | Specifies which resource values should be controlled.<br />The default is "RequestsAndLimits". |  | Enum: [RequestsAndLimits RequestsOnly] <br />Optional: \{\} <br /> |
 | `oomBumpUpRatio` _[Quantity](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#quantity-resource-api)_ | oomBumpUpRatio is the ratio to increase memory when OOM is detected. |  | Optional: \{\} <br /> |
 | `oomMinBumpUp` _[Quantity](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#quantity-resource-api)_ | oomMinBumpUp is the minimum increase in memory when OOM is detected. |  | Optional: \{\} <br /> |
+| `pressureDetection` _[PressureDetectionMode](#pressuredetectionmode)_ | pressureDetection controls whether the recommender observes this container for sustained<br />memory reclaim stall. Defaults to Disabled. |  | Enum: [Enabled Disabled] <br />Optional: \{\} <br /> |
 | `memoryAggregationIntervalSeconds` _integer_ | memoryAggregationIntervalSeconds is the length of a single interval<br />(in seconds) for which the peak memory usage is computed.<br />Memory usage peaks are aggregated in multiples of this interval.<br />In other words, there is one memory usage sample per interval<br />(the maximum usage over that interval). |  | Minimum: 1 <br />Optional: \{\} <br /> |
 | `memoryAggregationIntervalCount` _integer_ | memoryAggregationIntervalCount is the number of consecutive<br />memoryAggregationIntervals which make up the memory aggregation window.<br />The total window length is:<br />MemoryAggregationIntervalSeconds * MemoryAggregationIntervalCount. |  | Minimum: 1 <br />Optional: \{\} <br /> |
 | `startupBoost` _[StartupBoost](#startupboost)_ | startupBoost specifies the startup boost policy for the container.<br />This overrides any pod-level startup boost policy.<br />The startup boost policy takes precedence over the rest of the fields in<br />this struct, except for ContainerName and ControlledValues. |  | Optional: \{\} <br /> |
@@ -168,6 +169,23 @@ _Appears in:_
 | `evictAfterOOMSeconds` _integer_ | evictAfterOOMSeconds specifies the time in seconds to wait after an OOM event before<br />considering the pod for eviction. Pods that have OOMed in less than this time<br />since start will be evicted. |  | Minimum: 1 <br />Optional: \{\} <br /> |
 
 
+#### PressureDetectionMode
+
+_Underlying type:_ _string_
+
+PressureDetectionMode controls memory pressure observation for a container.
+
+
+
+_Appears in:_
+- [ContainerResourcePolicy](#containerresourcepolicy)
+
+| Field | Description |
+| --- | --- |
+| `Enabled` | PressureDetectionEnabled opts the container into memory pressure observation.<br /> |
+| `Disabled` | PressureDetectionDisabled disables memory pressure observation.<br /> |
+
+
 #### RecommendedContainerResources
 
 
@@ -189,6 +207,7 @@ _Appears in:_
 | `lowerBound` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#resourcelist-v1-core)_ | Minimum recommended amount of resources. Observes ContainerResourcePolicy.<br />This amount is not guaranteed to be sufficient for the application to operate in a stable way, however<br />running with less resources is likely to have significant impact on performance/availability. |  | Optional: \{\} <br /> |
 | `upperBound` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#resourcelist-v1-core)_ | Maximum recommended amount of resources. Observes ContainerResourcePolicy.<br />Any resources allocated beyond this value are likely wasted. This value may be larger than the maximum<br />amount of application is actually capable of consuming. |  | Optional: \{\} <br /> |
 | `uncappedTarget` _[ResourceList](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#resourcelist-v1-core)_ | The most recent recommended resources target computed by the autoscaler<br />for the controlled pods, based only on actual resource usage, not taking<br />into account the ContainerResourcePolicy.<br />May differ from the Recommendation if the actual resource usage causes<br />the target to violate the ContainerResourcePolicy (lower than MinAllowed<br />or higher that MaxAllowed).<br />Used only as status indication, will not affect actual resource assignment. |  | Optional: \{\} <br /> |
+| `lastPressureTime` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#time-v1-meta)_ | lastPressureTime is when the recommender last accepted a memory pressure sample for this container. |  | Optional: \{\} <br /> |
 
 
 #### RecommendedPodResources

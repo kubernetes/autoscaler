@@ -91,6 +91,8 @@ type ContainerStateAggregator interface {
 	GetOOMMinBumpUp() float64
 	// GetMemoryAggregationIntervalDuration returns the memory aggregation interval for this container.
 	GetMemoryAggregationIntervalDuration() time.Duration
+	// RecordPressureObserved notes that a memory pressure sample was accepted at the given time.
+	RecordPressureObserved(t time.Time)
 }
 
 // AggregateContainerState holds input signals aggregated from a set of containers.
@@ -109,6 +111,9 @@ type AggregateContainerState struct {
 	LastSampleStart   time.Time
 	TotalSamplesCount int
 	CreationTime      time.Time
+	// LastPressureTime is when a memory pressure sample was last accepted for a container in this
+	// aggregation. It is not checkpointed; the recommendation status carries it across restarts.
+	LastPressureTime time.Time
 
 	// Following fields are needed to correctly report quality metrics
 	// for VPA. When we record a new sample in an AggregateContainerState
@@ -206,6 +211,16 @@ func (a *AggregateContainerState) MergeContainerState(other *AggregateContainerS
 		a.LastSampleStart = other.LastSampleStart
 	}
 	a.TotalSamplesCount += other.TotalSamplesCount
+	if other.LastPressureTime.After(a.LastPressureTime) {
+		a.LastPressureTime = other.LastPressureTime
+	}
+}
+
+// RecordPressureObserved notes that a memory pressure sample was accepted at t.
+func (a *AggregateContainerState) RecordPressureObserved(t time.Time) {
+	if t.After(a.LastPressureTime) {
+		a.LastPressureTime = t
+	}
 }
 
 // NewAggregateContainerState returns a new, empty AggregateContainerState.
@@ -423,6 +438,11 @@ func (p *ContainerStateAggregatorProxy) SubtractSample(sample *ContainerUsageSam
 func (p *ContainerStateAggregatorProxy) GetLastRecommendation() corev1.ResourceList {
 	aggregator := p.cluster.findOrCreateAggregateContainerState(p.containerID)
 	return aggregator.GetLastRecommendation()
+}
+
+// RecordPressureObserved notes that a memory pressure sample was accepted at t.
+func (p *ContainerStateAggregatorProxy) RecordPressureObserved(t time.Time) {
+	p.cluster.findOrCreateAggregateContainerState(p.containerID).RecordPressureObserved(t)
 }
 
 // NeedsRecommendation returns true if the aggregator should have recommendation calculated.
