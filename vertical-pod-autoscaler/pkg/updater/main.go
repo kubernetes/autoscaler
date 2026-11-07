@@ -225,6 +225,9 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 	}
 
+	useEvictionRequest := features.Enabled(features.EvictionRequest) || config.UseEvictionRequest
+	updater.SetEvictionRequestOptions(useEvictionRequest, config.EvictionRequestTimeout, config.EvictionRequestRequester)
+
 	kubeFactory.Start(stopCh)
 	podInformerFactory.Start(stopCh)
 	for _, informerMap := range []map[reflect.Type]bool{
