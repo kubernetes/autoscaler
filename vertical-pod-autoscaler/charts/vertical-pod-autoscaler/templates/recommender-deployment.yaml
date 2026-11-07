@@ -38,7 +38,7 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "vertical-pod-autoscaler.recommender.fullname" . }}
+      serviceAccountName: {{ include "vertical-pod-autoscaler.recommender.serviceAccountName" . }}
       {{- with .Values.podSecurityContext }}
       securityContext:
         {{ toYaml . | nindent 8 | trim }}
