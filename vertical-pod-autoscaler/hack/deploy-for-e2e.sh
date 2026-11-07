@@ -119,22 +119,16 @@ for COMPONENT in ${COMPONENTS}; do
   esac
 done
 
-# Propagate FEATURE_GATES (set on alpha/beta CI lanes) to component args.
-# Commas in the value are escaped so Helm --set treats it as one assignment.
+# Propagate FEATURE_GATES (set on alpha/beta CI lanes) to the chart's top-level
+# featureGates map, which applies to every component. FEATURE_GATES is a
+# comma-separated list of Name=value pairs, e.g. "AllAlpha=true,AllBeta=true" becomes
+#   --set featureGates.AllAlpha=true --set featureGates.AllBeta=true
 if [[ -n "${FEATURE_GATES:-}" ]]; then
-  ESCAPED_FEATURE_GATES="${FEATURE_GATES//,/\\,}"
-  for COMPONENT in ${COMPONENTS}; do
-    case ${COMPONENT} in
-      recommender)
-        HELM_SET_ARGS+=("--set" "recommender.extraArgs[0]=--feature-gates=${ESCAPED_FEATURE_GATES}")
-        ;;
-      updater)
-        HELM_SET_ARGS+=("--set" "updater.extraArgs[0]=--feature-gates=${ESCAPED_FEATURE_GATES}")
-        ;;
-      admission-controller)
-        HELM_SET_ARGS+=("--set" "admissionController.extraArgs[0]=--feature-gates=${ESCAPED_FEATURE_GATES}")
-        ;;
-    esac
+  IFS=',' read -ra GATES <<< "${FEATURE_GATES}"
+  for GATE in "${GATES[@]}"; do
+    GATE_NAME="${GATE%%=*}"
+    GATE_VALUE="${GATE#*=}"
+    HELM_SET_ARGS+=("--set" "featureGates.${GATE_NAME}=${GATE_VALUE}")
   done
 fi
 

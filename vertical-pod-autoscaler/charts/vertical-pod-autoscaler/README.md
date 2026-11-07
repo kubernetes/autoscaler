@@ -4,7 +4,7 @@ WARNING: This chart is currently under development and is not ready for producti
 
 Automatically adjust resources for your workloads
 
-![Version: 0.15.0](https://img.shields.io/badge/Version-0.15.0-informational?style=flat-square)
+![Version: 0.16.0](https://img.shields.io/badge/Version-0.16.0-informational?style=flat-square)
 ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 ![AppVersion: 1.8.1](https://img.shields.io/badge/AppVersion-1.8.1-informational?style=flat-square)
 
@@ -153,6 +153,26 @@ Because items are evaluated as templates, a literal `{{ ... }}` in a manifest (f
 summary: "{{`{{ $labels.pod }}`}} is restarting"
 ```
 
+## Feature Gates
+
+VPA [feature gates](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/docs/features.md) are set once at the top level and passed to every component as a single `--feature-gates` argument:
+
+```yaml
+featureGates:
+  InPlace: true
+  CPUStartupBoost: true
+```
+
+If a component's `extraArgs` already contains a `--feature-gates` argument, the chart does not add its own for that component, so you can override the gates of a single component:
+
+```yaml
+featureGates:
+  InPlace: true
+recommender:
+  extraArgs:
+    - --feature-gates=InPlace=true,CPUStartupBoost=true
+```
+
 ## Migration Guides
 
 ### Migrating from vpa-up.sh script
@@ -272,6 +292,7 @@ This chart includes [helm-unittest](https://github.com/helm-unittest/helm-unitte
 | crds.enabled | bool | `true` | Whether to install and manage the VPA CRDs. Disable if you manage CRDs separately. |
 | crds.keep | bool | `true` | Whether to add the helm.sh/resource-policy: keep annotation to the CRDs, so they are not removed by `helm uninstall`. |
 | extraObjects | list | `[]` | Extra Kubernetes objects to deploy with the release, such as PodMonitors, NetworkPolicies or ConfigMaps. Each item is either a YAML map or a multi-line string, and is evaluated as a template. See the README for examples. |
+| featureGates | object | `{}` | Feature gates to set on all components, as a map of gate name to boolean. Rendered as a single `--feature-gates=Name=true,Other=false` argument. Skipped for a component whose `extraArgs` already contains a `--feature-gates` argument, so per-component overrides via `extraArgs` keep working. See https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/docs/features.md for the available gates. |
 | fullnameOverride | string | `nil` |  |
 | imagePullSecrets | list | `[]` |  |
 | nameOverride | string | `nil` |  |

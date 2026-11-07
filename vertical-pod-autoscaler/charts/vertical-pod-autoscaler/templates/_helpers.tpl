@@ -178,6 +178,35 @@ app.kubernetes.io/component: recommender
 
 
 {{/*
+featureGates
+*/}}
+
+{{/*
+Render the value of the --feature-gates flag from the top-level .Values.featureGates map (keys are sorted).
+Returns an empty string when no gates are set or when the component's extraArgs already carries a
+--feature-gates argument (either "--feature-gates=..." or a bare "--feature-gates" followed by its value),
+so a user-provided flag is never duplicated or overridden.
+Takes a dict with "featureGates" (map) and "extraArgs" (list).
+*/}}
+{{- define "vertical-pod-autoscaler.featureGates" -}}
+{{- $userSet := false -}}
+{{- range .extraArgs -}}
+{{- $arg := toString . -}}
+{{- if or (eq $arg "--feature-gates") (hasPrefix "--feature-gates=" $arg) -}}
+{{- $userSet = true -}}
+{{- end -}}
+{{- end -}}
+{{- if and .featureGates (not $userSet) -}}
+{{- $gates := list -}}
+{{- range $name, $enabled := .featureGates -}}
+{{- $gates = append $gates (printf "%s=%v" $name $enabled) -}}
+{{- end -}}
+{{- join "," $gates -}}
+{{- end -}}
+{{- end -}}
+
+
+{{/*
 extraObjects
 */}}
 

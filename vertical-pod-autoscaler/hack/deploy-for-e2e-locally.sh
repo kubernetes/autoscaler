@@ -160,25 +160,16 @@ for COMPONENT in ${COMPONENTS}; do
   esac
 done
 
-# Add feature gates if specified
-RECOM_ARGS_IDX=0
+# Add feature gates if specified via the chart's top-level featureGates map,
+# which applies to every component. FEATURE_GATES is a comma-separated list of
+# Name=value pairs, e.g. "AllAlpha=true,AllBeta=true" becomes
+#   --set featureGates.AllAlpha=true --set featureGates.AllBeta=true
 if [ -n "${FEATURE_GATES:-}" ]; then
-  # Escape commas so Helm --set treats the value as a single assignment
-  ESCAPED_FEATURE_GATES="${FEATURE_GATES//,/\\,}"
-  # Add feature gates to each enabled component
-  for COMPONENT in ${COMPONENTS}; do
-    case ${COMPONENT} in
-      recommender)
-        HELM_SET_ARGS+=("--set" "recommender.extraArgs[${RECOM_ARGS_IDX}]=--feature-gates=${ESCAPED_FEATURE_GATES}")
-        RECOM_ARGS_IDX=$((RECOM_ARGS_IDX + 1))
-        ;;
-      updater)
-        HELM_SET_ARGS+=("--set" "updater.extraArgs[0]=--feature-gates=${ESCAPED_FEATURE_GATES}")
-        ;;
-      admission-controller)
-        HELM_SET_ARGS+=("--set" "admissionController.extraArgs[0]=--feature-gates=${ESCAPED_FEATURE_GATES}")
-        ;;
-    esac
+  IFS=',' read -ra GATES <<< "${FEATURE_GATES}"
+  for GATE in "${GATES[@]}"; do
+    GATE_NAME="${GATE%%=*}"
+    GATE_VALUE="${GATE#*=}"
+    HELM_SET_ARGS+=("--set" "featureGates.${GATE_NAME}=${GATE_VALUE}")
   done
 fi
 
@@ -206,9 +197,9 @@ if [[ "${SUITE}" == "recommender-externalmetrics" ]]; then
 
   echo " ** Configuring recommender with external metrics args"
   HELM_SET_ARGS+=("--values" "${SCRIPT_ROOT}/hack/e2e/values-external-metrics.yaml")
-  HELM_SET_ARGS+=("--set" "recommender.extraArgs[${RECOM_ARGS_IDX}]=--use-external-metrics=true")
-  HELM_SET_ARGS+=("--set" "recommender.extraArgs[$((RECOM_ARGS_IDX + 1))]=--external-metrics-cpu-metric=cpu")
-  HELM_SET_ARGS+=("--set" "recommender.extraArgs[$((RECOM_ARGS_IDX + 2))]=--external-metrics-memory-metric=mem")
+  HELM_SET_ARGS+=("--set" "recommender.extraArgs[0]=--use-external-metrics=true")
+  HELM_SET_ARGS+=("--set" "recommender.extraArgs[1]=--external-metrics-cpu-metric=cpu")
+  HELM_SET_ARGS+=("--set" "recommender.extraArgs[2]=--external-metrics-memory-metric=mem")
 fi
 
 # Generate TLS certificates for admission-controller before Helm install
