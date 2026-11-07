@@ -98,6 +98,7 @@ func (asg *AutoScalingGroup) AtomicIncreaseSize(ctx context.Context, delta int) 
 	return cloudprovider.ErrNotImplemented
 }
 
+// DeleteNodes deletes nodes from this node group.
 // NOTE: We trust the AS service side group_id validation instead of doing a client-side pre-check.
 // The BatchRemoveInstances request carries the ScalingGroupId at the top level, and the AS service will validate that the instances belong to the group.
 // If any instance does not belong to the group, the request will fail with an error. The previous implementation called ListScalingInstances to pre-check,
