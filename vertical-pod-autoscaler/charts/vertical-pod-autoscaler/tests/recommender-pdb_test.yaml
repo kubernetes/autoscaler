@@ -1,7 +1,82 @@
-suite: recommender pdb - unhealthyPodEvictionPolicy
+suite: recommender pod disruption budget
 templates:
   - recommender-pdb.yaml
 tests:
+  - it: uses minAvailable by default
+    asserts:
+      - equal:
+          path: spec.minAvailable
+          value: 1
+      - notExists:
+          path: spec.maxUnavailable
+
+  - it: supports maxUnavailable when minAvailable is unset
+    set:
+      recommender.podDisruptionBudget.minAvailable: null
+      recommender.podDisruptionBudget.maxUnavailable: 1
+    asserts:
+      - equal:
+          path: spec.maxUnavailable
+          value: 1
+      - notExists:
+          path: spec.minAvailable
+
+  - it: supports a custom minAvailable when maxUnavailable is unset
+    set:
+      recommender.podDisruptionBudget.minAvailable: 2
+      recommender.podDisruptionBudget.maxUnavailable: null
+    asserts:
+      - equal:
+          path: spec.minAvailable
+          value: 2
+      - notExists:
+          path: spec.maxUnavailable
+
+  - it: rejects both minAvailable and maxUnavailable
+    set:
+      recommender.podDisruptionBudget.minAvailable: 1
+      recommender.podDisruptionBudget.maxUnavailable: 1
+    asserts:
+      - failedTemplate:
+          errorMessage: "Only one of recommender.podDisruptionBudget.minAvailable or recommender.podDisruptionBudget.maxUnavailable should be set."
+
+  - it: rejects a zero maxUnavailable when minAvailable is also set
+    set:
+      recommender.podDisruptionBudget.maxUnavailable: 0
+    asserts:
+      - failedTemplate:
+          errorMessage: "Only one of recommender.podDisruptionBudget.minAvailable or recommender.podDisruptionBudget.maxUnavailable should be set."
+
+  - it: renders maxUnavailable when maxUnavailable is zero and minAvailable is unset
+    set:
+      recommender.podDisruptionBudget.minAvailable: null
+      recommender.podDisruptionBudget.maxUnavailable: 0
+    asserts:
+      - equal:
+          path: spec.maxUnavailable
+          value: 0
+      - notExists:
+          path: spec.minAvailable
+
+  - it: renders minAvailable when minAvailable is zero and maxUnavailable is unset
+    set:
+      recommender.podDisruptionBudget.minAvailable: 0
+      recommender.podDisruptionBudget.maxUnavailable: null
+    asserts:
+      - equal:
+          path: spec.minAvailable
+          value: 0
+      - notExists:
+          path: spec.maxUnavailable
+
+  - it: rejects a zero minAvailable when maxUnavailable is also set
+    set:
+      recommender.podDisruptionBudget.minAvailable: 0
+      recommender.podDisruptionBudget.maxUnavailable: 1
+    asserts:
+      - failedTemplate:
+          errorMessage: "Only one of recommender.podDisruptionBudget.minAvailable or recommender.podDisruptionBudget.maxUnavailable should be set."
+
   - it: sets unhealthyPodEvictionPolicy to AlwaysAllow by default
     asserts:
       - equal:
