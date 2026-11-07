@@ -102,7 +102,7 @@ func (asg *AutoScalingGroup) AtomicIncreaseSize(ctx context.Context, delta int) 
 // The BatchRemoveInstances request carries the ScalingGroupId at the top level, and the AS service will validate that the instances belong to the group.
 // If any instance does not belong to the group, the request will fail with an error. The previous implementation called ListScalingInstances to pre-check,
 // but that is unnecessary and adds extra API calls. We can rely on the AS service to validate.
-func (asg *AutoScalingGroup) DeleteNodes(nodes []*apiv1.Node) error {
+func (asg *AutoScalingGroup) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	instanceIds := make([]string, 0, len(nodes))
 	nodeNames := make([]string, 0, len(nodes))
 	for _, node := range nodes {
