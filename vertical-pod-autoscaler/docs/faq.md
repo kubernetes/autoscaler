@@ -15,6 +15,7 @@
 - [How can I have Pods in the kube-system namespace under VPA control in AKS?](#how-can-i-have-pods-in-the-kube-system-namespace-under-vpa-control-in-aks)
 - [How can I configure VPA when running in EKS with Cilium?](#how-can-i-configure-vpa-when-running-in-eks-with-cilium)
 - [How does VPA treat resource requests and limits?](#how-does-vpa-treat-resource-requests-and-limits)
+- [How can I run VPA with access to a single namespace only?](#how-can-i-run-vpa-with-access-to-a-single-namespace-only)
 <!-- /toc -->
 
 ### VPA restarts my pods but does not modify CPU or memory settings
@@ -337,3 +338,19 @@ See also the discussion in
 [kubernetes/autoscaler#7882](https://github.com/kubernetes/autoscaler/issues/7882)
 and [kubernetes/autoscaler#7895](https://github.com/kubernetes/autoscaler/issues/7895).
 
+### How can I run VPA with access to a single namespace only?
+
+All three components accept `--vpa-object-namespace`. With it set, they only watch VerticalPodAutoscaler objects, checkpoints, pods and LimitRanges in that namespace and only query pod metrics there, so they don't need cluster-wide read access.
+
+The Helm chart sets this up with a single value:
+
+```yaml
+vpaObjectNamespace: team-a
+```
+
+This passes `--vpa-object-namespace=team-a` to every component, binds the component ClusterRoles with RoleBindings in `team-a` instead of ClusterRoleBindings, and limits the admission webhook to pods in `team-a` unless you set `admissionController.mutatingWebhookConfiguration.namespaceSelector` yourself.
+
+Two things still need cluster-level access, because the objects involved are cluster-scoped:
+
+- Installing the VerticalPodAutoscaler CRDs and the MutatingWebhookConfiguration, which the chart does at install time.
+- Letting the admission controller register its own webhook (`--register-webhook`). The chart rejects `admissionController.registerWebhook: true` together with `vpaObjectNamespace`; use the Helm-managed webhook (`certGen` or `certManager`) instead.
