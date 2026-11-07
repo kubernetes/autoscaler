@@ -73,6 +73,14 @@ var (
 		},
 	)
 
+	oomEventsBuffered = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "oom_events_buffered",
+			Help:      "Number of OOM events kept for a later cycle because their pod was not tracked yet.",
+		},
+	)
+
 	metricServerResponses = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Namespace: metricsNamespace,
@@ -115,7 +123,7 @@ type ObjectCounter struct {
 
 // Register initializes all metrics for VPA Recommender
 func Register() {
-	prometheus.MustRegister(vpaObjectCount, recommendationLatency, functionLatency, aggregateContainerStatesCount, metricServerResponses, prometheusClientRequestsCount, prometheusClientRequestsDuration)
+	prometheus.MustRegister(vpaObjectCount, recommendationLatency, functionLatency, aggregateContainerStatesCount, oomEventsBuffered, metricServerResponses, prometheusClientRequestsCount, prometheusClientRequestsDuration)
 }
 
 // NewExecutionTimer provides a timer for Recommender's RunOnce execution
@@ -131,6 +139,11 @@ func ObserveRecommendationLatency(created time.Time) {
 // RecordAggregateContainerStatesCount records the number of containers being tracked by the recommender
 func RecordAggregateContainerStatesCount(statesCount int) {
 	aggregateContainerStatesCount.Set(float64(statesCount))
+}
+
+// RecordOOMEventBuffered records an OOM event that had to wait for its pod to be tracked.
+func RecordOOMEventBuffered() {
+	oomEventsBuffered.Inc()
 }
 
 // RecordMetricsServerResponse records result of a query to metrics server
