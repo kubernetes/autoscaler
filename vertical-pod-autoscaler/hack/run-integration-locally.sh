@@ -64,6 +64,7 @@ function print_help {
   echo "ERROR! Usage: $BASE_NAME <suite>"
   echo "<suite> should be one of:"
   echo " - recommender"
+  echo " - updater"
 }
 
 if [ $# -eq 0 ]; then
@@ -106,7 +107,7 @@ then
 fi
 
 case ${SUITE} in
-  recommender)
+  recommender|updater)
     COMPONENTS="${SUITE}"
     ;;
   *)
@@ -133,9 +134,7 @@ fi
 export REGISTRY=${REGISTRY:-localhost:5001}
 export TAG=${TAG:-latest}
 
-rm -f ${SCRIPT_ROOT}/hack/e2e/vpa-rbac.yaml
-patch -c ${SCRIPT_ROOT}/deploy/vpa-rbac.yaml -i ${SCRIPT_ROOT}/hack/e2e/vpa-rbac.diff -o ${SCRIPT_ROOT}/hack/e2e/vpa-rbac.yaml
-kubectl apply -f ${SCRIPT_ROOT}/hack/e2e/vpa-rbac.yaml
+kubectl apply -f ${SCRIPT_ROOT}/deploy/vpa-rbac.yaml
 # Other-versioned CRDs are irrelevant as we're running a modern-ish cluster.
 kubectl apply -f ${SCRIPT_ROOT}/deploy/vpa-v1-crd-gen.yaml
 # Deploy metrics server for integration tests via Helm chart
@@ -152,10 +151,10 @@ done
 export GO111MODULE=on
 
 case ${SUITE} in
-  recommender)
+  recommender|updater)
 
     export KUBECONFIG=$HOME/.kube/config
-    pushd ${SCRIPT_ROOT}/e2e
+    pushd ${SCRIPT_ROOT}/test/e2e
     go test ./integration/*go -v --test.timeout=10m --args --ginkgo.v=true --ginkgo.focus="\[VPA\] \[${SUITE}\]" --disable-log-dump --ginkgo.timeout=10m
     INTEGRATION_RESULT=$?
     popd

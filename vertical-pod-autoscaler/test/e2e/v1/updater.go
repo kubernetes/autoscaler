@@ -37,7 +37,7 @@ import (
 	"github.com/onsi/gomega"
 )
 
-var _ = UpdaterE2eDescribe("Updater", func() {
+var _ = utils.UpdaterE2eDescribe("Updater", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
 	f.NamespacePodSecurityLevel = podsecurity.LevelBaseline
 
@@ -390,7 +390,7 @@ func setupPodsForUpscalingEviction(f *framework.Framework, updateMode vpa_types.
 	return setupPodsForEviction(f, "100m", "100Mi", nil, updateMode)
 }
 
-var _ = UpdaterE2eDescribe("Updater with PerVPAConfig", func() {
+var _ = utils.UpdaterE2eDescribe("Updater with PerVPAConfig", func() {
 	const replicas = 3
 	const statusUpdateInterval = 10 * time.Second
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
