@@ -18,6 +18,7 @@ package routines
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
@@ -25,6 +26,7 @@ import (
 
 	vpaautoscalingv1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/checkpoint"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/logic"
@@ -76,6 +78,34 @@ func (r *recommender) GetClusterStateFeeder() input.ClusterStateFeeder {
 	return r.clusterStateFeeder
 }
 
+// updateInitialDelayCondition sets the InitialDelayActive condition for a VPA
+// that sets initialDelaySeconds: True while its initial delay window is
+// active, False once it has elapsed or the field is removed. VPAs that never
+// set the field are left without the condition. The condition is removed when
+// the VPAInitialDelay feature gate is disabled. The window itself is enforced
+// by the Updater and Admission Controller; this only reports it.
+func updateInitialDelayCondition(vpa *model.Vpa, observedVpa *vpaautoscalingv1.VerticalPodAutoscaler, now time.Time) {
+	if !features.Enabled(features.VPAInitialDelay) || observedVpa == nil {
+		vpa.DeleteCondition(vpaautoscalingv1.InitialDelayActive)
+		return
+	}
+	expiry, ok := vpa_utils.InitialDelayExpiry(observedVpa)
+	if !ok {
+		if _, found := vpa.GetConditionsMap()[vpaautoscalingv1.InitialDelayActive]; found {
+			vpa.SetCondition(vpaautoscalingv1.InitialDelayActive, false, "DelayWindowExpired",
+				"Initial delay window ended")
+		}
+		return
+	}
+	if now.Before(expiry) {
+		vpa.SetCondition(vpaautoscalingv1.InitialDelayActive, true, "DelayWindowActive",
+			fmt.Sprintf("Initial delay window active until %s", expiry.UTC().Format(time.RFC3339)))
+		return
+	}
+	vpa.SetCondition(vpaautoscalingv1.InitialDelayActive, false, "DelayWindowExpired",
+		fmt.Sprintf("Initial delay window ended at %s", expiry.UTC().Format(time.RFC3339)))
+}
+
 func processVPAUpdate(r *recommender, vpa *model.Vpa, observedVpa *vpaautoscalingv1.VerticalPodAutoscaler) {
 	resources := r.podResourceRecommender.GetRecommendedPodResources(GetContainerNameToAggregateStateMap(vpa))
 	had := vpa.HasRecommendation()
@@ -92,6 +122,7 @@ func processVPAUpdate(r *recommender, vpa *model.Vpa, observedVpa *vpaautoscalin
 	}
 	hasMatchingPods := vpa.PodCount > 0
 	vpa.UpdateConditions(hasMatchingPods)
+	updateInitialDelayCondition(vpa, observedVpa, time.Now())
 	if err := r.clusterState.RecordRecommendation(vpa, time.Now()); err != nil {
 		klog.V(0).InfoS("", "err", err)
 		if klog.V(4).Enabled() {

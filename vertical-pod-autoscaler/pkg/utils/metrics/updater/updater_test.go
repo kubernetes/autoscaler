@@ -418,6 +418,33 @@ func TestUpdateModeAndSizeBasedGauge(t *testing.T) {
 				},
 			},
 		},
+		{
+			desc:       "VpasInInitialDelayCounter",
+			newCounter: NewVpasInInitialDelayCounter,
+			metric:     vpasInInitialDelayCount,
+			metricName: "vpa_updater_vpas_in_initial_delay_total",
+			iterations: []iteration{
+				{
+					additions: []addition{
+						{1, vpa_types.UpdateModeRecreate, 1},
+						{1, vpa_types.UpdateModeRecreate, 1},
+						{4, vpa_types.UpdateModeInPlaceOrRecreate, 1},
+					},
+					expectations: []expectation{
+						{[]string{"0" /* log2(1) */, "Recreate"}, 2},
+						{[]string{"2" /* log2(4) */, "InPlaceOrRecreate"}, 1},
+					},
+				},
+				{
+					additions: []addition{
+						{4, vpa_types.UpdateModeInPlaceOrRecreate, 1},
+					},
+					expectations: []expectation{
+						{[]string{"2" /* log2(4) */, "InPlaceOrRecreate"}, 1},
+					},
+				},
+			},
+		},
 	}
 
 	for _, tc := range testCases {

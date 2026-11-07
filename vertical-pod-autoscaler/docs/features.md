@@ -28,6 +28,11 @@
   - [Behavior](#behavior-2)
   - [Requirements](#requirements-2)
   - [Configuration](#configuration)
+- [Initial Delay](#initial-delay)
+  - [Usage](#usage-3)
+  - [Behavior](#behavior-3)
+  - [Requirements](#requirements-3)
+  - [Monitoring](#monitoring-2)
 <!-- /toc -->
 
 ## Limits control
@@ -315,3 +320,49 @@ The `startupBoost` field contains a `cpu` field with the following sub-fields:
 *   `factor`: (Optional) The multiplier to apply if `type` is `Factor` (e.g., 2 for 2x CPU). Required if `type` is `Factor`.
 *   `quantity`: (Optional) The amount of CPU to add if `type` is `Quantity` (e.g., "500m"). Required if `type` is `Quantity`.
 *   `durationSeconds`: (Optional) How long to keep the boost active *after* the pod becomes `Ready`. Defaults to `0`.
+
+## Initial Delay
+
+> [!WARNING]
+> FEATURE STATE: VPA v1.9.0 [alpha]
+
+`spec.updatePolicy.initialDelaySeconds` delays actuation of recommendations for a period after the VPA is created, giving the recommender time to collect usage data for a new workload. See [AEP-9936](../enhancements/9936-vpa-observation-window/README.md) for the design.
+
+### Usage
+
+```yaml
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: web-vpa
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: web
+  updatePolicy:
+    updateMode: Recreate
+    initialDelaySeconds: 21600   # 6 hours
+```
+
+### Behavior
+
+* The window starts at the VPA's `creationTimestamp` and lasts `initialDelaySeconds` seconds. Changing `initialDelaySeconds` moves the end of the window.
+* During the window the Updater and Admission Controller treat the VPA as if `updateMode` were `Off`, and the Recommender keeps publishing recommendations to `status.recommendation`.
+* CPU Startup Boost still applies during the window. A boost that expires during the window is scaled back to the pod's original resources.
+* After the window, the configured `updateMode` takes effect.
+
+### Requirements
+
+* VPA version 1.9.0+ with the `VPAInitialDelay` feature gate enabled on the admission-controller, updater and recommender:
+
+```bash
+--feature-gates=VPAInitialDelay=true
+```
+
+The admission-controller and updater enforce the window, and the recommender reports it in the `InitialDelayActive` condition.
+
+### Monitoring
+
+* The `InitialDelayActive` condition on the VPA is `True` while the window is active and `False` after it ends. It's set by the recommender, so it can lag the end of the window by up to one recommender loop (1 minute by default).
+* The updater exports `vpa_updater_vpas_in_initial_delay_total{vpa_size_log2, update_mode}`, the number of VPAs in their initial delay window.
