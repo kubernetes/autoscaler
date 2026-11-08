@@ -115,6 +115,40 @@ func TestUpdateNotRequired(t *testing.T) {
 	assert.Exactly(t, []*corev1.Pod{}, result, "Pod should not be updated")
 }
 
+func TestAddPodWithNilRecommendation(t *testing.T) {
+	for _, tc := range []struct {
+		name                       string
+		updateMode                 vpa_types.UpdateMode
+		withPriorInfeasibleAttempt bool
+	}{
+		{name: "Recreate", updateMode: vpa_types.UpdateModeRecreate, withPriorInfeasibleAttempt: true},
+		{name: "InPlaceWithPriorInfeasibleAttempt", updateMode: vpa_types.UpdateModeInPlace, withPriorInfeasibleAttempt: true},
+		{name: "InPlaceWithoutPriorInfeasibleAttempt", updateMode: vpa_types.UpdateModeInPlace},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			pod := test.Pod().WithName("POD1").AddContainer(test.Container().WithName(containerName).Get()).Get()
+			vpa := test.VerticalPodAutoscaler().WithContainer(containerName).WithTarget("4", "10M").WithUpdateMode(tc.updateMode).Get()
+
+			recommendationProcessor := &test.RecommendationProcessorMock{}
+			recommendationProcessor.On("Apply").Return(nil, nil).Once()
+			// No priority should be calculated when the processed recommendation is nil.
+			priorityProcessor := NewFakeProcessor(map[string]PodPriority{})
+			calculator := NewUpdatePriorityCalculator(vpa, updateconfig, recommendationProcessor, priorityProcessor)
+
+			infeasibleAttempts := map[types.UID]*vpa_types.RecommendedPodResources{}
+			if tc.withPriorInfeasibleAttempt {
+				infeasibleAttempts[pod.UID] = test.Recommendation().WithContainer(containerName).WithTarget("4", "10M").Get()
+			}
+			timestampNow := pod.Status.StartTime.Add(time.Hour * 24)
+			assert.NotPanics(t, func() {
+				calculator.AddPod(pod, timestampNow, infeasibleAttempts)
+			})
+			assert.Empty(t, calculator.GetSortedPods(NewDefaultPodEvictionAdmission()), "Pod without a recommendation should not be updated")
+			recommendationProcessor.AssertExpectations(t)
+		})
+	}
+}
+
 // TODO: add expects to fake processor
 func TestUseProcessor(t *testing.T) {
 	processedRecommendation := test.Recommendation().WithContainer(containerName).WithTarget("4", "10M").Get()
