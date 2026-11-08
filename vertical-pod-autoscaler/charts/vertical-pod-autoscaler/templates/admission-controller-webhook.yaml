@@ -23,7 +23,7 @@ webhooks:
     # caBundle is injected by the certgen patch job (certGen mode) or by cert-manager cainjector (certManager mode)
     service:
       name: {{ .Values.admissionController.service.name }}
-      namespace: {{ include "common.names.namespace" . }}
+      namespace: {{ include "common.names.namespace" . | quote }}
       port: 443
   failurePolicy: {{ .Values.admissionController.mutatingWebhookConfiguration.failurePolicy }}
   matchPolicy: Equivalent

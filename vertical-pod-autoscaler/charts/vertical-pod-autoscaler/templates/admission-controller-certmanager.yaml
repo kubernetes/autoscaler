@@ -6,7 +6,7 @@ apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
   name: {{ include "vertical-pod-autoscaler.admissionController.certManager.issuerName" . }}
-  namespace: {{ include "common.names.namespace" . }}
+  namespace: {{ include "common.names.namespace" . | quote }}
   labels:
     {{- include "vertical-pod-autoscaler.admissionController.labels" . | nindent 4 }}
   {{- with .Values.admissionController.certManager.annotations }}
@@ -20,7 +20,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: {{ include "vertical-pod-autoscaler.admissionController.certManager.caName" . }}
-  namespace: {{ include "common.names.namespace" . }}
+  namespace: {{ include "common.names.namespace" . | quote }}
   labels:
     {{- include "vertical-pod-autoscaler.admissionController.labels" . | nindent 4 }}
   {{- with .Values.admissionController.certManager.annotations }}
@@ -47,7 +47,7 @@ apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
   name: {{ include "vertical-pod-autoscaler.admissionController.certManager.caIssuerName" . }}
-  namespace: {{ include "common.names.namespace" . }}
+  namespace: {{ include "common.names.namespace" . | quote }}
   labels:
     {{- include "vertical-pod-autoscaler.admissionController.labels" . | nindent 4 }}
   {{- with .Values.admissionController.certManager.annotations }}
@@ -63,7 +63,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: {{ include "vertical-pod-autoscaler.admissionController.certManager.certName" . }}
-  namespace: {{ include "common.names.namespace" . }}
+  namespace: {{ include "common.names.namespace" . | quote }}
   labels:
     {{- include "vertical-pod-autoscaler.admissionController.labels" . | nindent 4 }}
   {{- with .Values.admissionController.certManager.annotations }}

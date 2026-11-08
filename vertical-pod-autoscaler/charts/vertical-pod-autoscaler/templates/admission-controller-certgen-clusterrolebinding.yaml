@@ -16,5 +16,5 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: {{ include "vertical-pod-autoscaler.admissionController.certGen.fullname" . }}
-    namespace: {{ include "common.names.namespace" . }}
+    namespace: {{ include "common.names.namespace" . | quote }}
 {{- end -}}

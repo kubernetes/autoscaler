@@ -4,7 +4,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: {{ include "vertical-pod-autoscaler.updater.fullname" . }}-leader-locking
-  namespace: {{ include "common.names.namespace" . }}
+  namespace: {{ include "common.names.namespace" . | quote }}
   labels:
     {{- include "vertical-pod-autoscaler.updater.labels" . | nindent 4 }}
 rules:

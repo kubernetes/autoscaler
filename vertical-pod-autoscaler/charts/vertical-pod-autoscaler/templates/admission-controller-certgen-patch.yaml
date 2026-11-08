@@ -3,7 +3,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: {{ include "vertical-pod-autoscaler.admissionController.certGen.fullname" . }}-patch
-  namespace: {{ include "common.names.namespace" . }}
+  namespace: {{ include "common.names.namespace" . | quote }}
   annotations:
     "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
