@@ -112,6 +112,9 @@ func (c *resourcesUpdatesPatchCalculator) CalculatePatches(pod *corev1.Pod, vpa 
 
 func getContainerPatch(pod *corev1.Pod, i int, annotationsPerContainer vpa_api_util.ContainerToAnnotationsMap, containerResources vpa_api_util.ContainerResources) ([]resource_admission.PatchRecord, string) {
 	var patches []resource_admission.PatchRecord
+	if len(containerResources.Requests) == 0 && len(containerResources.Limits) == 0 {
+		return patches, ""
+	}
 	// Add empty resources object if missing.
 	requests, limits := resourcehelpers.ContainerRequestsAndLimits(pod.Spec.Containers[i].Name, pod)
 	if limits == nil && requests == nil {
@@ -147,6 +150,12 @@ func (c *resourcesUpdatesPatchCalculator) applyCPUStartupBoost(container *corev1
 
 	startupBoostPolicy := getContainerStartupBoostPolicy(container, vpa)
 	if startupBoostPolicy == nil {
+		return nil, nil
+	}
+
+	// Without a recommendation or an original CPU request there is nothing to boost from, and a
+	// request added here could never be removed by the updater: /resize forbids removing requests.
+	if containerResources.Requests.Cpu().IsZero() && container.Resources.Requests.Cpu().IsZero() {
 		return nil, nil
 	}
 
