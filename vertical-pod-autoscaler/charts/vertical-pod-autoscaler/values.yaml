@@ -22,6 +22,11 @@ podSecurityContext:
 
 containerSecurityContext: {}
 
+# featureGates -- Feature gates to set on all components, as a map of gate name to boolean. Rendered as a single `--feature-gates=Name=true,Other=false` argument. Skipped for a component whose `extraArgs` already contains a `--feature-gates` argument, so per-component overrides via `extraArgs` keep working. See https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/docs/features.md for the available gates.
+featureGates: {}
+  # InPlace: true
+  # CPUStartupBoost: true
+
 admissionController:
   enabled: true
 

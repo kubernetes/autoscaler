@@ -76,6 +76,9 @@ spec:
           {{- with .Values.recommender.logLevel }}
             - --v={{ . }}
           {{- end }}
+          {{- with include "vertical-pod-autoscaler.featureGates" (dict "featureGates" .Values.featureGates "extraArgs" .Values.recommender.extraArgs) }}
+            - --feature-gates={{ . }}
+          {{- end }}
           {{- with .Values.recommender.extraArgs }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
