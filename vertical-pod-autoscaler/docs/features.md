@@ -296,6 +296,7 @@ spec:
 1.  When a pod managed by the VPA is created, the VPA Admission Controller applies the CPU boost.
 2.  The VPA Updater monitors the pod. Once the pod's condition is `Ready` and the `startupBoost.cpu.durationSeconds` has elapsed, it scales the CPU resources down in-place.
 3.  The scale-down/unboost target is either the VPA recommendation (if VPA is enabled for the container) or the original CPU resources defined in the pod spec.
+4.  A container is only boosted when there is a CPU value to boost from: a VPA recommendation or a CPU request in the pod spec. Containers with neither (for example when `updateMode` is `Off` and the pod does not request CPU) are left untouched, because a CPU request added at admission could not be removed again by an in-place resize.
 
 ### Requirements
 
