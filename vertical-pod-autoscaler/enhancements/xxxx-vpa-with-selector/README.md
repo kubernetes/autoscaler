@@ -27,7 +27,7 @@
 - [Implementation History](#implementation-history)
 - [Alternatives](#alternatives)
   - [One DaemonSet and VPA per node pool](#one-daemonset-and-vpa-per-node-pool)
-  - [`nodeSelector` as a plain label map](#nodeselector-as-a-plain-label-map)
+  - [<code>nodeSelector</code> as a plain label map](#nodeselector-as-a-plain-label-map)
 <!-- /toc -->
 
 ## Summary
@@ -163,8 +163,9 @@ A new condition type is added, set by the recommender (see
 var (
     // ... existing condition types ...
 
-    // SelectorOverlap indicates that, on some nodes this VPA's selector matches,
-    // another VPA with a selector controls the pods instead.
+    // SelectorOverlap indicates that this VPA matched some nodes but lost them
+    // to another VPA through the tie-break (oldest first, then by name), rather
+    // than through a precedence rule.
     SelectorOverlap VerticalPodAutoscalerConditionType = "SelectorOverlap"
 )
 ```
@@ -310,8 +311,17 @@ first. `zone-a` still controls the pods on nodes
 The recommender warns about this with the `SelectorOverlap` condition (reason `LostTieBreak`) on
 the losing VPA, here `zone-a`, with a message such as
 `1 of 3 nodes is controlled by VPA default/gpu: node-3`. The condition is removed once the
-overlap is gone. The winning VPA and VPAs without a selector never get it. The losing VPA keeps
-its recommendation, which is applied only to the pods it controls.
+overlap is gone. The losing VPA keeps its recommendation, which is applied only to the pods it
+controls.
+
+The condition is defined by how a VPA lost a node, not by what kind of VPA it is: it is set only
+when the node went to another VPA through the step 3 tie-break. The tie-break is the one place
+where the outcome depends on creation order rather than on the specs, so it is the one worth
+flagging. A VPA that loses a node through step 2 precedence is not reported, because a plain VPA
+yielding to a selector VPA is the intended fallback setup, and a condition that is always set on
+a fallback VPA would carry no information. As a consequence the winning VPA never gets the
+condition, and a VPA without a selector never gets it either, since it can only lose through
+step 2.
 
 `updateMode: Off` VPAs take part in the choice. Today the updater and the admission controller
 skip Off VPAs before matching pods. With selectors that would let a fallback VPA in `Recreate`
@@ -550,10 +560,11 @@ selectors, and can be revisited once the selector plumbing is stable.
   - VPA matching with `selector.nodeSelector`, including precedence of selector VPAs over a VPA
     without a selector, the tie-break for overlapping selectors, and that an Off selector VPA
     wins over an active fallback VPA so the pod is not updated.
-  - `SelectorOverlap` condition: set only on the losing selector VPA, for partial overlap (the
-    loser still controls its other nodes) and full overlap (the loser controls no pods), never
-    set on the winner or on a VPA without a selector, ignoring overlap on nodes that run no pod
-    of the target, and removed when node labels change or the winning VPA is deleted.
+  - `SelectorOverlap` condition: set only on a VPA that lost a node through the step 3
+    tie-break, for partial overlap (the loser still controls its other nodes) and full overlap
+    (the loser controls no pods), never set on the winner, never set on a VPA that lost through
+    step 2 precedence (so never on a VPA without a selector), ignoring overlap on nodes that run
+    no pod of the target, and removed when node labels change or the winning VPA is deleted.
   - Recommender cluster state: a node aggregate is linked to every VPA that matches it, so a VPA
     without a selector still receives all aggregates of its target when selector VPAs exist;
     the aggregate's `UpdateMode`, `ScalingMode` and `ControlledResources` follow the controlling
