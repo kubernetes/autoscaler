@@ -75,77 +75,83 @@ A new `RequestToLimit` field will be added, with the following sub-fields:
   * If `Type` is `Quantity`, this field is not allowed.
 
 * [Optional] `RequestToLimit.CPU.Quantity` (type `resource.Quantity`): The value specified in this field is added to the request to calculate the new limit.
-  * If `Type` is `Percentage`, this field is not allowed.  
+  * If `Type` is `Percentage`, this field is not allowed.
   * If `Type` is `Quantity`, the specified value is added to the resource request. For example, if the value is 200m, the CPU limit is calculated as the CPU request plus 200m.
-
 * [Optional] `RequestToLimit.Memory.Percentage` (type `integer`): Same as `CPU.Percentage`.
-* [Optional] `RequestToLimit.Memory.Quantity` (type `resource.Quantity`): Similar to `CPU.Quantity` except that for `Quantity` the units are memory-based (e.g., `Mi`, `Gi`) rather than CPU millicores (`m`).
+* [Optional] `RequestToLimit.Memory.Quantity` (type `resource.Quantity`): The value specified in this field is added to the request to calculate the new limit.
+  * If `Type` is `Percentage`, this field is not allowed.
+  * If `Type` is `Quantity`, the specified value is added to the resource request.
 
 Here are the Go struct definitions for the new field and its types. `ContainerResourcePolicy` is extended with a new `RequestToLimit` field (YAML key `requestToLimit`):
 
 ```go
+// ContainerResourcePolicy is extended with the new RequestToLimit field
+// (existing fields omitted for brevity).
+type ContainerResourcePolicy struct {
+  // RequestToLimit specifies how the resource limit should be derived from
+  // the resource request for this container.
+  // +optional
+  RequestToLimit *RequestToLimit `json:"requestToLimit,omitempty"`
+}
+
 // RequestToLimitType defines the policy type for deriving a limit from a request.
 // +kubebuilder:validation:Enum=Percentage;Quantity
 type RequestToLimitType string
 
 const (
-    // PercentageRequestToLimitType specifies that a percentage-like integer is used to determine the limit.
-    PercentageRequestToLimitType   RequestToLimitType = "Percentage"
-    // QuantityRequestToLimitType specifies that a fixed quantity is added
-	  // to the request to determine the limit.
-    QuantityRequestToLimitType RequestToLimitType = "Quantity"
+  // PercentageRequestToLimitType specifies that a percentage-like integer is used to determine the limit.
+  PercentageRequestToLimitType RequestToLimitType = "Percentage"
+  // QuantityRequestToLimitType specifies that a fixed quantity is added
+  // to the request to determine the limit.
+  QuantityRequestToLimitType RequestToLimitType = "Quantity"
 )
-
-// ContainerResourcePolicy is extended with the new RequestToLimit field
-// (existing fields omitted for brevity).
-type ContainerResourcePolicy struct {
-    // RequestToLimit specifies how the resource limit should be derived from
-    // the resource request for this container.
-    // +optional
-    RequestToLimit *RequestToLimit `json:"requestToLimit,omitempty"`
-}
 
 // RequestToLimit defines the request-to-limit policy.
 type RequestToLimit struct {
-    // CPU specifies the request-to-limit policy for the CPU resource.
-    // If this field is not set, the request-to-limit policy for CPU is determined
-    // from the Pod spec.
-    // +optional
-    CPU *RequestToLimitPolicy `json:"cpu,omitempty"`
+  // CPU specifies the request-to-limit policy for the CPU resource.
+  // If this field is not set, the request-to-limit policy for CPU is determined
+  // from the Pod spec.
+  // +optional
+  CPU *RequestToLimitPolicy `json:"cpu,omitempty"`
 
-    // Memory specifies the request-to-limit policy for the memory resource.
-    // If this field is not set, the request-to-limit policy for memory is determined
-    // from the Pod spec.
-    // +optional
-    Memory *RequestToLimitPolicy `json:"memory,omitempty"`
+  // Memory specifies the request-to-limit policy for the memory resource.
+  // If this field is not set, the request-to-limit policy for memory is determined
+  // from the Pod spec.
+  // +optional
+  Memory *RequestToLimitPolicy `json:"memory,omitempty"`
 }
 
 // RequestToLimitPolicy defines the request-to-limit policy for a resource.
 // +union
 // +kubebuilder:validation:XValidation:rule="(self.type == 'Percentage') == has(self.percentage)",message="percentage is required when type is Percentage and forbidden otherwise"
 // +kubebuilder:validation:XValidation:rule="(self.type == 'Quantity') == has(self.quantity)",message="quantity is required when type is Quantity and forbidden otherwise"
+// +kubebuilder:validation:XValidation:rule="!has(self.quantity) || quantity(string(self.quantity)).isGreaterThan(quantity('0'))",message="quantity must be greater than zero; use type: Percentage with percentage: 100 if the limit should equal the request"
+// +kubebuilder:validation:XValidation:rule=`!has(self.quantity) || quantity(string(self.quantity)).compareTo(quantity('4Ei')) <= 0`,message="quantity must not exceed 4Ei"
 type RequestToLimitPolicy struct {
-    // Type specifies the type of request-to-limit policy to apply.
-    // New values may be added in future releases; unrecognized values result in no request-to-limit policy being applied.
-    // +unionDiscriminator
-    // +required
-    Type RequestToLimitType `json:"type"`
+  // Type specifies the type of request-to-limit policy to apply.
+  // New values may be added in future releases; unrecognized values result in no request-to-limit policy being applied.
+  // +unionDiscriminator
+  // +required
+  Type RequestToLimitType `json:"type"`
 
-    // Percentage specifies the request-to-limit policy as a percentage-like integer.
-    // The value is divided by 100 to determine the multiplier applied to the
-    // recommended resource request to calculate the new limit.
-    // This field is required when Type is "Percentage".
-    // +unionMember=Percentage
-    // +optional
-    // +kubebuilder:validation:Minimum=100
-    Percentage *int32 `json:"percentage,omitempty"`
+  // Percentage specifies the request-to-limit policy as a percentage-like integer.
+  // The value is divided by 100 to determine the multiplier applied to the
+  // recommended resource request to calculate the new limit.
+  // This field is required when Type is "Percentage".
+  // +unionMember=Percentage
+  // +optional
+  // +kubebuilder:validation:Minimum=100
+  // +kubebuilder:validation:Maximum=10000
+  Percentage *int32 `json:"percentage,omitempty"`
 
-    // Quantity specifies the absolute resource quantity
-    // to add to the recommended resource request to determine the new limit.
-    // This field is required when Type is "Quantity".
-    // +unionMember=Quantity
-    // +optional
-    Quantity *resource.Quantity `json:"quantity,omitempty"`
+  // Quantity specifies the absolute resource quantity
+  // to add to the recommended resource request to determine the new limit.
+  // This field is required when Type is "Quantity".
+  // +unionMember=Quantity
+  // +optional
+  // +kubebuilder:validation:MaxLength=30
+  // +kubebuilder:validation:XIntOrString
+  Quantity *resource.Quantity `json:"quantity,omitempty"`
 }
 ```
 
@@ -189,16 +195,23 @@ Although the proactive and event-driven approaches would allow the request-to-li
 
 #### Static Validation via CRD Rules
 
-* The `RequestToLimit` configuration will be validated when VPA CRD objects are created or updated. For example:  
+* The `RequestToLimit` configuration will be validated when VPA CRD objects are created or updated. This validation is enforced by the API server for all clients. For example:  
   * The `Type` field is marked as required, therefore its presence will be validated.
-  * If `Type` is `Percentage`, the value must be greater than or equal to 100 (enforced via CRD validation rules).  
+  * If `Type` is `Percentage`, the value must be between 100 and 10000 (enforced via `Minimum`/`Maximum` markers). With the percentage capped at 10000 (multiplier <= 100), the product stays inside int64 (`~9.22*10^(18)`) for any request up to `~9.2*10^(16)` bytes or `~9.2*10^(16)` CPU cores. Everything realistic is far below that. 
+  * If `Type` is `Quantity`, the value must be greater than zero and must not exceed `4Ei`. With the buffer capped at `4Ei`, `request + quantity` stays inside int64 for any request up to `~4.6*10^(18)` bytes or CPU cores.
 
 #### Dynamic Validation via Admission Controller
 
 * When using the new `RequestToLimit` field, the `controlledValues` field must be set to `RequestsAndLimits`. It does not make sense to specify `RequestToLimit` if VPA is not allowed to update limits. This requirement is enforced by the admission controller.
 * Explicitly prohibit the use of `RequestToLimit` for any resource not listed in `controlledResources`. For example, if the intention is to set a custom policy for CPU, then the value of the `controlledResources` field must include `cpu`.
-* If `Type` is set to `Quantity`, then its value will be validated using the [ParseQuantity](https://github.com/kubernetes/apimachinery/blob/v0.34.1/pkg/api/resource/quantity.go#L277) function from `apimachinery`.
+* The memory quantities under the `requestToLimit` stanza are checked for fractional bytes, and a log message is output when this occurs. For example, for the value `1.1Mi` the user should be warned about it; `1.5Gi` is OK. A function like this can be used to detect fractional bytes:
 
+```go
+func hasFractionalBytes(value resource.Quantity) bool {
+	_, exact := value.AsScale(0)
+	return !exact
+}
+```
 
 ### Feature Enablement and Rollback
 
@@ -225,11 +238,13 @@ Although the proactive and event-driven approaches would allow the request-to-li
 ### Kubernetes Version Compatibility
 
 * Kubernetes version 1.33 or higher is required to use this feature with the VPA mode [`InPlaceOrRecreate`](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler/enhancements/4016-in-place-updates-support#kubernetes-version-compatibility).
+* Kubernetes version 1.29 or higher is required for the CRD-level `Quantity` validation, which uses the CEL quantity library ([CEL reference](https://kubernetes.io/docs/reference/using-api/cel/#kubernetes-quantity-library)).
 
 
 ### Test Plan
-
 * Implement comprehensive unit tests to cover all new functionality.  
+* Unit tests for the CRD validation of new fields.
+* Unit tests for the admission controller's Go-side validation of the new fields.
 
 #### E2E
 
@@ -302,6 +317,7 @@ spec:
 
 ## Implementation History
 
+* 2026-11-07: Add CRD-level validation for the `Quantity` / `Percentage` fields per API review feedback.
 * 2025-10-06: Update the `Type` field to correctly indicate that it is required, not optional. This field has no default value and must be explicitly set to either "Percentage" or "Quantity".
 * 2025-09-18: Update API for consistency. Add e2e tests and other small updates.
 * 2025-09-10: Initial proposal created.
