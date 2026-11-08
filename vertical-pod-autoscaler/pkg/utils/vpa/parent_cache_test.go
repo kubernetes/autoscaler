@@ -35,7 +35,6 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/rest"
 	clienttesting "k8s.io/client-go/testing"
-	"k8s.io/utils/ptr"
 
 	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/controller_fetcher"
 )
@@ -53,9 +52,13 @@ func TestFindParentControllerForPodDuringCacheLag(t *testing.T) {
 	}))
 	defer server.Close()
 
-	cron := &batchv1.CronJob{ObjectMeta: metav1.ObjectMeta{
-		Namespace: "example", Name: "periodic", UID: "cron-uid",
-	}}
+	cron := &batchv1.CronJob{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "example",
+			Name:      "periodic",
+			UID:       "cron-uid",
+		},
+	}
 	client := fake.NewClientset(cron)
 	var ownerReads atomic.Int32
 	client.PrependReactor("get", "*", func(clienttesting.Action) (bool, runtime.Object, error) {
@@ -91,9 +94,20 @@ func TestFindParentControllerForPodDuringCacheLag(t *testing.T) {
 	}
 
 	job, err := client.BatchV1().Jobs(cron.Namespace).Create(ctx, &batchv1.Job{
-		ObjectMeta: metav1.ObjectMeta{Namespace: cron.Namespace, Name: "periodic-1", UID: "job-uid",
-			OwnerReferences: []metav1.OwnerReference{{APIVersion: "batch/v1", Kind: "CronJob",
-				Name: cron.Name, UID: cron.UID, Controller: ptr.To(true)}}},
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: cron.Namespace,
+			Name:      "periodic-1",
+			UID:       "job-uid",
+			OwnerReferences: []metav1.OwnerReference{
+				{
+					APIVersion: "batch/v1",
+					Kind:       "CronJob",
+					Name:       cron.Name,
+					UID:        cron.UID,
+					Controller: new(true),
+				},
+			},
+		},
 	}, metav1.CreateOptions{})
 	require.NoError(t, err)
 	authoritative, err := client.BatchV1().Jobs(cron.Namespace).Get(ctx, job.Name, metav1.GetOptions{})
@@ -102,9 +116,21 @@ func TestFindParentControllerForPodDuringCacheLag(t *testing.T) {
 	_, exists, err := jobInformer.GetStore().GetByKey(cron.Namespace + "/" + job.Name)
 	require.NoError(t, err)
 	require.False(t, exists, "Job watch must still be held")
-	pod := &corev1.Pod{ObjectMeta: metav1.ObjectMeta{Namespace: cron.Namespace, Name: "periodic-1-pod",
-		OwnerReferences: []metav1.OwnerReference{{APIVersion: "batch/v1", Kind: "Job",
-			Name: job.Name, UID: job.UID, Controller: ptr.To(true)}}}}
+	pod := &corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: cron.Namespace,
+			Name:      "periodic-1-pod",
+			OwnerReferences: []metav1.OwnerReference{
+				{
+					APIVersion: "batch/v1",
+					Kind:       "Job",
+					Name:       job.Name,
+					UID:        job.UID,
+					Controller: new(true),
+				},
+			},
+		},
+	}
 
 	ownerReads.Store(0)
 	parent, err := FindParentControllerForPod(ctx, pod, fetcher)

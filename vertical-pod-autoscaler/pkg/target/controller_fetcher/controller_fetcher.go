@@ -167,8 +167,8 @@ func getOwnerController(owners []metav1.OwnerReference, namespace string) *Contr
 }
 
 // getParentOfWellKnownController reads a controller from its informer, falling back
-// to one API GET on a cache miss. It validates the UID and propagates lookup errors
-// without updating the informer store.
+// to one API GET on a cache miss or UID mismatch. Matching UIDs establish identity,
+// not metadata freshness. Lookup errors propagate without updating the informer store.
 func (f *controllerFetcher) getParentOfWellKnownController(ctx context.Context, informer cache.SharedIndexInformer, controllerKey ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error) {
 	namespace := controllerKey.Namespace
 	name := controllerKey.Name
@@ -177,17 +177,20 @@ func (f *controllerFetcher) getParentOfWellKnownController(ctx context.Context, 
 	if err != nil {
 		return nil, err
 	}
-	if !exists {
-		// A synchronized informer can still lag behind the API. Read once on a
-		// cache miss, without discovery or modifying the informer's store.
-		obj, err = f.getWellKnownController(ctx, controllerKey)
+	var apiObj metav1.Object
+	if exists {
+		apiObj, err = apimeta.Accessor(obj)
 		if err != nil {
 			return nil, err
 		}
 	}
-	apiObj, err := apimeta.Accessor(obj)
-	if err != nil {
-		return nil, err
+	if !exists || (controllerKey.UID != "" && apiObj.GetUID() != controllerKey.UID) {
+		// The informer may be missing the object or still hold its previous
+		// incarnation. Read once and validate the API object's UID below.
+		apiObj, err = f.getWellKnownController(ctx, controllerKey)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return getOwnerControllerForObject(apiObj, controllerKey)
 }

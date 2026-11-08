@@ -526,18 +526,17 @@ func TestJobControllerOwnershipChain(t *testing.T) {
 			}
 			for kind, obj := range map[wellKnownController]runtime.Object{job: jobObj, cronJob: cron} {
 				cached := kind == job && tc.cachedJob || kind == cronJob && tc.cachedCron
+				// Both stores contain the replacement; an old owner reference
+				// must be rejected even after checking the API.
+				meta, err := apimeta.Accessor(obj)
+				require.NoError(t, err)
+				resource := "jobs"
+				if kind == cronJob {
+					resource = "cronjobs"
+				}
+				require.NoError(t, client.Tracker().Update(batchv1.SchemeGroupVersion.WithResource(resource), obj, meta.GetNamespace()))
 				if cached {
 					require.NoError(t, f.informersMap[kind].GetStore().Add(obj))
-				} else {
-					// The API can contain a same-name replacement while an old
-					// owner reference still identifies the deleted object's UID.
-					meta, err := apimeta.Accessor(obj)
-					require.NoError(t, err)
-					resource := "jobs"
-					if kind == cronJob {
-						resource = "cronjobs"
-					}
-					require.NoError(t, client.Tracker().Update(batchv1.SchemeGroupVersion.WithResource(resource), obj, meta.GetNamespace()))
 				}
 			}
 			if tc.deleted != "" {
@@ -557,9 +556,7 @@ func TestJobControllerOwnershipChain(t *testing.T) {
 			if tc.mismatch != "" {
 				require.ErrorContains(t, err, "has UID \"replacement-uid\", expected")
 				require.Nil(t, parent)
-				if tc.mismatch == job && tc.cachedJob || tc.mismatch == cronJob && tc.cachedCron {
-					require.Empty(t, client.Actions(), "UID mismatches must not trigger API recovery")
-				}
+				require.Len(t, client.Actions(), 1, "a mismatched UID must be checked once against the API")
 				return
 			}
 			require.NoError(t, err)
@@ -576,6 +573,94 @@ func TestJobControllerOwnershipChain(t *testing.T) {
 			}
 			require.Len(t, client.Actions(), wantGets)
 		})
+	}
+}
+
+// TestWellKnownControllerCacheIdentity distinguishes stale object identity from
+// stale metadata. Only a missing entry or a different expected UID warrants a GET.
+func TestWellKnownControllerCacheIdentity(t *testing.T) {
+	for _, kind := range []wellKnownController{job, cronJob} {
+		for _, tc := range []struct {
+			name      string
+			cachedUID types.UID
+			ownerUID  types.UID
+			apiUID    types.UID
+			wantGet   bool
+			wantError string
+		}{
+			{name: "old cache entry with current owner in API", cachedUID: "old-uid", ownerUID: "current-uid", apiUID: "current-uid", wantGet: true},
+			{name: "replacement in cache and API", cachedUID: "current-uid", ownerUID: "old-uid", apiUID: "current-uid", wantGet: true, wantError: "has UID"},
+			{name: "different cached owner deleted from API", cachedUID: "old-uid", ownerUID: "current-uid", wantGet: true, wantError: "not found"},
+			{name: "matching UID with newer metadata in API", cachedUID: "current-uid", ownerUID: "current-uid", apiUID: "current-uid"},
+			{name: "matching UID with replacement in API", cachedUID: "old-uid", ownerUID: "old-uid", apiUID: "current-uid"},
+			{name: "matching UID with deleted owner in API", cachedUID: "old-uid", ownerUID: "old-uid"},
+			{name: "target reference without UID", cachedUID: "old-uid", apiUID: "current-uid"},
+		} {
+			t.Run(string(kind)+"/"+tc.name, func(t *testing.T) {
+				meta := metav1.ObjectMeta{
+					Namespace: testNamespace,
+					Name:      "controller",
+					UID:       tc.cachedUID,
+					OwnerReferences: []metav1.OwnerReference{
+						{
+							APIVersion: "batch/v1",
+							Kind:       "CronJob",
+							Name:       "cached-parent",
+							UID:        "cached-parent-uid",
+							Controller: new(true),
+						},
+					},
+				}
+				var cached runtime.Object = &batchv1.Job{ObjectMeta: meta}
+				resource := "jobs"
+				if kind == cronJob {
+					cached = &batchv1.CronJob{ObjectMeta: meta}
+					resource = "cronjobs"
+				}
+				client := fake.NewClientset()
+				if tc.apiUID != "" {
+					live := cached.DeepCopyObject()
+					liveMeta, err := apimeta.Accessor(live)
+					require.NoError(t, err)
+					liveMeta.SetUID(tc.apiUID)
+					liveMeta.GetOwnerReferences()[0].Name = "api-parent"
+					require.NoError(t, client.Tracker().Create(batchv1.SchemeGroupVersion.WithResource(resource), live, testNamespace))
+				}
+				f := simpleControllerFetcher()
+				f.kubeClient = client
+				store := f.informersMap[kind].GetStore()
+				require.NoError(t, store.Add(cached))
+				cachedBeforeLookup := cached.DeepCopyObject()
+				parent, err := f.getParentOfController(context.Background(), ControllerKeyWithAPIVersion{
+					ControllerKey: ControllerKey{Namespace: meta.Namespace, Name: meta.Name, Kind: string(kind)},
+					ApiVersion:    "batch/v1",
+					UID:           tc.ownerUID,
+				})
+				if tc.wantError != "" {
+					require.ErrorContains(t, err, tc.wantError)
+					require.Nil(t, parent)
+				} else {
+					require.NoError(t, err)
+					require.NotNil(t, parent)
+					wantParent := "cached-parent"
+					if tc.wantGet {
+						wantParent = "api-parent"
+					}
+					require.Equal(t, wantParent, parent.Name)
+				}
+				if tc.wantGet {
+					require.Len(t, client.Actions(), 1)
+					action := client.Actions()[0]
+					require.True(t, action.Matches("get", resource))
+					require.Equal(t, meta.Namespace, action.GetNamespace())
+					require.Equal(t, meta.Name, action.(core.GetAction).GetName())
+				} else {
+					require.Empty(t, client.Actions())
+				}
+				require.Equal(t, []any{cached}, store.List(), "fallback must not replace the cached object")
+				require.Equal(t, cachedBeforeLookup, cached)
+			})
+		}
 	}
 }
 
@@ -620,21 +705,32 @@ func TestWellKnownControllerAPIErrors(t *testing.T) {
 			apierrors.NewTimeoutError("request timed out", 1),
 			context.Canceled,
 		} {
-			t.Run(string(kind)+"/"+apiErr.Error(), func(t *testing.T) {
-				client := fake.NewClientset()
-				client.PrependReactor("get", resource, func(core.Action) (bool, runtime.Object, error) {
-					return true, nil, apiErr
+			for _, cached := range []bool{false, true} {
+				t.Run(fmt.Sprintf("%s/cached=%t/%s", kind, cached, apiErr), func(t *testing.T) {
+					client := fake.NewClientset()
+					client.PrependReactor("get", resource, func(core.Action) (bool, runtime.Object, error) {
+						return true, nil, apiErr
+					})
+					f := simpleControllerFetcher()
+					f.kubeClient = client
+					if cached {
+						meta := metav1.ObjectMeta{Namespace: testNamespace, Name: "owner", UID: "old-uid"}
+						var obj runtime.Object = &batchv1.Job{ObjectMeta: meta}
+						if kind == cronJob {
+							obj = &batchv1.CronJob{ObjectMeta: meta}
+						}
+						require.NoError(t, f.informersMap[kind].GetStore().Add(obj))
+					}
+					parent, err := f.FindTopMostWellKnownOrScalable(context.Background(), &ControllerKeyWithAPIVersion{
+						ControllerKey: ControllerKey{Namespace: testNamespace, Kind: string(kind), Name: "owner"},
+						ApiVersion:    "batch/v1",
+						UID:           "current-uid",
+					})
+					require.ErrorIs(t, err, apiErr)
+					require.Nil(t, parent)
+					require.Len(t, client.Actions(), 1, "API errors must not be retried or suppressed")
 				})
-				f := simpleControllerFetcher()
-				f.kubeClient = client
-				parent, err := f.FindTopMostWellKnownOrScalable(context.Background(), &ControllerKeyWithAPIVersion{
-					ControllerKey: ControllerKey{Namespace: testNamespace, Kind: string(kind), Name: "owner"},
-					ApiVersion:    "batch/v1",
-				})
-				require.ErrorIs(t, err, apiErr)
-				require.Nil(t, parent)
-				require.Len(t, client.Actions(), 1, "API errors must not be retried or suppressed")
-			})
+			}
 		}
 	}
 }
