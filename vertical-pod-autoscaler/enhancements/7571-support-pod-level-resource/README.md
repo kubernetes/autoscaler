@@ -308,8 +308,8 @@ For example, if a user defines a Kubernetes Deployment with two replicas, each c
 The differences in how resource sample aggregation (both CPU and memory) works at the pod level versus the container level are as follows, at the pod level:
 * All container usage samples for each resource type belonging to a pod are discarded if a sample for any of its running containers is missing.
 * As stated in the [goals](#goals) section, native sidecar samples are also included in the pod level calculations.
-* For CPU usage, the recommender sums the CPU samples from all running regular containers in the pod, calculates the weight of the aggregated sample, and adds it to the appropriate bucket in the pod-level CPU histogram.
-* For memory usage, the recommender sums the memory samples from all running regular containers in the pod. It adds the resulting sample to the pod-level memory histogram only when the sum exceeds the current pod-level peak within the current aggregation interval.
+* For CPU usage, the recommender sums the CPU samples from all running containers in the pod (regular containers and restartable init containers), calculates the weight of the aggregated sample, and adds it to the appropriate bucket in the pod-level CPU histogram.
+* For memory usage, the recommender sums the memory samples from all running containers in the pod (regular containers and restartable init containers). It adds the resulting sample to the pod-level memory histogram only when the sum exceeds the current pod-level peak within the current aggregation interval.
 
 All other mechanisms remain unchanged, including:
 * The initialization of the new pod-level histograms follows the same approach as the existing container-level histograms. Specifically, they use the same [cpuHistogramOptions](https://github.com/kubernetes/autoscaler/blob/6a616ea0c5ea0cb6111240073a9273b3467c064e/vertical-pod-autoscaler/pkg/recommender/model/aggregations_config.go#L89) and memoryHistogramOptions. These are the planned parameters for the alpha release. Based on community feedback and testing, we may adjust these parameters in future iterations.
@@ -321,7 +321,7 @@ All other mechanisms remain unchanged, including:
 
 Although this proposal does not include container-level resource autoscaling, the code should validate that pod-level recommendations do not conflict with aggregated container-level resource specifications.
 
-The flow should be as follows: if the pod contains any container-level resource specifications, validation should be triggered. If a violation is detected, the pod-level recommendations should be updated accordingly.
+If a violation is detected, the pod-level recommendations should be raised to satisfy the rules below, so the Pod degrades rather than becoming unschedulable.
 
 The rules to verify are:
 * pod.spec.resources.requests >= sum(containers.requests)
@@ -384,7 +384,7 @@ The admission controller would reject VPA objects that define both `containerPol
 ### Updater
 
 With the introduction of pod-level recommendations and pod-level resources, the updater must make eviction and in-place update decisions for these pods. The decision making logic remains consistent with the latest VPA behavior. In other words:
-* Evict a pod or apply a pod-level in-place update when the pod-level resource request in the pod spec is lower than the LowerBound or higher than the UpperBound.
+* Evict a pod or apply a pod-level in-place update when the pod's actual pod-level resource request (resolved the same way as container-level requests today) is lower than the LowerBound or higher than the UpperBound.
 * Evict a pod or apply a pod-level in-place update when the [resourceDiff](https://github.com/kubernetes/autoscaler/blob/14ed794bee002422d0256a4fdd853681399c78cb/vertical-pod-autoscaler/pkg/updater/priority/priority_processor.go#L97) is greater than 0.1 and the pod is not categorized as a "short-lived pod".
 * Evict a pod or apply a pod-level in-place update if any container in the pod has experienced an OOM kill.
 
@@ -394,12 +394,7 @@ The capping.go logic must be updated so that both the admission controller and t
 
 ### Container LimitRange Objects
 
-This AEP proposes to skip enforcing constraints defined by container LimitRange objects for pod-level recommendations. The built-in LimitRanger admission controller automatically sets default container-level requests and limits for these Pods, which is undesirable when pod-level resources are in use.
-
-This behavior is also described in the [pod-level Resource Spec KEP](https://github.com/kubernetes/enhancements/blob/master/keps/sig-node/2837-pod-level-resource-spec/README.md#admission-controller), which recommends placing Pods in namespaces without container LimitRange objects.
-
-To handle container LimitRange objects for Pods whose pod-level resources stanza is managed by VPA, this AEP proposes the following:
-* Inform the user through logs produced by the updater and admission controller that a Container LimitRange object exists in the namespace, and suggest that the user either remove it from the cluster or move the workload to a namespace where such a LimitRange object does not exist. The implementation does not enforce these constraints on pod-level recommendations in this case.
+VPA does not cap pod-level recommendations to the minimum, maximum, or ratio constraints of container-type `LimitRange` objects; only Pod-type `LimitRange` constraints apply to pod-level recommendations. Default container-level requests and limits injected by the built-in LimitRanger admission controller are handled by the behaviour described in the [Validation](#validation) section.
 
 ### Pod Annotations
 
@@ -556,6 +551,8 @@ Otherwise, remove this subsection.
 This new feature, proposed by this document, relies on two feature gates:
 * `PodLevelResources` - implements pod-level resources.
 * `InPlacePodLevelResourcesVerticalScaling` - implements in-place scaling at the pod-level.
+
+VPA does not check whether these feature gates are enabled in the cluster. If they are not enabled, some functionalities will be unavailable. For example, pod-level recommendations are applied only through eviction, while in-place updates fail.
 
 Therefore, it is recommended to use a Kubernetes version that includes both of these feature gates (use [this page](https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates) to verify this information). The alpha version of `InPlacePodLevelResourcesVerticalScaling` was released in v1.35, so at least this Kubernetes version should be used.
 
