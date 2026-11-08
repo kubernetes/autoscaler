@@ -19,6 +19,7 @@
     - [Disruption budget for selector VPAs](#disruption-budget-for-selector-vpas)
     - [How the admission controller determines the target node](#how-the-admission-controller-determines-the-target-node)
     - [Why startup boost is excluded](#why-startup-boost-is-excluded)
+    - [Per-node aggregates only for DaemonSets with a selector VPA](#per-node-aggregates-only-for-daemonsets-with-a-selector-vpa)
   - [Test Plan](#test-plan)
   - [Feature Enablement and Rollback](#feature-enablement-and-rollback)
   - [Graduation Criteria](#graduation-criteria)
@@ -203,10 +204,29 @@ When the `VPANodeSelector` feature gate is enabled:
    state (`aggregateStateKey` is namespace, container name and pod label set), which for a
    DaemonSet means all its pods share one aggregate. For pods of a DaemonSet that is the target
    of at least one VPA with `spec.selector`, the aggregate state key is extended with the pod's
-   node name, so usage from different nodes is kept in separate aggregates. Because a DaemonSet
-   runs at most one pod per node, this yields at most one aggregate per node per container. All
-   other pods, including pods of DaemonSets targeted only by VPAs without a selector, keep
-   today's key, so enabling the gate adds no aggregates for clusters that do not use selectors.
+   node name (`pod.spec.nodeName`), so usage from different nodes is kept in separate
+   aggregates. Because a DaemonSet runs at most one pod per node, this yields at most one
+   aggregate per node per container. Every sample is still added to exactly one aggregate; the
+   per-node aggregates replace the shared one, they do not exist next to it. All other pods,
+   including pods of DaemonSets targeted only by VPAs without a selector, keep today's key, so
+   enabling the gate adds no aggregates for clusters that do not use selectors.
+
+   The node name is stable for the lifetime of the node and does not depend on which selector
+   VPAs exist, so the aggregates of a DaemonSet never need to be rebuilt when a selector VPA is
+   added, changed or deleted, or when a node is relabeled. Which VPA an aggregate belongs to is
+   decided at match time (step 3) against the node's current labels.
+
+   Transition - When the first selector VPA for a DaemonSet is created, new samples of its pods
+   are added under the node-aware key from the next recommender cycle on. The existing shared
+   aggregate receives no more samples. It stays linked to the VPA without a selector, if there
+   is one, until it expires at the end of the aggregation window, so that VPA keeps its history.
+   The per-node aggregates start empty, because the shared histogram cannot be split by node,
+   so a new selector VPA has no history on its first cycles. This is a cold start similar to a
+   new VPA on a workload the recommender has not seen before, see
+   [Per-node aggregates only for DaemonSets with a selector VPA](#per-node-aggregates-only-for-daemonsets-with-a-selector-vpa).
+   When the last selector VPA for a DaemonSet is
+   deleted, new samples go back to the shared key and the per-node aggregates stay linked to
+   the VPA without a selector until they expire, so no history is lost in that direction.
 
 3. Matching aggregates to VPAs - When the recommender decides whether an aggregate belongs to
    a VPA (`matchesAggregation`), it checks the pod label selector derived from `targetRef` (as
@@ -214,15 +234,27 @@ When the `VPANodeSelector` feature gate is enabled:
    node. A VPA without a selector matches every aggregate of its target, as today. If a node's
    labels change, the recommender re-checks the aggregates of that node, links them to the
    selector VPAs that now match the node and unlinks them from the selector VPAs that no longer
-   do.
+   do. The aggregate itself is untouched, so a relabeled node changes owner without losing its
+   history. This is the same shape as changing `targetRef` on a running VPA today: the VPA is
+   relinked to the aggregates that match its new target, and the aggregates stay as they are.
 
-4. Aggregates linked to several VPAs - As today, `UseAggregationIfMatching` links an aggregate to
-   every VPA that matches it, so a node aggregate is typically linked to one selector VPA and to
-   the VPA without a selector, if there is one. Each VPA computes its recommendation from all the
-   aggregates linked to it, so the VPA without a selector keeps recommending for the whole
-   DaemonSet. The aggregate's per-VPA fields (`UpdateMode`, `ScalingMode`, `ControlledResources`)
-   are today overwritten by whichever VPA linked last. With the gate enabled they are instead
-   taken from the controlling VPA, resolved with the rules in
+4. Computing a recommendation from several aggregates - As today, `UseAggregationIfMatching`
+   links an aggregate to every VPA that matches it, so a node aggregate is typically linked to
+   one selector VPA and to the VPA without a selector, if there is one. Each recommender cycle,
+   each VPA merges all the aggregates linked to it into one histogram per container
+   (`AggregateStateByContainerName`, as today) and computes one recommendation from the
+   merged result. A VPA selecting `pool=gpu` over three gpu nodes therefore merges three
+   aggregates into one recommendation, and the VPA without a selector merges all the aggregates
+   of the DaemonSet, which gives the same result as the single shared aggregate would have.
+   Merging is the existing mechanism the recommender uses whenever a VPA's pods do not share one
+   label set (for example across a Deployment rollout), and is a sum over fixed-size histograms,
+   so the number of aggregates does not change the recommendation, only the memory held by the
+   recommender. The recommendation is written to the VPA's status and applied to pods by the
+   updater and admission controller; pods never see individual aggregates.
+
+   The aggregate's per-VPA fields (`UpdateMode`, `ScalingMode`, `ControlledResources`) are today
+   overwritten by whichever VPA linked last. With the gate enabled they are instead taken from
+   the controlling VPA, resolved with the rules in
    [Choosing the controlling VPA for a pod](#choosing-the-controlling-vpa-for-a-pod).
 
 Pods on nodes that no selector VPA selects - If a DaemonSet pod runs on a node that matches none of
@@ -554,6 +586,28 @@ selector alone and so size its in-place restrictions over the whole DaemonSet ra
 selected pods. Rejecting the combination up front is simpler than teaching the unboost path about
 selectors, and can be revisited once the selector plumbing is stable.
 
+#### Per-node aggregates only for DaemonSets with a selector VPA
+
+The recommender switches a DaemonSet to per-node aggregates only once a VPA with `spec.selector`
+targets it. An alternative is to key every DaemonSet pod by node name whenever the
+`VPANodeSelector` feature gate is enabled. That would avoid the transition described in the
+[Recommender](#recommender) section and the cold start that comes with it: the per-node
+aggregates would already hold history when the first selector VPA is created.
+
+The alternative is rejected because it makes every user pay for the feature whether they use it
+or not. The recommender tracks all pods by default (`--memory-saver` is off), so every DaemonSet
+in the cluster would hold one aggregate per node per container, including DaemonSets nobody
+intends to split. Aggregates of nodes that have left the cluster stay in memory until the end of
+the aggregation window, so on clusters with node churn the count is a multiple of the live node
+count. Once the gate is locked on at GA there would be no way to turn this off. A feature gate should enable a capability, not change the recommender's memory profile
+for workloads that do not use it. Keeping the per-node key behind the presence of a selector VPA
+preserves the property that enabling the gate adds no aggregates for clusters that do not use
+selectors.
+
+The cost of this choice is the cold start of the first selector VPA on a DaemonSet, which is
+accepted for alpha. It is the same situation as a new VPA on a workload whose pods the
+recommender has not seen, and the recommendation converges as samples arrive.
+
 ### Test Plan
 
 - **Unit tests**:
@@ -650,11 +704,11 @@ checkpoints remain valid and are reused.
 ### Graduation Criteria
 
 - **Alpha → Beta**:
-  - E2E tests are stable for at least 2 releases.
+  - E2E tests are stable for at least one release.
   - No open bugs against the `VPANodeSelector` feature gate.
   - Positive user feedback from at least two production deployments.
 - **Beta → GA**:
-  - Feature has been stable in beta for at least 2 releases.
+  - Feature has been stable in beta for at least one release.
   - Consider expanding support beyond DaemonSet and adding pod label selection.
 
 ### Version Skew
