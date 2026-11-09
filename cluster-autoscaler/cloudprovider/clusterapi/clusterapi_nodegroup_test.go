@@ -1164,6 +1164,9 @@ func TestNodeGroupDeleteNodesRepeatedBeforeDeletionTimestamp(t *testing.T) {
 func TestNodeGroupDeleteNodesSkipsMachineThatRegisteredSincePending(t *testing.T) {
 	test := func(t *testing.T, testConfig *TestConfig) {
 		registered := testConfig.machines[0]
+		// Removing status.nodeRef makes the provider report this machine as
+		// pending, which lets the autoscaler ask to delete a machine that already
+		// has a Node.
 		unstructured.RemoveNestedField(registered.Object, "status", "nodeRef")
 
 		controller := NewTestMachineController(t)
