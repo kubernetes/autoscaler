@@ -2,6 +2,9 @@ name: VPA Helm Unit Tests
 
 on:
   push:
+    branches:
+      - master
+      - 'vpa-release-*'
     paths:
       - 'vertical-pod-autoscaler/charts/**'
   pull_request:
