@@ -66,7 +66,7 @@ spec:
           command:
             - /pod_nanny
             - --config-dir=/etc/config
-            - --container="pod-nanny"
+            - --container=pod-nanny
             - --cpu=300m
             - --extra-cpu=20m
             - --memory=200Mi

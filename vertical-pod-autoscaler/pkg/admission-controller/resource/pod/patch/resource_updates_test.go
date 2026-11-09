@@ -80,7 +80,7 @@ func addResourceRequestPatch(index int, res, amount string) resource_admission.P
 	return resource_admission.PatchRecord{
 		Op:    "add",
 		Path:  fmt.Sprintf("/spec/containers/%d/resources/requests/%s", index, res),
-		Value: resource.MustParse(amount),
+		Value: amount,
 	}
 }
 
@@ -88,7 +88,7 @@ func addResourceLimitPatch(index int, res, amount string) resource_admission.Pat
 	return resource_admission.PatchRecord{
 		Op:    "add",
 		Path:  fmt.Sprintf("/spec/containers/%d/resources/limits/%s", index, res),
-		Value: resource.MustParse(amount),
+		Value: amount,
 	}
 }
 
@@ -319,9 +319,7 @@ func TestCalculatePatches_ResourceUpdates(t *testing.T) {
 			}
 			if assert.Len(t, patches, len(tc.expectPatches), fmt.Sprintf("got %+v, want %+v", patches, tc.expectPatches)) {
 				for i, gotPatch := range patches {
-					if !EqPatch(gotPatch, tc.expectPatches[i]) {
-						t.Errorf("Expected patch at position %d to be %+v, got %+v", i, tc.expectPatches[i], gotPatch)
-					}
+					assert.Equal(t, tc.expectPatches[i], gotPatch, "patch at position %d", i)
 				}
 			}
 		})
@@ -357,12 +355,10 @@ func TestGetPatches_TwoReplacementResources(t *testing.T) {
 	if assert.Len(t, patches, 3, "unexpected number of patches") {
 		cpuUpdate := addResourceRequestPatch(0, cpu, "1")
 		unobtaniumUpdate := addResourceRequestPatch(0, unobtanium, "2")
-		AssertPatchOneOf(t, patches[0], []resource_admission.PatchRecord{cpuUpdate, unobtaniumUpdate})
-		AssertPatchOneOf(t, patches[1], []resource_admission.PatchRecord{cpuUpdate, unobtaniumUpdate})
-		assert.False(t, EqPatch(patches[0], patches[1]))
+		assert.ElementsMatch(t, []resource_admission.PatchRecord{cpuUpdate, unobtaniumUpdate}, patches[:2])
 		cpuFirstUnobtaniumSecond := addAnnotationRequest([][]string{{cpu, unobtanium}}, request)
 		unobtaniumFirstCpuSecond := addAnnotationRequest([][]string{{unobtanium, cpu}}, request)
-		AssertPatchOneOf(t, patches[2], []resource_admission.PatchRecord{cpuFirstUnobtaniumSecond, unobtaniumFirstCpuSecond})
+		assert.Contains(t, []resource_admission.PatchRecord{cpuFirstUnobtaniumSecond, unobtaniumFirstCpuSecond}, patches[2])
 	}
 }
 
@@ -697,6 +693,97 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 			},
 		},
 		{
+			name: "startup boost factor skipped when container has no CPU request and no recommendation",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: "container1",
+							Resources: corev1.ResourceRequirements{
+								Requests: corev1.ResourceList{
+									corev1.ResourceMemory: resource.MustParse("100Mi"),
+								},
+							},
+						},
+					},
+				},
+			},
+			vpa:                test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, 10).Get(),
+			recommendResources: make([]vpa_api_util.ContainerResources, 1),
+			maxAllowedCpu:      resource.QuantityValue{},
+			featureGateEnabled: true,
+			expectPatches:      []resource_admission.PatchRecord{},
+		},
+		{
+			name: "startup boost quantity skipped when container has no CPU request and no recommendation",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: "container1",
+						},
+					},
+				},
+			},
+			vpa:                test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.QuantityStartupBoostType, nil, &quantity, 10).Get(),
+			recommendResources: make([]vpa_api_util.ContainerResources, 1),
+			maxAllowedCpu:      resource.QuantityValue{},
+			featureGateEnabled: true,
+			expectPatches:      []resource_admission.PatchRecord{},
+		},
+		{
+			name: "startup boost skipped when container has no CPU request and VPA is Off",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: "container1",
+						},
+					},
+				},
+			},
+			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithUpdateMode(vpa_types.UpdateModeOff).WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, 10).Get(),
+			recommendResources: []vpa_api_util.ContainerResources{
+				{
+					Requests: corev1.ResourceList{
+						cpu: resource.MustParse("100m"),
+					},
+				},
+			},
+			maxAllowedCpu:      resource.QuantityValue{},
+			featureGateEnabled: true,
+			expectPatches:      []resource_admission.PatchRecord{},
+		},
+		{
+			name: "startup boost from recommendation when container has no CPU request",
+			pod: &corev1.Pod{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name: "container1",
+						},
+					},
+				},
+			},
+			vpa: test.VerticalPodAutoscaler().WithName("name").WithContainer("container1").WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor2, nil, 10).Get(),
+			recommendResources: []vpa_api_util.ContainerResources{
+				{
+					Requests: corev1.ResourceList{
+						cpu: resource.MustParse("100m"),
+					},
+				},
+			},
+			maxAllowedCpu:      resource.QuantityValue{},
+			featureGateEnabled: true,
+			expectPatches: []resource_admission.PatchRecord{
+				GetAddAnnotationPatch(annotations.GetStartupCPUBoostAnnotationKey("container1"), "{\"requests\":{},\"limits\":{}}"),
+				GetPatchInitializingEmptyResources(0),
+				GetPatchInitializingEmptyResourcesSubfield(0, "requests"),
+				addResourceRequestPatch(0, cpu, "200m"),
+				GetAddAnnotationPatch(ResourceUpdatesAnnotation, "Pod resources updated by name: container 0: cpu request"),
+			},
+		},
+		{
 			name: "startup boost with ControlledValues=RequestsOnly",
 			pod: &corev1.Pod{
 				Spec: corev1.PodSpec{
@@ -920,9 +1007,7 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 			}
 			if assert.Len(t, patches, len(tc.expectPatches), fmt.Sprintf("got %+v, want %+v", patches, tc.expectPatches)) {
 				for i, gotPatch := range patches {
-					if !EqPatch(gotPatch, tc.expectPatches[i]) {
-						t.Errorf("Expected patch at position %d to be %+v, got %+v", i, tc.expectPatches[i], gotPatch)
-					}
+					assert.Equal(t, tc.expectPatches[i], gotPatch, "patch at position %d", i)
 				}
 			}
 		})

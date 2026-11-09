@@ -1057,6 +1057,108 @@ func TestNodeGroupMachineSetDeleteNodesWithMismatchedNodes(t *testing.T) {
 	})
 }
 
+// Repeating the deletion of one machine before the API server stamps a
+// deletion timestamp must not lower the target size twice. The autoscaler
+// retries an unregistered node on every pass, and the delete-machine
+// annotation is not treated as "already handled" by DeleteNodes.
+func TestNodeGroupDeleteNodesRepeatedBeforeDeletionTimestamp(t *testing.T) {
+	test := func(t *testing.T, testConfig *TestConfig) {
+		// A machine without a node reference is reported as pending and is the
+		// population the autoscaler retries on every pass.
+		pending := testConfig.machines[len(testConfig.machines)-1]
+		unstructured.RemoveNestedField(pending.Object, "status", "nodeRef")
+
+		controller := NewTestMachineController(t)
+		defer controller.Stop()
+		controller.AddTestConfigs(testConfig)
+
+		nodegroups, err := controller.nodeGroups()
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if l := len(nodegroups); l != 1 {
+			t.Fatalf("expected 1 nodegroup, got %d", l)
+		}
+
+		ng := nodegroups[0].(*nodegroup)
+
+		providerIDs, err := ng.Nodes(context.Background())
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		var node *corev1.Node
+		for _, id := range providerIDs {
+			if strings.HasPrefix(id.Id, pendingMachinePrefix) {
+				node = &corev1.Node{
+					ObjectMeta: metav1.ObjectMeta{Name: id.Id},
+					Spec:       corev1.NodeSpec{ProviderID: id.Id},
+				}
+			}
+		}
+		if node == nil {
+			t.Fatalf("expected one pending machine, got %d provider IDs", len(providerIDs))
+		}
+
+		currentTarget := func() (int, error) {
+			ngs, err := controller.nodeGroups()
+			if err != nil {
+				return 0, err
+			}
+			return ngs[0].TargetSize(context.Background())
+		}
+
+		if err := ng.DeleteNodes(context.Background(), []*corev1.Node{node}); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := wait.PollUntilContextTimeout(ctx, 100*time.Millisecond, 5*time.Second, true, func(context.Context) (bool, error) {
+			target, err := currentTarget()
+			return target == 9, err
+		}); err != nil {
+			target, _ := currentTarget()
+			t.Fatalf("after first deletion: expected target 9, got %d", target)
+		}
+
+		ngs, err := controller.nodeGroups()
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if err := ngs[0].DeleteNodes(context.Background(), []*corev1.Node{node}); err != nil {
+			t.Fatalf("unexpected error on repeat: %v", err)
+		}
+		time.Sleep(500 * time.Millisecond)
+		target, err := currentTarget()
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if target != 9 {
+			t.Errorf("repeating the deletion of an already-annotated machine lowered the target: expected 9, got %d", target)
+		}
+	}
+
+	annotations := map[string]string{
+		nodeGroupMinSizeAnnotationKey: "1",
+		nodeGroupMaxSizeAnnotationKey: "10",
+	}
+
+	t.Run("MachineSet", func(t *testing.T) {
+		test(t, NewTestConfigBuilder().
+			ForMachineSet().
+			WithNodeCount(10).
+			WithAnnotations(annotations).
+			Build())
+	})
+
+	t.Run("MachineDeployment", func(t *testing.T) {
+		test(t, NewTestConfigBuilder().
+			ForMachineDeployment().
+			WithNodeCount(10).
+			WithAnnotations(annotations).
+			Build())
+	})
+}
+
 func TestNodeGroupDeleteNodesTwice(t *testing.T) {
 	addDeletionTimestampToMachine := func(controller *machineController, node *corev1.Node) error {
 		m, err := controller.findMachineByProviderID(normalizedProviderString(node.Spec.ProviderID))

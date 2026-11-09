@@ -1,0 +1,94 @@
+suite: feature gates
+templates:
+  - admission-controller-deployment.yaml
+  - recommender-deployment.yaml
+  - updater-deployment.yaml
+tests:
+  - it: does not pass --feature-gates by default
+    asserts:
+      - notMatchRegexRaw:
+          pattern: --feature-gates
+
+  - it: passes featureGates to all components as a single sorted --feature-gates argument
+    set:
+      featureGates:
+        InPlace: true
+        CPUStartupBoost: false
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].args
+          content: --feature-gates=CPUStartupBoost=false,InPlace=true
+          count: 1
+
+  - it: accepts string values (e.g. from --set-string)
+    set:
+      featureGates:
+        InPlace: "true"
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].args
+          content: --feature-gates=InPlace=true
+          count: 1
+
+  - it: does not override a --feature-gates= argument set in a component's extraArgs
+    set:
+      featureGates:
+        InPlace: true
+      recommender.extraArgs:
+        - --feature-gates=CPUStartupBoost=true
+    asserts:
+      - template: recommender-deployment.yaml
+        contains:
+          path: spec.template.spec.containers[0].args
+          content: --feature-gates=CPUStartupBoost=true
+          count: 1
+      - template: recommender-deployment.yaml
+        notContains:
+          path: spec.template.spec.containers[0].args
+          content: --feature-gates=InPlace=true
+      - template: admission-controller-deployment.yaml
+        contains:
+          path: spec.template.spec.containers[0].args
+          content: --feature-gates=InPlace=true
+          count: 1
+      - template: updater-deployment.yaml
+        contains:
+          path: spec.template.spec.containers[0].args
+          content: --feature-gates=InPlace=true
+          count: 1
+
+  - it: does not override a space-separated --feature-gates argument set in a component's extraArgs
+    set:
+      featureGates:
+        InPlace: true
+      updater.extraArgs:
+        - --feature-gates
+        - CPUStartupBoost=true
+    asserts:
+      - template: updater-deployment.yaml
+        notContains:
+          path: spec.template.spec.containers[0].args
+          content: --feature-gates=InPlace=true
+      - template: updater-deployment.yaml
+        contains:
+          path: spec.template.spec.containers[0].args
+          content: --feature-gates
+          count: 1
+      - template: recommender-deployment.yaml
+        contains:
+          path: spec.template.spec.containers[0].args
+          content: --feature-gates=InPlace=true
+          count: 1
+
+  - it: ignores unrelated extraArgs
+    set:
+      featureGates:
+        InPlace: true
+      recommender.extraArgs:
+        - --v=2
+    asserts:
+      - template: recommender-deployment.yaml
+        contains:
+          path: spec.template.spec.containers[0].args
+          content: --feature-gates=InPlace=true
+          count: 1

@@ -236,7 +236,7 @@ func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider histor
 	}
 	for podID, podHistory := range clusterHistory {
 		klog.V(4).InfoS("Adding pod with labels", "pod", podID, "labels", podHistory.LastLabels)
-		feeder.clusterState.AddOrUpdatePod(podID, podHistory.LastLabels, corev1.PodUnknown)
+		feeder.clusterState.AddOrUpdatePod(podID, podHistory.LastLabels, corev1.PodUnknown) //nolint:staticcheck
 		for containerName, sampleList := range podHistory.Samples {
 			containerID := model.ContainerID{
 				PodID:         podID,

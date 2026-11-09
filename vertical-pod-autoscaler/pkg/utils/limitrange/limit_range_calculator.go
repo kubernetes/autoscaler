@@ -88,7 +88,7 @@ func (lc *limitsChecker) getLimitRangeItem(namespace string, limitType corev1.Li
 		if lrResource, lrHas := lrItem[resourceName]; lrHas {
 			resultResource, resultHas := result[resourceName]
 			if !resultHas {
-				result[resourceName] = lrResource.DeepCopy()
+				result[resourceName] = lrResource
 			} else {
 				result[resourceName] = picker(resultResource, lrResource)
 			}

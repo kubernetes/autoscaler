@@ -21,7 +21,6 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/cache"
-	"k8s.io/klog/v2"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
@@ -52,44 +51,13 @@ func NewMatcher(vpaIndexer cache.Indexer,
 }
 
 func (m *matcher) GetMatchingVPA(ctx context.Context, pod *corev1.Pod) *vpa_types.VerticalPodAutoscaler {
-	parentController, err := vpa_api_util.FindParentControllerForPod(ctx, pod, m.controllerFetcher)
-	if err != nil {
-		klog.ErrorS(err, "Failed to get parent controller for pod", "pod", klog.KObj(pod))
-		return nil
-	}
-	if parentController == nil {
-		return nil
-	}
+	finder := vpa_api_util.NewControllingVPAFinder(m.vpaIndexer, m.selectorFetcher, m.controllerFetcher, admitsPods)
+	vpa, _ := finder.GetControllingVPAForPod(ctx, pod)
+	return vpa
+}
 
-	configs, err := m.vpaIndexer.ByIndex(vpa_api_util.TargetRefIndex,
-		vpa_api_util.TargetRefIndexKey(parentController.Namespace, parentController.Kind, parentController.Name))
-	if err != nil {
-		klog.ErrorS(err, "Failed to get vpa configs")
-		return nil
-	}
-
-	var controllingVpa *vpa_types.VerticalPodAutoscaler
-	for _, obj := range configs {
-		vpaConfig, ok := obj.(*vpa_types.VerticalPodAutoscaler)
-		if !ok {
-			klog.ErrorS(nil, "Unexpected object type in VPA cache", "object", obj)
-			continue
-		}
-		if vpa_api_util.GetUpdateMode(vpaConfig) == vpa_types.UpdateModeOff && !vpa_api_util.HasStartupBoost(vpaConfig) {
-			continue
-		}
-
-		selector, err := m.selectorFetcher.Fetch(ctx, vpaConfig)
-		if err != nil {
-			klog.V(3).InfoS("Skipping VPA object because we cannot fetch selector", "vpa", klog.KObj(vpaConfig), "error", err)
-			continue
-		}
-
-		vpaWithSelector := &vpa_api_util.VpaWithSelector{Vpa: vpaConfig, Selector: selector}
-		if vpa_api_util.PodMatchesVPA(pod, vpaWithSelector) && vpa_api_util.Stronger(vpaConfig, controllingVpa) {
-			controllingVpa = vpaConfig
-		}
-	}
-
-	return controllingVpa
+// admitsPods reports whether the admission controller should act on Pods
+// controlled by the VPA.
+func admitsPods(vpa *vpa_types.VerticalPodAutoscaler) bool {
+	return vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeOff || vpa_api_util.HasStartupBoost(vpa)
 }

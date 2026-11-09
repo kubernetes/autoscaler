@@ -96,3 +96,36 @@ tests:
               fieldRef:
                 fieldPath: metadata.namespace
         template: updater-deployment.yaml
+
+  - it: does not render a strategy block by default
+    asserts:
+      - notExists:
+          path: spec.strategy
+        template: updater-deployment.yaml
+
+  - it: renders updater.strategy on the updater Deployment when set
+    set:
+      updater.strategy:
+        type: RollingUpdate
+        rollingUpdate:
+          maxSurge: 0
+          maxUnavailable: 1
+    asserts:
+      - equal:
+          path: spec.strategy.type
+          value: RollingUpdate
+        template: updater-deployment.yaml
+      - equal:
+          path: spec.strategy.rollingUpdate.maxUnavailable
+          value: 1
+        template: updater-deployment.yaml
+
+  - it: renders the Recreate strategy type
+    set:
+      updater.strategy.type: Recreate
+    asserts:
+      - equal:
+          path: spec.strategy
+          value:
+            type: Recreate
+        template: updater-deployment.yaml

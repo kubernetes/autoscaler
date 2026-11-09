@@ -507,7 +507,7 @@ func (r *unstructuredScalableResource) readInfrastructureReferenceResource() (*u
 
 	apiGroup, ok := infraref["apiGroup"]
 	if ok {
-		if apiversion, err = getKindPreferredVersion(r.controller.managementDiscoveryClient, apiGroup, kind); err != nil {
+		if apiversion, err = r.controller.kindPreferredVersion(apiGroup, kind); err != nil {
 			klog.V(4).Infof("Unable to read preferred version for kind %s in api group %s, error: %v", kind, apiGroup, err)
 			return nil, err
 		}

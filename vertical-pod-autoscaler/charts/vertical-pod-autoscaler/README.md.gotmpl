@@ -150,6 +150,26 @@ Because items are evaluated as templates, a literal `{{"{{"}} ... {{"}}"}}` in a
 summary: "{{"{{"}}`{{"{{"}} $labels.pod {{"}}"}}`{{"}}"}} is restarting"
 ```
 
+## Feature Gates
+
+VPA [feature gates](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/docs/features.md) are set once at the top level and passed to every component as a single `--feature-gates` argument:
+
+```yaml
+featureGates:
+  InPlace: true
+  CPUStartupBoost: true
+```
+
+If a component's `extraArgs` already contains a `--feature-gates` argument, the chart does not add its own for that component, so you can override the gates of a single component:
+
+```yaml
+featureGates:
+  InPlace: true
+recommender:
+  extraArgs:
+    - --feature-gates=InPlace=true,CPUStartupBoost=true
+```
+
 ## Migration Guides
 
 ### Migrating from vpa-up.sh script

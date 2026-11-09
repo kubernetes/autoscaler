@@ -28,3 +28,4 @@ steps:
       - release
 substitutions:
   _GIT_TAG: "0.0.0" # default value, this is substituted at build time
+serviceAccount: projects/k8s-staging-images/serviceAccounts/autoscaling-sa@k8s-staging-images.iam.gserviceaccount.com

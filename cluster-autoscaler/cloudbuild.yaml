@@ -4,6 +4,7 @@ options:
   # this prevents errors if you don't use both _GIT_TAG and _PULL_BASE_REF,
   # or any new substitutions added in the future.
   substitution_option: ALLOW_LOOSE
+  machineType: E2_HIGHCPU_8
 steps:
   - name: "gcr.io/k8s-staging-test-infra/gcb-docker-gcloud:latest"
     entrypoint: make
@@ -13,3 +14,4 @@ steps:
       - execute-release
 substitutions:
   _GIT_TAG: "0.0.0" # default value, this is substituted at build time
+serviceAccount: projects/k8s-staging-images/serviceAccounts/autoscaling-sa@k8s-staging-images.iam.gserviceaccount.com

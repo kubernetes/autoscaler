@@ -28,6 +28,7 @@ import (
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/test/e2e/utils"
 	"k8s.io/kubernetes/test/e2e/framework"
@@ -1333,6 +1334,34 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		podList := utils.StartDeploymentPods(f, d)
 		pod := podList.Items[0]
 		gomega.Expect(pod.Spec.Containers[0].Resources.Requests.Cpu().Cmp(initialCPU)).To(gomega.Equal(0))
+	})
+
+	f.It("doesn't boost CPU on pod creation when the container has no CPU request and VPA update mode is Off", framework.WithFeatureGate(features.CPUStartupBoost), func() {
+		d := NewHamsterDeployment(f)
+		d.Spec.Replicas = new(int32(1))
+		d.Spec.Template.Spec.Containers[0].Resources.Requests = apiv1.ResourceList{
+			apiv1.ResourceMemory: ParseQuantityOrDie("100Mi"),
+		}
+
+		ginkgo.By("Setting up a VPA with updateMode Off and a startup boost policy")
+		containerName := utils.GetHamsterContainerNameByIndex(0)
+		factor := int32(2)
+		vpaCRD := test.VerticalPodAutoscaler().
+			WithName("hamster-vpa").
+			WithNamespace(f.Namespace.Name).
+			WithTargetRef(utils.HamsterTargetRef).
+			WithContainer(containerName).
+			WithUpdateMode(vpa_types.UpdateModeOff).
+			WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor, nil, 15).
+			Get()
+		utils.InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Starting the deployment and verifying the pod is NOT boosted")
+		podList := utils.StartDeploymentPods(f, d)
+		pod := podList.Items[0]
+		_, hasCPURequest := pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceCPU]
+		gomega.Expect(hasCPURequest).To(gomega.BeFalse(), "a CPU request was added to a container that had none")
+		gomega.Expect(pod.Annotations).NotTo(gomega.HaveKey(annotations.GetStartupCPUBoostAnnotationKey(containerName)))
 	})
 })
 

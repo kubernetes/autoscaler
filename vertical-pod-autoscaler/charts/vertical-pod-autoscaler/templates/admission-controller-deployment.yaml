@@ -89,6 +89,9 @@ spec:
           {{- with .Values.admissionController.logLevel }}
             - --v={{ . }}
           {{- end }}
+          {{- with include "vertical-pod-autoscaler.featureGates" (dict "featureGates" .Values.featureGates "extraArgs" .Values.admissionController.extraArgs) }}
+            - --feature-gates={{ . }}
+          {{- end }}
           {{- with .Values.admissionController.extraArgs }}
             {{- toYaml . | nindent 12 }}
           {{- end }}

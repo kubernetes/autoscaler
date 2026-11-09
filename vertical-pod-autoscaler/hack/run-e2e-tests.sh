@@ -43,9 +43,6 @@ fi
 SUITE=$1
 
 export GO111MODULE=on
-# todo(adrianmoisey): Make the setting of GOBIN nicer
-ABSOLUTE_PATH=$(realpath "${SCRIPT_ROOT}")
-export GOBIN="${ABSOLUTE_PATH}/test/e2e/_output/bin"
 
 export ARTIFACTS=${ARTIFACTS:-/workspace/_artifacts}
 
@@ -77,8 +74,8 @@ case ${SUITE} in
   recommender|updater|admission-controller|actuation|full-vpa)
     export KUBECONFIG=$HOME/.kube/config
     pushd ${SCRIPT_ROOT}/test/e2e
-    go install github.com/onsi/ginkgo/v2/ginkgo
-    ${GOBIN}/ginkgo build v1/ && ${GOBIN}/ginkgo --nodes=$NUMPROC --focus="\[VPA\] \[${SUITE}\]" v1/v1.test -- --report-dir=${ARTIFACTS} --disable-log-dump ${SKIP}
+    # ginkgo CLI version is tracked as a tool in test/go.mod, in lockstep with the library.
+    go tool ginkgo build v1/ && go tool ginkgo --nodes=$NUMPROC --focus="\[VPA\] \[${SUITE}\]" v1/v1.test -- --report-dir=${ARTIFACTS} --disable-log-dump ${SKIP}
     V1_RESULT=$?
     popd
     echo "Copying VPA logs to ${ARTIFACTS}"

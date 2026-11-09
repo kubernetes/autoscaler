@@ -23,11 +23,11 @@ export DOCKER_CLI_EXPERIMENTAL=enabled
 
 GOARM=7
 GOLANG_VERSION = 1.26
-REGISTRY = gcr.io/k8s-staging-autoscaling
+REGISTRY = us-central1-docker.pkg.dev/k8s-staging-images/autoscaling
 IMGNAME = addon-resizer
 IMAGE = $(REGISTRY)/$(IMGNAME)
 MULTI_ARCH_IMG = $(IMAGE)-$(ARCH)
-TAG ?= 2.4
+TAG ?= 1.9.0
 # The output type could either be docker (local), or registry.
 OUTPUT_TYPE ?= docker
 

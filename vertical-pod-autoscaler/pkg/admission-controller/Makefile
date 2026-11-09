@@ -1,7 +1,7 @@
 all: build
 
 TAG?=dev
-REGISTRY?=gcr.io/k8s-staging-autoscaling
+REGISTRY?=us-central1-docker.pkg.dev/k8s-staging-images/autoscaling
 FLAGS=
 TEST_ENVVAR=LD_FLAGS=-s GO111MODULE=on
 ENVVAR=CGO_ENABLED=0 $(TEST_ENVVAR)
