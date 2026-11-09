@@ -224,7 +224,6 @@ func (csm *cloudServiceManager) GetInstances(groupID string) ([]cloudprovider.In
 			klog.Warningf("instance %s has nil lifecycle state or health status, skipping. lifecycle: %v, health: %v", *sgi.InstanceId, sgi.LifeCycleState, sgi.HealthStatus)
 			continue
 		}
-		
 		instance := cloudprovider.Instance{
 			Id:     *sgi.InstanceId,
 			Status: csm.transformInstanceState(*sgi.LifeCycleState, *sgi.HealthStatus),
@@ -400,7 +399,7 @@ func (csm *cloudServiceManager) ListScalingGroups() ([]AutoScalingGroup, error) 
 	for startNumber := int32(0); startNumber < pageLimit*1000; {
 		opts := &huaweicloudsdkasmodel.ListScalingGroupsRequest{
 			StartNumber: &startNumber,
-			Limit: &pageLimit,
+			Limit:       &pageLimit,
 		}
 		response, err := asClient.ListScalingGroups(opts)
 		if err != nil {
@@ -460,14 +459,14 @@ func (csm *cloudServiceManager) transformInstanceState(lifeCycleState huaweiclou
 	case healthStatusEnum.ERROR:
 		instanceStatus.ErrorInfo = &cloudprovider.InstanceErrorInfo{
 			ErrorClass:   cloudprovider.OtherErrorClass,
-			ErrorCode: "healthStatusError",
+			ErrorCode:    "healthStatusError",
 			ErrorMessage: fmt.Sprintf("%v", healthStatus),
 		}
 		return instanceStatus
 	default:
 		instanceStatus.ErrorInfo = &cloudprovider.InstanceErrorInfo{
 			ErrorClass:   cloudprovider.OtherErrorClass,
-			ErrorCode: "invalidHealthState",
+			ErrorCode:    "invalidHealthState",
 			ErrorMessage: fmt.Sprintf("invalid instance health state: %v", healthStatus),
 		}
 		return instanceStatus
