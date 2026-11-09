@@ -1159,6 +1159,97 @@ func TestNodeGroupDeleteNodesRepeatedBeforeDeletionTimestamp(t *testing.T) {
 	})
 }
 
+// A machine reported as pending can register a node before the autoscaler acts
+// on the instance list that still shows it as pending.
+func TestNodeGroupDeleteNodesSkipsMachineThatRegisteredSincePending(t *testing.T) {
+	test := func(t *testing.T, testConfig *TestConfig) {
+		registered := testConfig.machines[0]
+		unstructured.RemoveNestedField(registered.Object, "status", "nodeRef")
+
+		controller := NewTestMachineController(t)
+		defer controller.Stop()
+		controller.AddTestConfigs(testConfig)
+
+		nodegroups, err := controller.nodeGroups()
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if l := len(nodegroups); l != 1 {
+			t.Fatalf("expected 1 nodegroup, got %d", l)
+		}
+		ng := nodegroups[0].(*nodegroup)
+
+		instances, err := ng.Nodes(context.Background())
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		pendingProviderID := ""
+		for _, instance := range instances {
+			if strings.HasPrefix(instance.Id, pendingMachinePrefix) {
+				pendingProviderID = instance.Id
+			}
+		}
+		if pendingProviderID == "" {
+			t.Fatalf("expected one pending machine, got %d instances", len(instances))
+		}
+
+		if err := unstructured.SetNestedField(registered.Object, map[string]interface{}{
+			"kind": "Node",
+			"name": fmt.Sprintf("%s-node", registered.GetName()),
+		}, "status", "nodeRef"); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if err := controller.UpdateResource(controller.machineInformer, controller.machineResource, registered); err != nil {
+			t.Fatalf("unexpected error registering the machine: %v", err)
+		}
+
+		node := &corev1.Node{
+			ObjectMeta: metav1.ObjectMeta{Name: pendingProviderID},
+			Spec:       corev1.NodeSpec{ProviderID: pendingProviderID},
+		}
+		if err := ng.DeleteNodes(context.Background(), []*corev1.Node{node}); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		machine, err := controller.machineInformer.Lister().ByNamespace(registered.GetNamespace()).Get(registered.GetName())
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if _, annotated := machine.(*unstructured.Unstructured).GetAnnotations()[machineDeleteAnnotationKey]; annotated {
+			t.Errorf("machine %q registered a node and must not be marked for deletion", registered.GetName())
+		}
+
+		replicas, err := ng.scalableResource.Replicas()
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if replicas != 10 {
+			t.Errorf("machine %q registered a node and must not lower the target size: expected 10, got %d", registered.GetName(), replicas)
+		}
+	}
+
+	annotations := map[string]string{
+		nodeGroupMinSizeAnnotationKey: "1",
+		nodeGroupMaxSizeAnnotationKey: "10",
+	}
+
+	t.Run("MachineSet", func(t *testing.T) {
+		test(t, NewTestConfigBuilder().
+			ForMachineSet().
+			WithNodeCount(10).
+			WithAnnotations(annotations).
+			Build())
+	})
+
+	t.Run("MachineDeployment", func(t *testing.T) {
+		test(t, NewTestConfigBuilder().
+			ForMachineDeployment().
+			WithNodeCount(10).
+			WithAnnotations(annotations).
+			Build())
+	})
+}
+
 func TestNodeGroupDeleteNodesTwice(t *testing.T) {
 	addDeletionTimestampToMachine := func(controller *machineController, node *corev1.Node) error {
 		m, err := controller.findMachineByProviderID(normalizedProviderString(node.Spec.ProviderID))
