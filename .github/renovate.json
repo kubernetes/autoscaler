@@ -1,11 +1,13 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "description": "Renovate covers vertical-pod-autoscaler only; the rest of the repository uses Dependabot. Restrictions are expressed via matchUpdateTypes rather than `enabled: false`, because dep-level disables are applied before version lookup and cannot be re-enabled per update type.",
+  "description": "Renovate covers vertical-pod-autoscaler only; the rest of the repository uses Dependabot. Restrictions are expressed via matchUpdateTypes rather than `enabled: false`, because dep-level disables are applied before version lookup and cannot be re-enabled per update type. The weekly schedule is all of Monday (UTC) rather than the schedule:weekly preset's 4-hour window: the hosted app only gets about one run per 4 hours, and with the default prHourlyLimit of 2 that meant two PRs per week, starving the release branches. Each run may open up to 10 PRs; 10 may be open at once.",
   "extends": [
-    "config:recommended",
-    "schedule:weekly"
+    "config:recommended"
   ],
+  "schedule": ["* * * * 1"],
   "timezone": "Etc/UTC",
+  "prHourlyLimit": 10,
+  "prConcurrentLimit": 10,
   "commitMessagePrefix": "[VPA]",
   "commitMessageAction": "Bump",
   "enabledManagers": [
@@ -87,6 +89,12 @@
       "groupName": "golangci-lint"
     },
     {
+      "description": "Helm charts installed by hack scripts are unrelated to the linters and get their own PR; one group keeps the same chart in sync across scripts. Must come after the kube-api-linter grouping rule to override its groupName.",
+      "matchManagers": ["custom.regex"],
+      "matchDatasources": ["helm"],
+      "groupName": "helm charts"
+    },
+    {
       "description": "golangci-lint major upgrades require changing the /v2 module path manually.",
       "matchManagers": ["custom.regex"],
       "matchPackageNames": ["github.com/golangci/golangci-lint/v2"],
@@ -161,7 +169,7 @@
       "enabled": false
     },
     {
-      "description": "Kubernetes modules: one PR per branch, checked daily. separateMinorPatch makes Renovate offer the highest patch even though the minor is blocked.",
+      "description": "Kubernetes modules: one PR per branch, checked daily. separateMinorPatch makes Renovate offer the highest patch even though the minor is blocked. Besides codegen and CRDs, docs/flags.md is regenerated because k8s.io/component-base contributes flags to the components' --help output. postUpgradeTasks is replaced, not merged, between matching rules, so the flags command is listed here as well as in the rule for the other product dependencies.",
       "matchManagers": ["gomod"],
       "matchPackageNames": ["k8s.io/**"],
       "separateMinorPatch": true,
@@ -169,7 +177,8 @@
       "postUpgradeTasks": {
         "commands": [
           "vertical-pod-autoscaler/hack/update-codegen.sh",
-          "vertical-pod-autoscaler/hack/generate-crd-yaml.sh"
+          "vertical-pod-autoscaler/hack/generate-crd-yaml.sh",
+          "vertical-pod-autoscaler/hack/generate-flags.sh"
         ],
         "executionMode": "branch",
         "installTools": {
@@ -177,6 +186,21 @@
         }
       },
       "extends": ["schedule:daily"]
+    },
+    {
+      "description": "Other product dependencies (vertical-pod-autoscaler/go.mod only, not hack/tools) can change the components' --help output too, e.g. pflag's formatting of bool flags, so docs/flags.md is regenerated to keep verify-vpa-flags.sh green.",
+      "matchManagers": ["gomod"],
+      "matchFileNames": ["vertical-pod-autoscaler/go.mod"],
+      "matchPackageNames": ["!k8s.io/**"],
+      "postUpgradeTasks": {
+        "commands": [
+          "vertical-pod-autoscaler/hack/generate-flags.sh"
+        ],
+        "executionMode": "branch",
+        "installTools": {
+          "golang": {}
+        }
+      }
     },
     {
       "description": "Everything that is not a Kubernetes module goes into one PR per branch, checked weekly (the repository default). On master this means latest versions; the release-branch rules below narrow it down.",

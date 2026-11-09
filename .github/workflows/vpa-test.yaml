@@ -2,6 +2,9 @@ name: Vertical Pod Autoscaler
 
 on:
   push:
+    branches:
+      - master
+      - 'vpa-release-*'
     paths:
       - 'vertical-pod-autoscaler/**'
       - '!vertical-pod-autoscaler/**/*.md'
