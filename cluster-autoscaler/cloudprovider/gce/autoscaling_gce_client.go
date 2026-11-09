@@ -47,6 +47,12 @@ const (
 	// cannot be provisioned by cloud provider.
 	ErrorCodeResourcePoolExhausted = "RESOURCE_POOL_EXHAUSTED"
 
+	// ErrorCodeConfigurationAvailability is an error code used in InstanceErrorInfo if the requested
+	// machine type and configuration combination is not supported in the zone.
+	ErrorCodeConfigurationAvailability = "CONFIGURATION_AVAILABILITY"
+
+	errorDetailReasonConfigurationAvailability = "configuration_availability"
+
 	// ErrorCodeInsufficientCapacity is an error code used in InstanceErrorInfo if there is insufficient capacity.
 	ErrorCodeInsufficientCapacity = "INSUFFICIENT_CAPACITY"
 
@@ -538,7 +544,13 @@ func (i *instanceListBuilder) gceInstanceToInstance(ref GceRef, gceInstance *gce
 	lastAttemptErrors := getLastAttemptErrors(gceInstance)
 	for _, instanceError := range lastAttemptErrors {
 		i.errorCodeCounts[instanceError.Code]++
-		if newErrorInfo := GetErrorInfo(instanceError.Code, instanceError.Message, gceInstance.InstanceStatus, errorInfo); newErrorInfo != nil {
+		newErrorInfo := GetInstanceErrorInfo(InstanceError{
+			Code:           instanceError.Code,
+			Message:        instanceError.Message,
+			Reason:         getErrorDetailReason(instanceError),
+			InstanceStatus: gceInstance.InstanceStatus,
+		}, errorInfo)
+		if newErrorInfo != nil {
 			// override older error
 			errorInfo = newErrorInfo
 		} else {
@@ -577,84 +589,112 @@ func (i *instanceListBuilder) build(ctx context.Context) []GceInstance {
 	return i.infos
 }
 
+// InstanceError describes a single instance creation error reported by GCE,
+// together with the status of the instance it was reported for.
+type InstanceError struct {
+	// Code is the error code, e.g. "ZONE_RESOURCE_POOL_EXHAUSTED_WITH_DETAILS".
+	Code string
+	// Message is the human-readable error message.
+	Message string
+	// Reason is the ErrorInfo reason taken from the structured error details,
+	// e.g. "configuration_availability". Empty if the error has no such detail.
+	Reason string
+	// InstanceStatus is the status of the instance the error was reported for.
+	InstanceStatus string
+}
+
 // GetErrorInfo maps the error code, error message and instance status to CA instance error info
 func GetErrorInfo(errorCode, errorMessage, instanceStatus string, previousErrorInfo *cloudprovider.InstanceErrorInfo) *cloudprovider.InstanceErrorInfo {
-	if isResourcePoolExhaustedErrorCode(errorCode) {
+	return GetInstanceErrorInfo(InstanceError{
+		Code:           errorCode,
+		Message:        errorMessage,
+		InstanceStatus: instanceStatus,
+	}, previousErrorInfo)
+}
+
+// GetInstanceErrorInfo maps the instance error to CA instance error info.
+func GetInstanceErrorInfo(instanceError InstanceError, previousErrorInfo *cloudprovider.InstanceErrorInfo) *cloudprovider.InstanceErrorInfo {
+	if isConfigurationAvailabilityError(instanceError.Code, instanceError.Reason) {
+		return &cloudprovider.InstanceErrorInfo{
+			ErrorClass: cloudprovider.OtherErrorClass,
+			ErrorCode:  ErrorCodeConfigurationAvailability,
+		}
+	} else if isResourcePoolExhaustedErrorCode(instanceError.Code) {
 		return &cloudprovider.InstanceErrorInfo{
 			ErrorClass: cloudprovider.OutOfResourcesErrorClass,
 			ErrorCode:  ErrorCodeResourcePoolExhausted,
 		}
-	} else if isInsufficientCapacityErrorCode(errorCode) {
+	} else if isInsufficientCapacityErrorCode(instanceError.Code) {
 		return &cloudprovider.InstanceErrorInfo{
 			ErrorClass: cloudprovider.OutOfResourcesErrorClass,
 			ErrorCode:  ErrorCodeInsufficientCapacity,
 		}
-	} else if isQuotaExceededErrorCode(errorCode) {
+	} else if isQuotaExceededErrorCode(instanceError.Code) {
 		return &cloudprovider.InstanceErrorInfo{
 			ErrorClass: cloudprovider.OutOfResourcesErrorClass,
 			ErrorCode:  ErrorCodeQuotaExceeded,
 		}
-	} else if isIPSpaceExhaustedErrorCode(errorCode) {
+	} else if isIPSpaceExhaustedErrorCode(instanceError.Code) {
 		return &cloudprovider.InstanceErrorInfo{
 			ErrorClass: cloudprovider.OtherErrorClass,
 			ErrorCode:  ErrorIPSpaceExhausted,
 		}
-	} else if isPermissionsError(errorCode) {
+	} else if isPermissionsError(instanceError.Code) {
 		return &cloudprovider.InstanceErrorInfo{
 			ErrorClass: cloudprovider.OtherErrorClass,
 			ErrorCode:  ErrorCodePermissions,
 		}
-	} else if isVmExternalIpAccessPolicyConstraintError(errorCode, errorMessage) {
+	} else if isVmExternalIpAccessPolicyConstraintError(instanceError.Code, instanceError.Message) {
 		return &cloudprovider.InstanceErrorInfo{
 			ErrorClass: cloudprovider.OtherErrorClass,
 			ErrorCode:  ErrorCodeVmExternalIpAccessPolicyConstraint,
 		}
-	} else if isReservationNotReady(errorMessage) {
+	} else if isReservationNotReady(instanceError.Message) {
 		return &cloudprovider.InstanceErrorInfo{
 			ErrorClass: cloudprovider.OtherErrorClass,
 			ErrorCode:  ErrorReservationNotReady,
 		}
-	} else if isInvalidReservationError(errorMessage) {
+	} else if isInvalidReservationError(instanceError.Message) {
 		return &cloudprovider.InstanceErrorInfo{
 			ErrorClass: cloudprovider.OtherErrorClass,
 			ErrorCode:  ErrorInvalidReservation,
 		}
-	} else if isReservationNotFound(errorMessage) {
+	} else if isReservationNotFound(instanceError.Message) {
 		return &cloudprovider.InstanceErrorInfo{
 			ErrorClass: cloudprovider.OtherErrorClass,
 			ErrorCode:  ErrorReservationNotFound,
 		}
-	} else if isReservationCapacityExceeded(errorMessage) {
+	} else if isReservationCapacityExceeded(instanceError.Message) {
 		return &cloudprovider.InstanceErrorInfo{
 			ErrorClass: cloudprovider.OtherErrorClass,
 			ErrorCode:  ErrorReservationCapacityExceeded,
 		}
-	} else if isReservationIncompatible(errorMessage) {
+	} else if isReservationIncompatible(instanceError.Message) {
 		return &cloudprovider.InstanceErrorInfo{
 			ErrorClass: cloudprovider.OtherErrorClass,
 			ErrorCode:  ErrorReservationIncompatible,
 		}
-	} else if isTpuConfigurationInvalidError(errorCode, errorMessage) {
+	} else if isTpuConfigurationInvalidError(instanceError.Code, instanceError.Message) {
 		return &cloudprovider.InstanceErrorInfo{
 			ErrorClass: cloudprovider.OtherErrorClass,
 			ErrorCode:  ErrorUnsupportedTpuConfiguration,
 		}
-	} else if isAutomaticReservationNotAvailableError(errorMessage) {
+	} else if isAutomaticReservationNotAvailableError(instanceError.Message) {
 		return &cloudprovider.InstanceErrorInfo{
 			ErrorClass: cloudprovider.OtherErrorClass,
 			ErrorCode:  ErrorAutomaticReservationsNotAvailable,
 		}
-	} else if isAutomaticReservationsNoCapacity(errorMessage) {
+	} else if isAutomaticReservationsNoCapacity(instanceError.Message) {
 		return &cloudprovider.InstanceErrorInfo{
 			ErrorClass: cloudprovider.OtherErrorClass,
 			ErrorCode:  ErrorAutomaticReservationsNoCapacity,
 		}
-	} else if isCloudKmsError(errorMessage) {
+	} else if isCloudKmsError(instanceError.Message) {
 		return &cloudprovider.InstanceErrorInfo{
 			ErrorClass: cloudprovider.OtherErrorClass,
 			ErrorCode:  ErrorCodeCloudKms,
 		}
-	} else if isInstanceStatusNotRunningYet(instanceStatus) {
+	} else if isInstanceStatusNotRunningYet(instanceError.InstanceStatus) {
 		if previousErrorInfo != nil {
 			// keep the current error
 			return previousErrorInfo
@@ -694,6 +734,22 @@ func getLastAttemptErrors(instance *gce.ManagedInstance) []*gce.ManagedInstanceL
 		return instance.LastAttempt.Errors.Errors
 	}
 	return nil
+}
+
+func getErrorDetailReason(instanceError *gce.ManagedInstanceLastAttemptErrorsErrors) string {
+	if instanceError == nil {
+		return ""
+	}
+	for _, detail := range instanceError.ErrorDetails {
+		if detail != nil && detail.ErrorInfo != nil && detail.ErrorInfo.Reason != "" {
+			return detail.ErrorInfo.Reason
+		}
+	}
+	return ""
+}
+
+func isConfigurationAvailabilityError(errorCode, errorDetailReason string) bool {
+	return isResourcePoolExhaustedErrorCode(errorCode) && errorDetailReason == errorDetailReasonConfigurationAvailability
 }
 
 func isResourcePoolExhaustedErrorCode(errorCode string) bool {

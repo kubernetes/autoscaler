@@ -165,6 +165,7 @@ func TestErrors(t *testing.T) {
 	testCases := []struct {
 		errorCodes         []string
 		errorMessage       string
+		errorDetails       []*gce_api.ManagedInstanceLastAttemptErrorsErrorsErrorDetails
 		expectedErrorCode  string
 		expectedErrorClass cloudprovider.InstanceErrorClass
 	}{
@@ -177,6 +178,70 @@ func TestErrors(t *testing.T) {
 			errorCodes:         []string{"RESOURCE_POOL_EXHAUSTED", "ZONE_RESOURCE_POOL_EXHAUSTED", "ZONE_RESOURCE_POOL_EXHAUSTED_WITH_DETAILS"},
 			expectedErrorCode:  "RESOURCE_POOL_EXHAUSTED",
 			expectedErrorClass: cloudprovider.OutOfResourcesErrorClass,
+		},
+		{
+			errorCodes:   []string{"ZONE_RESOURCE_POOL_EXHAUSTED_WITH_DETAILS"},
+			errorMessage: "Instance 'myinst' creation failed: The zone 'projects/myprojid/zones/myzone' does not have enough resources available to fulfill the request. '(resource type:compute)'.",
+			errorDetails: []*gce_api.ManagedInstanceLastAttemptErrorsErrorsErrorDetails{
+				{
+					ErrorInfo: &gce_api.ErrorInfo{
+						Domain: "compute.googleapis.com",
+						Reason: "stockout",
+						Metadatas: map[string]string{
+							"vmType": "c3-standard-4",
+							"zone":   "us-central1-a",
+						},
+					},
+				},
+			},
+			expectedErrorCode:  ErrorCodeResourcePoolExhausted,
+			expectedErrorClass: cloudprovider.OutOfResourcesErrorClass,
+		},
+		{
+			errorCodes:   []string{"ZONE_RESOURCE_POOL_EXHAUSTED_WITH_DETAILS"},
+			errorMessage: "Instance 'myinst' creation failed: The zone 'projects/myprojid/zones/myzone' does not have enough resources available to fulfill the request. '(resource type:compute)'.",
+			errorDetails: []*gce_api.ManagedInstanceLastAttemptErrorsErrorsErrorDetails{
+				{
+					ErrorInfo: &gce_api.ErrorInfo{
+						Domain: "compute.googleapis.com",
+						Reason: "configuration_availability",
+						Metadatas: map[string]string{
+							"attachment":     "",
+							"vmType":         "c3-highcpu-4",
+							"zone":           "us-central1-a",
+							"zonesAvailable": "",
+						},
+					},
+				},
+				{
+					LocalizedMessage: &gce_api.LocalizedMessage{
+						Locale:  "en-US",
+						Message: "A c3-highcpu-4 VM instance is not supported in the us-central1-a zone with your configuration. Retry your request in a zone that supports the machine type and configuration you require.",
+					},
+				},
+			},
+			expectedErrorCode:  ErrorCodeConfigurationAvailability,
+			expectedErrorClass: cloudprovider.OtherErrorClass,
+		},
+		{
+			errorCodes:   []string{"ZONE_RESOURCE_POOL_EXHAUSTED_WITH_DETAILS"},
+			errorMessage: "Instance 'myinst' creation failed: The zone 'projects/myprojid/zones/myzone' does not have enough resources available to fulfill the request. '(resource type:compute)'.",
+			errorDetails: []*gce_api.ManagedInstanceLastAttemptErrorsErrorsErrorDetails{
+				{
+					LocalizedMessage: &gce_api.LocalizedMessage{
+						Locale:  "en-US",
+						Message: "A c3-highcpu-4 VM instance is not supported in the us-central1-a zone with your configuration.",
+					},
+				},
+				{
+					ErrorInfo: &gce_api.ErrorInfo{
+						Domain: "compute.googleapis.com",
+						Reason: "configuration_availability",
+					},
+				},
+			},
+			expectedErrorCode:  ErrorCodeConfigurationAvailability,
+			expectedErrorClass: cloudprovider.OtherErrorClass,
 		},
 		{
 			errorCodes:         []string{"INSUFFICIENT_CAPACITY"},
@@ -276,8 +341,9 @@ func TestErrors(t *testing.T) {
 							Errors: &gce_api.ManagedInstanceLastAttemptErrors{
 								Errors: []*gce_api.ManagedInstanceLastAttemptErrorsErrors{
 									{
-										Code:    errorCode,
-										Message: tc.errorMessage,
+										Code:         errorCode,
+										Message:      tc.errorMessage,
+										ErrorDetails: tc.errorDetails,
 									},
 								},
 							},
