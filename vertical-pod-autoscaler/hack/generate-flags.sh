@@ -94,6 +94,10 @@ extract_flags() {
         sub(/^-[a-zA-Z0-9], /, "", names)
         sub(/^--*/, "", names)
 
+        # pflag >= 1.1.0 renders natively registered bool flags as
+        # "--name[=true|false]"; drop the suffix so the name stays plain
+        sub(/\[=true\|false\]/, "", names)
+
         # Whatever follows the flag name is its type (omitted for boolean flags)
         if (match(names, /[[:space:]]/)) {
             flag = substr(names, 1, RSTART-1)
