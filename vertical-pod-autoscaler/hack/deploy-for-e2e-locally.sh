@@ -119,7 +119,7 @@ export TAG=${TAG:-latest}
 helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/
 helm repo update metrics-server
 # renovate: datasource=helm depName=metrics-server registryUrl=https://kubernetes-sigs.github.io/metrics-server/
-helm upgrade --install --set args={--kubelet-insecure-tls} metrics-server metrics-server/metrics-server --namespace kube-system --version 3.13.0 --wait
+helm upgrade --install --set args={--kubelet-insecure-tls} metrics-server metrics-server/metrics-server --namespace kube-system --version 3.14.0 --wait
 
 # Build (or pull) and load Docker images for each component
 for COMPONENT in ${COMPONENTS}; do
