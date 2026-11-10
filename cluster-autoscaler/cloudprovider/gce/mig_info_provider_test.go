@@ -20,12 +20,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"regexp"
+	"sync"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	gce "google.golang.org/api/compute/v1"
+	"google.golang.org/api/googleapi"
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/units"
 )
@@ -37,6 +40,30 @@ var (
 	errFetchMigBaseName  = errors.New("fetch mig basename error")
 	errFetchMigTemplate  = errors.New("fetch mig template error")
 	errFetchMachineType  = errors.New("fetch machine type error")
+	// errRateLimited mirrors the error returned by GCE when the per-minute read
+	// requests quota is exhausted.
+	errRateLimited = &googleapi.Error{
+		Code:    http.StatusForbidden,
+		Message: "Quota exceeded for quota metric 'Read requests' and limit 'Read requests per minute per region' of service 'compute.googleapis.com' for consumer 'project_number:123456789'.",
+		Errors: []googleapi.ErrorItem{{
+			Reason:  "rateLimitExceeded",
+			Message: "Quota exceeded for quota metric 'Read requests' and limit 'Read requests per minute per region' of service 'compute.googleapis.com' for consumer 'project_number:123456789'.",
+		}},
+		Details: []interface{}{
+			map[string]interface{}{
+				"@type":  "type.googleapis.com/google.rpc.ErrorInfo",
+				"reason": "RATE_LIMIT_EXCEEDED",
+				"domain": "googleapis.com",
+				"metadata": map[string]interface{}{
+					"quota_limit":  "ReadRequestsPerMinutePerProjectPerRegion",
+					"quota_metric": "compute.googleapis.com/read_requests_per_region",
+				},
+			},
+			map[string]interface{}{
+				"@type": "type.googleapis.com/google.rpc.Help",
+			},
+		},
+	}
 
 	mig = &gceMig{
 		gceRef: GceRef{
@@ -807,6 +834,14 @@ func TestGetMigTargetSize(t *testing.T) {
 			expectedErr: errFetchMig,
 			migQuery:    mig,
 		},
+		{
+			name:        "cache fill rate limited, fallback skipped",
+			cache:       emptyCache(),
+			fetchMigs:   fetchMigsRateLimited,
+			fetchMig:    fetchMigUnexpected(t),
+			expectedErr: errRateLimited,
+			migQuery:    mig,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -997,6 +1032,13 @@ func TestGetMigBasename(t *testing.T) {
 			fetchMig:    fetchMigFail,
 			expectedErr: errFetchMig,
 		},
+		{
+			name:        "cache fill rate limited, fallback skipped",
+			cache:       emptyCache(),
+			fetchMigs:   fetchMigsRateLimited,
+			fetchMig:    fetchMigUnexpected(t),
+			expectedErr: errRateLimited,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -1076,6 +1118,13 @@ func TestGetListManagedInstancesResults(t *testing.T) {
 			fetchMigs:   fetchMigsFail,
 			fetchMig:    fetchMigFail,
 			expectedErr: errFetchMig,
+		},
+		{
+			name:        "cache fill rate limited, fallback skipped",
+			cache:       emptyCache(),
+			fetchMigs:   fetchMigsRateLimited,
+			fetchMig:    fetchMigUnexpected(t),
+			expectedErr: errRateLimited,
 		},
 	}
 
@@ -1170,6 +1219,13 @@ func TestGetMigInstanceTemplateName(t *testing.T) {
 			fetchMigs:   fetchMigsFail,
 			fetchMig:    fetchMigFail,
 			expectedErr: errFetchMig,
+		},
+		{
+			name:        "cache fill rate limited, fallback skipped",
+			cache:       emptyCache(),
+			fetchMigs:   fetchMigsRateLimited,
+			fetchMig:    fetchMigUnexpected(t),
+			expectedErr: errRateLimited,
 		},
 	}
 
@@ -1953,8 +2009,19 @@ func emptyCache() *GceCache {
 func fetchMigsFail(_ string) ([]*gce.InstanceGroupManager, error) {
 	return nil, errFetchMigs
 }
+func fetchMigsRateLimited(_ string) ([]*gce.InstanceGroupManager, error) {
+	return nil, errRateLimited
+}
 func fetchMigFail(_ GceRef) (*gce.InstanceGroupManager, error) {
 	return nil, errFetchMig
+}
+
+// fetchMigUnexpected fails the test if FetchMig is called at all.
+func fetchMigUnexpected(t *testing.T) func(GceRef) (*gce.InstanceGroupManager, error) {
+	return func(migRef GceRef) (*gce.InstanceGroupManager, error) {
+		t.Errorf("unexpected FetchMig call for %v", migRef)
+		return nil, errFetchMig
+	}
 }
 
 func fetchMigsConst(migs []*gce.InstanceGroupManager) func(string) ([]*gce.InstanceGroupManager, error) {
@@ -2098,5 +2165,412 @@ func fetchAllInstancesInZone(allInstances map[string][]GceInstance) func(string,
 			return nil, errors.New("")
 		}
 		return instances, nil
+	}
+}
+
+type migInfoGetterTestCase struct {
+	name    string
+	guarded bool
+	call    func(ctx context.Context, p MigInfoProvider, ref GceRef) error
+}
+
+func migInfoGetters() []migInfoGetterTestCase {
+	return []migInfoGetterTestCase{
+		{
+			name:    "GetMigTargetSize",
+			guarded: true,
+			call: func(ctx context.Context, p MigInfoProvider, ref GceRef) error {
+				_, err := p.GetMigTargetSize(ctx, ref)
+				return err
+			},
+		},
+		{
+			name: "GetMigBasename",
+			call: func(ctx context.Context, p MigInfoProvider, ref GceRef) error {
+				_, err := p.GetMigBasename(ctx, ref)
+				return err
+			},
+		},
+		{
+			name: "GetMigInstanceTemplateName",
+			call: func(ctx context.Context, p MigInfoProvider, ref GceRef) error {
+				_, err := p.GetMigInstanceTemplateName(ctx, ref)
+				return err
+			},
+		},
+		{
+			name: "GetMigIsStable",
+			call: func(_ context.Context, p MigInfoProvider, ref GceRef) error {
+				_, err := p.GetMigIsStable(ref)
+				return err
+			},
+		},
+		{
+			name: "GetListManagedInstancesResults",
+			call: func(_ context.Context, p MigInfoProvider, ref GceRef) error {
+				_, err := p.GetListManagedInstancesResults(ref)
+				return err
+			},
+		},
+	}
+}
+
+// countingGceClient wraps a mockAutoscalingGceClient and counts FetchAllMigs
+// calls per zone and FetchMig calls per MIG.
+type countingGceClient struct {
+	mu                sync.Mutex
+	fetchAllMigsCalls map[string]int
+	fetchMigCalls     map[GceRef]int
+}
+
+func newCountingGceClient(fetchMigs func(string) ([]*gce.InstanceGroupManager, error), fetchMig func(GceRef) (*gce.InstanceGroupManager, error)) (*countingGceClient, *mockAutoscalingGceClient) {
+	counter := &countingGceClient{
+		fetchAllMigsCalls: map[string]int{},
+		fetchMigCalls:     map[GceRef]int{},
+	}
+	client := &mockAutoscalingGceClient{
+		fetchMigs: func(zone string) ([]*gce.InstanceGroupManager, error) {
+			counter.mu.Lock()
+			counter.fetchAllMigsCalls[zone]++
+			counter.mu.Unlock()
+			return fetchMigs(zone)
+		},
+		fetchMig: func(migRef GceRef) (*gce.InstanceGroupManager, error) {
+			counter.mu.Lock()
+			counter.fetchMigCalls[migRef]++
+			counter.mu.Unlock()
+			return fetchMig(migRef)
+		},
+	}
+	return counter, client
+}
+
+func (c *countingGceClient) listCalls(zone string) int {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.fetchAllMigsCalls[zone]
+}
+
+func (c *countingGceClient) getCalls(migRef GceRef) int {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.fetchMigCalls[migRef]
+}
+
+func (c *countingGceClient) totalGetCalls() int {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	total := 0
+	for _, n := range c.fetchMigCalls {
+		total += n
+	}
+	return total
+}
+
+// migListingErrorTestCase describes how MIG info getters are expected to behave
+// after listing MIGs in a zone failed with listErr.
+type migListingErrorTestCase struct {
+	name    string
+	listErr error
+	// wantErr is the error expected from getters for MIGs in the failed zone.
+	wantErr error
+	// wantGetsPerMiss is the number of single MIG fetches expected for every
+	// getter call that misses the cache for a MIG in the failed zone.
+	wantGetsPerMiss int
+}
+
+func migListingErrorTestCases() []migListingErrorTestCase {
+	return []migListingErrorTestCase{
+		{
+			// Generic errors keep the single MIG fetch fallback: the MIG might
+			// still be retrievable even though listing the zone failed.
+			name:            "generic error",
+			listErr:         errFetchMigs,
+			wantErr:         errFetchMig,
+			wantGetsPerMiss: 1,
+		},
+		{
+			// Rate limit errors apply to the whole zone: the single MIG fetch
+			// would fail the same way and only consume more quota.
+			name:            "rate limit error",
+			listErr:         errRateLimited,
+			wantErr:         errRateLimited,
+			wantGetsPerMiss: 0,
+		},
+	}
+}
+
+func TestMigInfoGettersDoNotRepeatFailedMigListing(t *testing.T) {
+	for _, tc := range migListingErrorTestCases() {
+		for _, getter := range migInfoGetters() {
+			t.Run(tc.name+"/"+getter.name, func(t *testing.T) {
+				ctx := context.Background()
+				cache := NewGceCache().WithMigs(map[GceRef]Mig{
+					mig1.GceRef(): mig1,
+					mig2.GceRef(): mig2,
+				})
+				counter, client := newCountingGceClient(
+					func(string) ([]*gce.InstanceGroupManager, error) { return nil, tc.listErr },
+					fetchMigFail,
+				)
+				provider := NewCachingMigInfoProvider(cache, NewMigLister(cache), client, mig1.GceRef().Project, 1, 0, false, false)
+
+				// All zones fail to list: every getter lists each zone only once.
+				assert.ErrorIs(t, getter.call(ctx, provider, mig1.GceRef()), tc.wantErr)
+				assert.ErrorIs(t, getter.call(ctx, provider, mig2.GceRef()), tc.wantErr)
+				assert.ErrorIs(t, getter.call(ctx, provider, mig1.GceRef()), tc.wantErr)
+
+				assert.Equal(t, 1, counter.listCalls(mig1.GceRef().Zone))
+				assert.Equal(t, 1, counter.listCalls(mig2.GceRef().Zone))
+				assert.Equal(t, 3*tc.wantGetsPerMiss, counter.totalGetCalls())
+
+				// Next loop: listing errors are invalidated, so listing is retried once.
+				cache.InvalidateMigListingErrors()
+				cache.InvalidateAllMigTargetSizes(ctx)
+
+				assert.ErrorIs(t, getter.call(ctx, provider, mig1.GceRef()), tc.wantErr)
+				assert.Equal(t, 2, counter.listCalls(mig1.GceRef().Zone))
+				assert.Equal(t, 2, counter.listCalls(mig2.GceRef().Zone))
+				assert.Equal(t, 4*tc.wantGetsPerMiss, counter.totalGetCalls())
+			})
+		}
+	}
+}
+
+func TestMigInfoGettersDoNotRepeatMigListingForFailedZone(t *testing.T) {
+	igm2 := &gce.InstanceGroupManager{
+		Name:                        mig2.GceRef().Name,
+		BaseInstanceName:            "mig2-base",
+		InstanceTemplate:            "https://www.googleapis.com/compute/v1/projects/myprojid/global/instanceTemplates/tmpl-2",
+		TargetSize:                  3,
+		ListManagedInstancesResults: "PAGINATED",
+		Status:                      &gce.InstanceGroupManagerStatus{IsStable: true},
+	}
+
+	for _, tc := range migListingErrorTestCases() {
+		for _, getter := range migInfoGetters() {
+			t.Run(tc.name+"/"+getter.name, func(t *testing.T) {
+				ctx := context.Background()
+				cache := NewGceCache().WithMigs(map[GceRef]Mig{
+					mig1.GceRef(): mig1,
+					mig2.GceRef(): mig2,
+				})
+				counter, client := newCountingGceClient(
+					func(zone string) ([]*gce.InstanceGroupManager, error) {
+						if zone == mig1.GceRef().Zone {
+							return nil, tc.listErr
+						}
+						return []*gce.InstanceGroupManager{igm2}, nil
+					},
+					fetchMigFail,
+				)
+				provider := NewCachingMigInfoProvider(cache, NewMigLister(cache), client, mig1.GceRef().Project, 1, 0, false, false)
+
+				// mig1's zone fails to list: repeated getters don't re-list any zone.
+				assert.ErrorIs(t, getter.call(ctx, provider, mig1.GceRef()), tc.wantErr)
+				assert.ErrorIs(t, getter.call(ctx, provider, mig1.GceRef()), tc.wantErr)
+
+				assert.Equal(t, 1, counter.listCalls(mig1.GceRef().Zone))
+				assert.Equal(t, 1, counter.listCalls(mig2.GceRef().Zone))
+				assert.Equal(t, 2*tc.wantGetsPerMiss, counter.getCalls(mig1.GceRef()))
+
+				// mig2 in the healthy zone is served from the listing cache.
+				assert.NoError(t, getter.call(ctx, provider, mig2.GceRef()))
+				assert.Equal(t, 1, counter.listCalls(mig1.GceRef().Zone))
+				assert.Equal(t, 1, counter.listCalls(mig2.GceRef().Zone))
+				assert.Equal(t, 0, counter.getCalls(mig2.GceRef()))
+			})
+		}
+	}
+}
+
+func TestMigInfoGettersDoNotRelistFailedZoneOnHealthyZoneCacheMiss(t *testing.T) {
+	for _, tc := range migListingErrorTestCases() {
+		for _, getter := range migInfoGetters() {
+			if getter.guarded {
+				continue
+			}
+			t.Run(tc.name+"/"+getter.name, func(t *testing.T) {
+				ctx := context.Background()
+				cache := NewGceCache().WithMigs(map[GceRef]Mig{
+					mig1.GceRef(): mig1,
+					mig2.GceRef(): mig2,
+				})
+				// mig1's zone fails to list; mig2's zone lists fine but no longer
+				// contains mig2 (e.g. the MIG was deleted).
+				counter, client := newCountingGceClient(
+					func(zone string) ([]*gce.InstanceGroupManager, error) {
+						if zone == mig1.GceRef().Zone {
+							return nil, tc.listErr
+						}
+						return nil, nil
+					},
+					fetchMigFail,
+				)
+				provider := NewCachingMigInfoProvider(cache, NewMigLister(cache), client, mig1.GceRef().Project, 1, 0, false, false)
+
+				// First miss on mig2 lists both zones, then falls back to fetching mig2.
+				assert.ErrorIs(t, getter.call(ctx, provider, mig2.GceRef()), errFetchMig)
+				assert.Equal(t, 1, counter.listCalls(mig1.GceRef().Zone))
+				assert.Equal(t, 1, counter.listCalls(mig2.GceRef().Zone))
+				assert.Equal(t, 1, counter.getCalls(mig2.GceRef()))
+
+				// Second miss on mig2 re-lists only the healthy zone; the failed zone
+				// is skipped until the next Refresh().
+				assert.ErrorIs(t, getter.call(ctx, provider, mig2.GceRef()), errFetchMig)
+				assert.Equal(t, 1, counter.listCalls(mig1.GceRef().Zone))
+				assert.Equal(t, 2, counter.listCalls(mig2.GceRef().Zone))
+				assert.Equal(t, 2, counter.getCalls(mig2.GceRef()))
+
+				// mig1 in the failed zone doesn't trigger any listing either.
+				assert.ErrorIs(t, getter.call(ctx, provider, mig1.GceRef()), tc.wantErr)
+				assert.Equal(t, 1, counter.listCalls(mig1.GceRef().Zone))
+				assert.Equal(t, 2, counter.listCalls(mig2.GceRef().Zone))
+				assert.Equal(t, tc.wantGetsPerMiss, counter.getCalls(mig1.GceRef()))
+			})
+		}
+	}
+}
+
+func TestMigInfoGettersListMigsAgainOnMissAfterSuccessfulListing(t *testing.T) {
+	igm2 := &gce.InstanceGroupManager{
+		Name:                        mig2.GceRef().Name,
+		BaseInstanceName:            "mig2-base",
+		InstanceTemplate:            "https://www.googleapis.com/compute/v1/projects/myprojid/global/instanceTemplates/tmpl-2",
+		TargetSize:                  3,
+		ListManagedInstancesResults: "PAGINATED",
+		Status:                      &gce.InstanceGroupManagerStatus{IsStable: true},
+	}
+
+	for _, getter := range migInfoGetters() {
+		if getter.guarded {
+			continue
+		}
+		t.Run(getter.name, func(t *testing.T) {
+			ctx := context.Background()
+			cache := NewGceCache().WithMigs(map[GceRef]Mig{
+				mig1.GceRef(): mig1,
+				mig2.GceRef(): mig2,
+			})
+			counter, client := newCountingGceClient(
+				func(zone string) ([]*gce.InstanceGroupManager, error) {
+					if zone == mig2.GceRef().Zone {
+						return []*gce.InstanceGroupManager{igm2}, nil
+					}
+					return nil, nil
+				},
+				fetchMigFail,
+			)
+			provider := NewCachingMigInfoProvider(cache, NewMigLister(cache), client, mig1.GceRef().Project, 1, 0, false, false)
+
+			// Listing succeeds but does not contain mig1, so each miss re-lists and GETs.
+			assert.ErrorIs(t, getter.call(ctx, provider, mig1.GceRef()), errFetchMig)
+			assert.ErrorIs(t, getter.call(ctx, provider, mig1.GceRef()), errFetchMig)
+
+			assert.Equal(t, 2, counter.listCalls(mig1.GceRef().Zone))
+			assert.Equal(t, 2, counter.listCalls(mig2.GceRef().Zone))
+			assert.Equal(t, 2, counter.getCalls(mig1.GceRef()))
+		})
+	}
+}
+
+func TestIsRateLimitError(t *testing.T) {
+	testCases := []struct {
+		name string
+		err  error
+		want bool
+	}{
+		{
+			name: "nil",
+			err:  nil,
+		},
+		{
+			name: "non-googleapi error",
+			err:  errFetchMigs,
+		},
+		{
+			name: "403 rateLimitExceeded",
+			err:  errRateLimited,
+			want: true,
+		},
+		{
+			name: "403 rateLimitExceeded without ErrorInfo details",
+			err: &googleapi.Error{
+				Code:   http.StatusForbidden,
+				Errors: []googleapi.ErrorItem{{Reason: "rateLimitExceeded"}},
+			},
+			want: true,
+		},
+		{
+			name: "403 userRateLimitExceeded",
+			err: &googleapi.Error{
+				Code:   http.StatusForbidden,
+				Errors: []googleapi.ErrorItem{{Reason: "userRateLimitExceeded"}},
+			},
+			want: true,
+		},
+		{
+			name: "403 RATE_LIMIT_EXCEEDED ErrorInfo without legacy errors",
+			err: &googleapi.Error{
+				Code: http.StatusForbidden,
+				Details: []interface{}{
+					map[string]interface{}{
+						"@type":  "type.googleapis.com/google.rpc.ErrorInfo",
+						"reason": "RATE_LIMIT_EXCEEDED",
+						"domain": "googleapis.com",
+					},
+				},
+			},
+			want: true,
+		},
+		{
+			name: "403 without rate limit reason",
+			err: &googleapi.Error{
+				Code:   http.StatusForbidden,
+				Errors: []googleapi.ErrorItem{{Reason: "forbidden"}},
+				Details: []interface{}{
+					map[string]interface{}{
+						"@type":  "type.googleapis.com/google.rpc.ErrorInfo",
+						"reason": "IAM_PERMISSION_DENIED",
+						"domain": "compute.googleapis.com",
+					},
+				},
+			},
+		},
+		{
+			name: "403 without reasons",
+			err:  &googleapi.Error{Code: http.StatusForbidden},
+		},
+		{
+			name: "429",
+			err:  &googleapi.Error{Code: http.StatusTooManyRequests},
+			want: true,
+		},
+		{
+			name: "wrapped 429",
+			err:  fmt.Errorf("listing failed: %w", &googleapi.Error{Code: http.StatusTooManyRequests}),
+			want: true,
+		},
+		{
+			name: "404",
+			err:  &googleapi.Error{Code: http.StatusNotFound},
+		},
+		{
+			name: "500",
+			err:  &googleapi.Error{Code: http.StatusInternalServerError},
+		},
+		{
+			name: "500 with rateLimitExceeded reason",
+			err: &googleapi.Error{
+				Code:   http.StatusInternalServerError,
+				Errors: []googleapi.ErrorItem{{Reason: "rateLimitExceeded"}},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.want, isRateLimitError(tc.err))
+		})
 	}
 }
