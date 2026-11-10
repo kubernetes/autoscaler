@@ -30,6 +30,7 @@ import (
 	resource_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/resource"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
@@ -113,7 +114,7 @@ func addInitResourceRequestPatch(index int, res, amount string) resource_admissi
 	return resource_admission.PatchRecord{
 		Op:    "add",
 		Path:  fmt.Sprintf("/spec/initContainers/%d/resources/requests/%s", index, res),
-		Value: resource.MustParse(amount),
+		Value: amount,
 	}
 }
 
@@ -967,8 +968,8 @@ func TestCalculatePatches_StartupBoost(t *testing.T) {
 			featureGateEnabled: true,
 			expectPatches: []resource_admission.PatchRecord{
 				GetAddAnnotationPatch(annotations.GetStartupCPUBoostAnnotationKey("container1"), "{\"requests\":{},\"limits\":{}}"),
-				GetPatchInitializingEmptyResources(0),
-				GetPatchInitializingEmptyResourcesSubfield(0, "requests"),
+				GetPatchInitializingEmptyResources(0, model.ContainerTypeStandard),
+				GetPatchInitializingEmptyResourcesSubfield(0, "requests", model.ContainerTypeStandard),
 				addResourceRequestPatch(0, cpu, "200m"),
 				GetAddAnnotationPatch(ResourceUpdatesAnnotation, "Pod resources updated by name: container 0: cpu request"),
 			},
