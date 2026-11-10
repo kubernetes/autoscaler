@@ -243,7 +243,7 @@ func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider histor
 	}
 	for podID, podHistory := range clusterHistory {
 		podSpec := pods[podID]
-		phase := corev1.PodUnknown
+		var phase corev1.PodPhase
 		if podSpec != nil {
 			phase = podSpec.Phase
 		}
