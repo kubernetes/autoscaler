@@ -107,7 +107,7 @@ func processCheckpointUpdateForVPA(vpa *model.Vpa, writer *checkpointWriter, con
 func (writer *checkpointWriter) StoreCheckpoints(ctx context.Context, concurrentWorkers int) {
 	vpas := getVpasToCheckpoint(writer.cluster.VPAs())
 
-	// Build this index once per pass.
+	// Build this map once per pass.
 	var containers containersAggregateMap
 	if len(vpas) > 0 && concurrentWorkers > 0 {
 		containers = groupContainersByAggregate(writer.cluster)
