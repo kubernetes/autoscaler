@@ -54,12 +54,12 @@ func NewProvider(calculator limitrange.LimitRangeCalculator,
 func GetContainersResources(pod *corev1.Pod, vpaResourcePolicy *vpa_types.PodResourcePolicy, podRecommendation vpa_types.RecommendedPodResources, limitRange *corev1.LimitRangeItem,
 	addAll bool, annotations vpa_api_util.ContainerToAnnotationsMap) (initResources, containerResources []vpa_api_util.ContainerResources) {
 	if features.Enabled(features.NativeSidecar) {
-		initResources = getResourcesForPodContainers(pod.Spec.InitContainers, pod, vpaResourcePolicy, podRecommendation, limitRange, addAll, annotations)
+		initResources = make([]vpa_api_util.ContainerResources, len(pod.Spec.InitContainers))
 		// Only native sidecars are eligible for recommendations; plain init containers run once
 		// and must never be patched, even if a recommendation happens to exist.
 		for i := range pod.Spec.InitContainers {
-			if !resourcehelpers.IsNativeSidecar(&pod.Spec.InitContainers[i]) {
-				initResources[i] = vpa_api_util.ContainerResources{}
+			if resourcehelpers.IsNativeSidecar(&pod.Spec.InitContainers[i]) {
+				initResources[i] = getSingleContainerResources(pod.Spec.InitContainers[i], pod, vpaResourcePolicy, podRecommendation, limitRange, addAll, annotations)
 			}
 		}
 	}

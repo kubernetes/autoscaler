@@ -18,6 +18,7 @@ package recommendation
 
 import (
 	"errors"
+	"fmt"
 	"math"
 	"testing"
 
@@ -430,6 +431,58 @@ func TestUpdateResourceRequests(t *testing.T) {
 					assert.NoError(t, err)
 				}
 			}
+		})
+	}
+}
+
+func TestGetContainersResourcesSkipsPlainInitContainers(t *testing.T) {
+	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.NativeSidecar, true)
+	always := corev1.ContainerRestartPolicyAlways
+	pod := test.Pod().WithName("pod").AddContainer(test.Container().WithName("app").Get()).
+		AddInitContainer(corev1.Container{
+			Name: "plain-before",
+			Resources: corev1.ResourceRequirements{
+				Requests: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("100m")},
+				Limits:   corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("200m")},
+			},
+		}).
+		AddInitContainer(corev1.Container{
+			Name:          "sidecar",
+			RestartPolicy: &always,
+			Resources: corev1.ResourceRequirements{
+				Requests: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("100m")},
+				Limits:   corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("200m")},
+			},
+		}).
+		AddInitContainer(corev1.Container{Name: "plain-after"}).Get()
+	recommendations := vpa_types.RecommendedPodResources{
+		ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+			test.Recommendation().WithContainer("app").WithTarget("100m", "100Mi").GetContainerResources(),
+			test.Recommendation().WithContainer("plain-before").WithTarget("200m", "200Mi").GetContainerResources(),
+			test.Recommendation().WithContainer("sidecar").WithTarget("300m", "300Mi").GetContainerResources(),
+			test.Recommendation().WithContainer("plain-after").WithTarget("400m", "400Mi").GetContainerResources(),
+		},
+	}
+	controlledValues := vpa_types.ContainerControlledValuesRequestsAndLimits
+	policy := &vpa_types.PodResourcePolicy{ContainerPolicies: []vpa_types.ContainerResourcePolicy{{
+		ContainerName: vpa_types.DefaultContainerResourcePolicy, ControlledValues: &controlledValues,
+	}}}
+	for _, addAll := range []bool{false, true} {
+		t.Run(fmt.Sprintf("addAll=%t", addAll), func(t *testing.T) {
+			annotations := vpa_api_util.ContainerToAnnotationsMap{}
+			initResources, resources := GetContainersResources(pod, policy, recommendations, nil, addAll, annotations)
+			if !assert.Len(t, initResources, len(pod.Spec.InitContainers)) || !assert.Len(t, resources, 1) {
+				return
+			}
+			assert.Empty(t, initResources[0])
+			assert.Equal(t, resource.MustParse("300m"), initResources[1].Requests[corev1.ResourceCPU])
+			cpuLimit := initResources[1].Limits[corev1.ResourceCPU]
+			assert.Equal(t, 0, cpuLimit.Cmp(resource.MustParse("600m")))
+			assert.Empty(t, initResources[2])
+			assert.Equal(t, resource.MustParse("100m"), resources[0].Requests[corev1.ResourceCPU])
+			assert.Contains(t, annotations, "sidecar")
+			assert.NotContains(t, annotations, "plain-before")
+			assert.NotContains(t, annotations, "plain-after")
 		})
 	}
 }

@@ -400,7 +400,7 @@ func TestAdmitForNativeSidecar(t *testing.T) {
 			},
 		}
 	}
-	// Only the sidecar's recommendation scales up; app and plain-init don't.
+	// Both init containers have scale-up recommendations, but only the sidecar is eligible.
 	recommendationFor := func() *vpaautoscalingv1.RecommendedPodResources {
 		return &vpaautoscalingv1.RecommendedPodResources{
 			ContainerRecommendations: []vpaautoscalingv1.RecommendedContainerResources{
@@ -427,6 +427,17 @@ func TestAdmitForNativeSidecar(t *testing.T) {
 		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = evictionRequirementsFor(pod)
 
 		assert.Equal(t, true, sdpea.Admit(pod, recommendationFor()))
+	})
+
+	t.Run("gate enabled does not admit based on plain init container", func(t *testing.T) {
+		featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.NativeSidecar, true)
+		pod := newPod()
+		sdpea := NewScalingDirectionPodEvictionAdmission()
+		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = evictionRequirementsFor(pod)
+		recommendation := recommendationFor()
+		recommendation.ContainerRecommendations[1].Target[corev1.ResourceCPU] = resource.MustParse("500m")
+
+		assert.False(t, sdpea.Admit(pod, recommendation))
 	})
 }
 

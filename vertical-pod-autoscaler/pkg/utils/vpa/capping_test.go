@@ -68,6 +68,44 @@ func TestRecommendationNotAvailable(t *testing.T) {
 	assert.Empty(t, res.ContainerRecommendations)
 }
 
+func TestApplySkipsPlainInitContainerRecommendations(t *testing.T) {
+	always := corev1.ContainerRestartPolicyAlways
+	pod := test.Pod().WithName("pod1").AddContainer(test.Container().WithName("app").Get()).
+		AddInitContainer(corev1.Container{Name: "plain-init"}).
+		AddInitContainer(corev1.Container{Name: "sidecar", RestartPolicy: &always}).Get()
+	vpa := test.VerticalPodAutoscaler().WithContainer("app").WithContainer("plain-init").WithContainer("sidecar").Get()
+	vpa.Status.Recommendation = &vpa_types.RecommendedPodResources{
+		ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+			test.Recommendation().WithContainer("app").WithTarget("100m", "100Mi").GetContainerResources(),
+			test.Recommendation().WithContainer("plain-init").WithTarget("200m", "200Mi").GetContainerResources(),
+			test.Recommendation().WithContainer("sidecar").WithTarget("300m", "300Mi").GetContainerResources(),
+		},
+	}
+	processor := NewCappingRecommendationProcessor(&fakeLimitRangeCalculator{})
+	for _, tc := range []struct {
+		name          string
+		gateEnabled   bool
+		expectedNames []string
+	}{
+		{name: "gate disabled", expectedNames: []string{"app"}},
+		{name: "gate enabled", gateEnabled: true, expectedNames: []string{"app", "sidecar"}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.NativeSidecar, tc.gateEnabled)
+			recommendation, annotations, err := processor.Apply(vpa, pod)
+			if !assert.NoError(t, err) {
+				return
+			}
+			names := make([]string, 0, len(recommendation.ContainerRecommendations))
+			for _, container := range recommendation.ContainerRecommendations {
+				names = append(names, container.ContainerName)
+			}
+			assert.Equal(t, tc.expectedNames, names)
+			assert.NotContains(t, annotations, "plain-init")
+		})
+	}
+}
+
 func TestRecommendationToLimitCapping(t *testing.T) {
 	containerName := "ctr-name"
 	pod := test.Pod().WithName("pod1").AddContainer(test.Container().WithName(containerName).Get()).Get()

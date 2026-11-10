@@ -316,7 +316,7 @@ func getContainer(containerName string, pod *corev1.Pod) *corev1.Container {
 	}
 	if features.Enabled(features.NativeSidecar) {
 		for i, container := range pod.Spec.InitContainers {
-			if container.Name == containerName {
+			if container.Name == containerName && resourcehelpers.IsNativeSidecar(&container) {
 				return &pod.Spec.InitContainers[i]
 			}
 		}

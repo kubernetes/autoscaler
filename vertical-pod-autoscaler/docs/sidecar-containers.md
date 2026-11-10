@@ -7,6 +7,7 @@
   - [The vpaObservedContainers Annotation](#the-vpaobservedcontainers-annotation)
   - [Webhook Ordering Importance](#webhook-ordering-importance)
   - [The Eviction Loop Problem](#the-eviction-loop-problem)
+- [Native Kubernetes Sidecars](#native-kubernetes-sidecars)
 - [Customizing VPA Behavior for Sidecar Containers](#customizing-vpa-behavior-for-sidecar-containers)
   - [Option 1: Webhook Ordering](#option-1-webhook-ordering)
   - [Option 2: Webhook Reinvocation](#option-2-webhook-reinvocation)
@@ -15,9 +16,9 @@
   - [Example 2: Custom VPA Configuration with Sidecars](#example-2-custom-vpa-configuration-with-sidecars)
 <!-- /toc -->
 
-In this document, "sidecar container" refers to any additional Container that isn't the main application Container in a Pod. This is distinct from the [native Kubernetes sidecar pattern](https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/), which makes use of `initContainers`. Our usage here applies to all additional regular `containers` only, as VPA does not support `initContainers` yet.
+This document distinguishes additional regular `containers` (often injected by a webhook) from [native Kubernetes sidecars](https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/), which are `initContainers` with `restartPolicy: Always`. The webhook-ordering guidance below applies to injected containers; native sidecar support is described separately.
 
-The Vertical Pod Autoscaler (VPA) has specific behavior when dealing with these additional containers that are injected into pods via admission webhooks.
+The Vertical Pod Autoscaler (VPA) handles webhook-injected regular containers and native sidecars differently.
 
 ## Understanding VPA and Container Policies
 
@@ -25,10 +26,10 @@ The Vertical Pod Autoscaler (VPA) has specific behavior when dealing with these 
 
 To understand why sidecar handling is important, let's first look at how VPA manages containers by default. This default behavior is at the root of why special consideration is needed for sidecars.
 
-When you create a VPA resource for a pod, it automatically attempts to manage ALL containers in that pod - not just the ones you explicitly configure. This happens because:
+When you create a VPA resource for a pod, it automatically attempts to manage all eligible containers in that pod - not just the ones you explicitly configure. This happens because:
 
 1. VPA applies a default `containerPolicy` with `mode: Auto` to any container not explicitly configured
-2. This automatic inclusion means VPA will try to manage resources for every container it sees
+2. This automatic inclusion means VPA will try to manage resources for every eligible container it sees
 3. Even sidecars injected into the pod will fall under VPA's management unless special steps are taken
 
 This default "manage everything" approach can cause problems with sidecars because:
@@ -61,9 +62,11 @@ spec:
 
 ## Default Behavior: Ignoring Sidecar Containers
 
+This section concerns webhook-injected regular containers that VPA did not observe at pod admission time, not all sidecars.
+
 ### The vpaObservedContainers Annotation
 
-VPA uses a special annotation to track which containers were present in the pod before any webhook injections:
+VPA uses a special annotation to track which containers were present when its admission webhook ran:
 
 ```yaml
 apiVersion: v1
@@ -98,6 +101,31 @@ Without proper handling of sidecar containers, the following problematic sequenc
 3. The pod starts with mismatched resources
 4. VPA detects the mismatch and evicts the pod
 5. The process repeats, creating an endless loop
+
+## Native Kubernetes Sidecars
+
+Starting with VPA v1.9, native sidecar support is an alpha feature, disabled by default. Enable `--feature-gates=NativeSidecar=true` on the admission controller, recommender, and updater to manage `initContainers` whose `restartPolicy` is `Always`. Plain init containers are **not** managed, even when the gate is enabled. With the gate disabled, VPA continues to ignore all init containers.
+
+For example, in a pod targeted by a VPA, the gate allows VPA to recommend and apply resources for `log-agent` as well as `app`, but not for `setup`:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: native-sidecar-example
+spec:
+  initContainers:
+  - name: setup
+    image: registry.k8s.io/pause:3.9
+  - name: log-agent
+    image: registry.k8s.io/pause:3.9
+    restartPolicy: Always
+  containers:
+  - name: app
+    image: registry.k8s.io/pause:3.9
+```
+
+The admission controller can apply recommendations to a native sidecar on pod creation. The updater also considers native sidecars for updates and eviction decisions. As with regular containers, an injected native sidecar must be present when the VPA webhook runs to appear in `vpaObservedContainers`; the ordering considerations above still matter for injected sidecars.
 
 ## Customizing VPA Behavior for Sidecar Containers
 
