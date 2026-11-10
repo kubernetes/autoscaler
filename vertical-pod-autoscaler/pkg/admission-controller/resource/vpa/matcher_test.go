@@ -145,31 +145,24 @@ func TestGetMatchingVpa(t *testing.T) {
 			expectedFound:   true,
 			expectedVpaName: "initial-vpa",
 		}, {
-			name: "vpa in initial delay window is not matched",
+			name: "vpa in initial delay window is matched",
 			pod:  podBuilder.Get(),
 			vpas: []*vpa_types.VerticalPodAutoscaler{
 				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeRecreate).WithInitialDelaySeconds(3600).WithName("delayed-vpa").WithCreationTimestamp(time.Now()).WithTargetRef(targetRef).Get(),
-			},
-			labelSelector: "app = test",
-			expectedFound: false,
-		}, {
-			name: "vpa after initial delay window is matched",
-			pod:  podBuilder.Get(),
-			vpas: []*vpa_types.VerticalPodAutoscaler{
-				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeRecreate).WithInitialDelaySeconds(3600).WithName("delayed-vpa").WithCreationTimestamp(time.Now().Add(-2 * time.Hour)).WithTargetRef(targetRef).Get(),
 			},
 			labelSelector:   "app = test",
 			expectedFound:   true,
 			expectedVpaName: "delayed-vpa",
 		}, {
-			name: "vpa in initial delay window with startup boost is matched",
+			name: "two vpas, older one in initial delay window",
 			pod:  podBuilder.Get(),
 			vpas: []*vpa_types.VerticalPodAutoscaler{
-				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeRecreate).WithInitialDelaySeconds(3600).WithName("delayed-with-boost-vpa").WithCreationTimestamp(time.Now()).WithTargetRef(targetRef).WithCPUStartupBoost(vpa_types.FactorStartupBoostType, &factor, nil, 0).Get(),
+				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeRecreate).WithInitialDelaySeconds(3600).WithName("delayed-vpa").WithCreationTimestamp(time.Now().Add(-time.Minute)).WithTargetRef(targetRef).Get(),
+				vpaBuilder.WithUpdateMode(vpa_types.UpdateModeRecreate).WithName("recreate-vpa").WithCreationTimestamp(time.Now()).WithTargetRef(targetRef).Get(),
 			},
 			labelSelector:   "app = test",
 			expectedFound:   true,
-			expectedVpaName: "delayed-with-boost-vpa",
+			expectedVpaName: "delayed-vpa",
 		}, {
 			name:          "no vpa objects",
 			pod:           podBuilder.Get(),

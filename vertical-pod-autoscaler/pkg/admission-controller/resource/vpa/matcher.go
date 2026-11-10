@@ -59,6 +59,5 @@ func (m *matcher) GetMatchingVPA(ctx context.Context, pod *corev1.Pod) *vpa_type
 // admitsPods reports whether the admission controller should act on Pods
 // controlled by the VPA.
 func admitsPods(vpa *vpa_types.VerticalPodAutoscaler) bool {
-	off := vpa_api_util.GetUpdateMode(vpa) == vpa_types.UpdateModeOff || vpa_api_util.InInitialDelayWindow(vpa)
-	return !off || vpa_api_util.HasStartupBoost(vpa)
+	return vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeOff || vpa_api_util.HasStartupBoost(vpa)
 }
