@@ -3,6 +3,7 @@ templates:
   - admission-controller-tls-secret.yaml
   - admission-controller-webhook.yaml
   - admission-controller-validations.yaml
+  - admission-controller-deployment.yaml
 tests:
   - it: generates the TLS Secret and sets the webhook caBundle by default
     asserts:
@@ -109,3 +110,22 @@ tests:
       - failedTemplate:
           errorPattern: must either all be set or all be empty
         template: admission-controller-validations.yaml
+  - it: fails when validityDays is not positive
+    set:
+      admissionController.tls.validityDays: 0
+    asserts:
+      - failedTemplate:
+          errorPattern: validityDays must be greater than 0
+        template: admission-controller-validations.yaml
+  - it: propagates a custom tls.secretName to the Secret and the deployment volume
+    set:
+      admissionController.tls.secretName: my-custom-certs
+    asserts:
+      - equal:
+          path: metadata.name
+          value: my-custom-certs
+        template: admission-controller-tls-secret.yaml
+      - equal:
+          path: spec.template.spec.volumes[0].secret.secretName
+          value: my-custom-certs
+        template: admission-controller-deployment.yaml

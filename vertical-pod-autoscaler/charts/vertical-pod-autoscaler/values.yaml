@@ -114,7 +114,7 @@ admissionController:
   # admissionController.topologySpreadConstraints -- Topology spread constraints for scheduling the Admission Controller, used to spread replicas across failure domains such as zones.
   topologySpreadConstraints: []
 
-  # admissionController.registerWebhook -- Whether to register webhook via the application itself or via Helm. Set to false (default) when Helm renders the webhook (tls.create or certManager). When true you must set tls.create: false and provide the TLS Secret yourself. Security issue: granting delete on mutatingwebhookconfigurations is a potential security risk as it allows the admission controller to remove any webhook configurations.
+  # admissionController.registerWebhook -- Whether to register webhook via the application itself or via Helm. Set to false (default) when the VPA admission controller does not register the webhook itself and delegates it to Helm (tls.create or certManager). When true you must set tls.create: false and provide the TLS Secret yourself. Security issue: granting delete on mutatingwebhookconfigurations is a potential security risk as it allows the admission controller to remove any webhook configurations.
   registerWebhook: false
 
   # admissionController.hostNetwork -- Enable host network for the admission controller pod. Set to true when the pod needs direct access to the host's network namespace. Note: this bypasses Kubernetes network isolation and may cause port conflicts if multiple replicas run on the same node.

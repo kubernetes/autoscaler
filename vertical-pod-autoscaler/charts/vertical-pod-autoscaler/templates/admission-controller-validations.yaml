@@ -13,6 +13,9 @@
 {{- fail "No TLS certificate source configured for the admission controller. Enable exactly one of: admissionController.tls.create (Helm-generated certificate, default), admissionController.certManager.enabled, or admissionController.registerWebhook (you provide the TLS Secret)." }}
 {{- end }}
 {{- $supplied := len (compact (list $ac.tls.caCert $ac.tls.cert $ac.tls.key)) }}
+{{- if and $ac.tls.create (eq (len (compact (list $ac.tls.caCert $ac.tls.cert $ac.tls.key))) 0) (le (int $ac.tls.validityDays) 0) }}
+{{- fail "admissionController.tls.validityDays must be greater than 0 when Helm generates the certificate." }}
+{{- end }}
 {{- if and (gt $supplied 0) (lt $supplied 3) }}
 {{- fail "admissionController.tls.caCert, admissionController.tls.cert and admissionController.tls.key must either all be set or all be empty." }}
 {{- end }}

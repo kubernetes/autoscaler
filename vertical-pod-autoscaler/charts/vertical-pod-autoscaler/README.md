@@ -190,16 +190,16 @@ TBD
 ### Migrating from the certgen job to Helm-generated certificates
 Earlier chart versions generated the certificate with the `kube-webhook-certgen` job (`admissionController.certGen.*`). The job and the `certGen` values have been removed.
 
-The job created the `vpa-tls-certs` Secret outside of Helm. On Helm 3.17+, let Helm adopt it with `--take-ownership`. The chart reuses the existing certificate, so the Secret and the webhook `caBundle` stay the same and nothing is disrupted:
+The job created the TLS Secret (`vpa-tls-certs` by default, see `admissionController.tls.secretName`) outside of Helm. Replace `<secret-name>` below with its name; if it is not the default, also pass `--set admissionController.tls.secretName=<secret-name>`. On Helm 3.17+, let Helm adopt it with `--take-ownership`. The chart reuses the existing certificate, so the Secret and the webhook `caBundle` stay the same and nothing is disrupted:
 ```bash
 helm upgrade <release-name> <chart> --namespace <namespace> --take-ownership
 ```
 On older Helm versions, Helm refuses to adopt the Secret ("invalid ownership metadata"). Add Helm ownership metadata to the existing Secret before upgrading, preserving the serving certificate and avoiding a temporary mismatch with the webhook's `caBundle`:
 ```bash
-kubectl label secret -n <namespace> vpa-tls-certs \
+kubectl label secret -n <namespace> <secret-name> \
   app.kubernetes.io/managed-by=Helm --overwrite
 
-kubectl annotate secret -n <namespace> vpa-tls-certs \
+kubectl annotate secret -n <namespace> <secret-name> \
   meta.helm.sh/release-name=<release-name> \
   meta.helm.sh/release-namespace=<namespace> --overwrite
 
@@ -219,7 +219,7 @@ kubectl delete mutatingwebhookconfiguration vpa-webhook-config
 ```
 - Delete the existing secret (to allow Helm to generate new certificates):
 ```bash
-kubectl delete secret -n <namespace> vpa-tls-certs
+kubectl delete secret -n <namespace> <secret-name>
 ```
 - Upgrade with the new values:
 ```bash
@@ -276,7 +276,7 @@ This chart includes [helm-unittest](https://github.com/helm-unittest/helm-unitte
 | admissionController.podDisruptionBudget.unhealthyPodEvictionPolicy | string | `"AlwaysAllow"` | Policy used to evict unhealthy pods, either 'IfHealthyBudget' or 'AlwaysAllow'. |
 | admissionController.podLabels | object | `{}` |  |
 | admissionController.priorityClassName | string | `nil` |  |
-| admissionController.registerWebhook | bool | `false` | Whether to register webhook via the application itself or via Helm. Set to false (default) when Helm renders the webhook (tls.create or certManager). When true you must set tls.create: false and provide the TLS Secret yourself. Security issue: granting delete on mutatingwebhookconfigurations is a potential security risk as it allows the admission controller to remove any webhook configurations. |
+| admissionController.registerWebhook | bool | `false` | Whether to register webhook via the application itself or via Helm. Set to false (default) when the VPA admission controller does not register the webhook itself and delegates it to Helm (tls.create or certManager). When true you must set tls.create: false and provide the TLS Secret yourself. Security issue: granting delete on mutatingwebhookconfigurations is a potential security risk as it allows the admission controller to remove any webhook configurations. |
 | admissionController.replicas | int | `2` |  |
 | admissionController.resources | object | `{}` |  |
 | admissionController.revisionHistoryLimit | int | `10` |  |
