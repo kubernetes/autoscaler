@@ -179,11 +179,11 @@ func newAzureCache(client *azClient, cacheTTL time.Duration, config Config) (*az
 	return cache, nil
 }
 
-func (m *azureCache) getVMsPoolCache() *cache.Cache[string, armcontainerservice.AgentPool] {
+func (m *azureCache) readVMsPoolCache(poolName string) (armcontainerservice.AgentPool, bool) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	return m.vmsPools
+	return m.vmsPools.Read(poolName)
 }
 
 func (m *azureCache) readVirtualMachinesCache(poolName string) ([]*armcompute.VirtualMachine, bool) {
@@ -521,7 +521,6 @@ func (m *azureCache) HasInstance(providerID string) (bool, error) {
 
 // FindForInstance returns node group of the given Instance
 func (m *azureCache) FindForInstance(instance *azureRef, vmType string) (cloudprovider.NodeGroup, error) {
-	vmsPoolCache := m.getVMsPoolCache()
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -540,7 +539,7 @@ func (m *azureCache) FindForInstance(instance *azureRef, vmType string) (cloudpr
 	}
 
 	// cluster with vmss pool only
-	if vmType == providerazureconsts.VMTypeVMSS && vmsPoolCache.IsEmpty() {
+	if vmType == providerazureconsts.VMTypeVMSS && m.vmsPools.IsEmpty() {
 		if m.areAllScaleSetsUniform() {
 			// Omit virtual machines not managed by vmss only in case of uniform scale set.
 			if ok := virtualMachineRE.Match([]byte(inst.Name)); ok {

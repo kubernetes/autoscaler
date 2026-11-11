@@ -197,11 +197,11 @@ func (m *AzureManager) parseSKUAndVMsAgentpoolNameFromSpecName(name string) (boo
 		agentPoolName := parts[0]
 		sku := parts[1]
 
-		vmsPoolCache := m.azureCache.getVMsPoolCache()
-		if _, ok := vmsPoolCache.Read(agentPoolName); ok {
+		if _, ok := m.azureCache.readVMsPoolCache(agentPoolName); ok {
 			return true, agentPoolName, sku
 		}
 	}
+
 	return false, "", ""
 }
 
