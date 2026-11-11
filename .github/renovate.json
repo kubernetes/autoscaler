@@ -113,9 +113,10 @@
       "enabled": false
     },
     {
-      "description": "Docker images: one PR per branch, checked daily.",
+      "description": "Docker images: one PR per branch, checked daily. separateMinorPatch makes Renovate offer the highest patch of the current Go minor on release branches even though the minor bump is blocked.",
       "matchManagers": ["dockerfile"],
       "groupName": "docker images",
+      "separateMinorPatch": true,
       "extends": ["schedule:daily"]
     },
     {
