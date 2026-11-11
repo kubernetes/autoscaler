@@ -84,7 +84,6 @@ func BenchmarkStoreCheckpoints(b *testing.B) {
 			for b.Loop() {
 				writer.StoreCheckpoints(ctx, tc.workers)
 			}
-			b.ReportMetric(float64(len(cluster.VPAs()))*float64(containerCount), "container-visits/op")
 		})
 	}
 }
