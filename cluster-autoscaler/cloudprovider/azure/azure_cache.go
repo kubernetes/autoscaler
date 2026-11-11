@@ -186,11 +186,11 @@ func (m *azureCache) getVMsPoolCache() *cache.Cache[string, armcontainerservice.
 	return m.vmsPools
 }
 
-func (m *azureCache) getVirtualMachinesCache() *cache.Cache[string, []*armcompute.VirtualMachine] {
+func (m *azureCache) readVirtualMachinesCache(poolName string) ([]*armcompute.VirtualMachine, bool) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	return m.virtualMachines
+	return m.virtualMachines.Read(poolName)
 }
 
 func (m *azureCache) getScaleSetsCache() *cache.Cache[string, *armcompute.VirtualMachineScaleSet] {

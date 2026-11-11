@@ -428,11 +428,8 @@ func (vmPool *VMPool) getSpotPoolSize() (int32, error) {
 // If excludeDeleting is true, it skips VMs in the "Deleting" state.
 // https://learn.microsoft.com/en-us/azure/virtual-machines/states-billing#provisioning-states
 func (vmPool *VMPool) getVMsFromCache(op skipOption) ([]*armcompute.VirtualMachine, error) {
-	vmsMap := vmPool.manager.azureCache.getVirtualMachinesCache()
-
 	var filteredVMs []*armcompute.VirtualMachine
-	vms, ok := vmsMap.Read(vmPool.agentPoolName)
-	if ok {
+	if vms, ok := vmPool.manager.azureCache.readVirtualMachinesCache(vmPool.agentPoolName); ok {
 		for _, vm := range vms {
 			if vm.Properties == nil ||
 				vm.Properties.HardwareProfile == nil ||
