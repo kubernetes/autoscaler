@@ -102,9 +102,13 @@ func newCheckpointBenchmarkCluster(b *testing.B, vpaCount int) model.ClusterStat
 		if err := cluster.AddOrUpdateVpa(vpa, labels.SelectorFromSet(labels.Set{"app": app})); err != nil {
 			b.Fatal(err)
 		}
+
+		// Create 5 pods per VPA.
 		for p := range 5 {
 			podID := model.PodID{Namespace: "benchmark", PodName: fmt.Sprintf("%s-pod-%d", app, p)}
 			cluster.AddOrUpdatePod(podID, map[string]string{"app": app}, corev1.PodRunning)
+
+			// Create two containers per pod.
 			for c := range 2 {
 				containerID := model.ContainerID{PodID: podID, ContainerName: fmt.Sprintf("container-%d", c)}
 				if err := cluster.AddOrUpdateContainer(containerID, model.Resources{}); err != nil {
