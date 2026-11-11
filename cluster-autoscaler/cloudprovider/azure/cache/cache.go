@@ -24,7 +24,7 @@ import (
 
 type Cache[K comparable, V any] struct {
 	// entries is a map of cache entries, keyed by the cache key.
-	entries map[K]*item[V]
+	entries map[K]V
 
 	// keyCanonicalizer transforms keys before they are used to access entries.
 	keyCanonicalizer func(K) K
@@ -54,7 +54,7 @@ func New[K comparable, V any](
 	}
 
 	return &Cache[K, V]{
-		entries:          make(map[K]*item[V]),
+		entries:          make(map[K]V),
 		keyCanonicalizer: cfg.keyCanonicalizer.(func(K) K),
 		log:              log,
 	}
@@ -67,7 +67,7 @@ func (c *Cache[K, V]) Read(key K) (V, bool) {
 	// Check if the entry is present and not expired.
 	entry, entryFound := c.lookupEntry(canonicalKey)
 	if entryFound {
-		return entry.value, true
+		return entry, true
 	}
 
 	var zero V
@@ -81,7 +81,7 @@ func (c *Cache[K, V]) ReadAll() []V {
 
 	values := make([]V, 0, len(c.entries))
 	for _, entry := range c.entries {
-		values = append(values, entry.value)
+		values = append(values, entry)
 	}
 
 	return values
@@ -94,9 +94,6 @@ func (c *Cache[K, V]) ReadAll() []V {
 // now is the current time, used to calculate the expiry time.
 func (c *Cache[K, V]) Add(key K, value V) {
 	canonicalKey := c.keyCanonicalizer(key)
-	toCache := item[V]{
-		value: value,
-	}
 
 	c.log.V(4).Info(
 		"Adding cache entry",
@@ -105,7 +102,7 @@ func (c *Cache[K, V]) Add(key K, value V) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
-	c.entries[canonicalKey] = &toCache
+	c.entries[canonicalKey] = value
 }
 
 // AddAll adds all entries to the cache. Entries with existing keys are overwritten.
@@ -150,13 +147,11 @@ func (c *Cache[K, V]) evict(key K) {
 	delete(c.entries, key)
 }
 
-func (c *Cache[K, V]) newEntries(entries map[K]V) map[K]*item[V] {
-	toCache := make(map[K]*item[V], len(entries))
+func (c *Cache[K, V]) newEntries(entries map[K]V) map[K]V {
+	toCache := make(map[K]V, len(entries))
 
 	for key, value := range entries {
-		toCache[c.keyCanonicalizer(key)] = &item[V]{
-			value: value,
-		}
+		toCache[c.keyCanonicalizer(key)] = value
 	}
 
 	return toCache
@@ -165,7 +160,7 @@ func (c *Cache[K, V]) newEntries(entries map[K]V) map[K]*item[V] {
 // lookupEntry looks up the cache entry for the given key.
 // key is the cache key.
 // Returns the cached value (if present) and a boolean indicating whether the entry was found.
-func (c *Cache[K, V]) lookupEntry(key K) (*item[V], bool) {
+func (c *Cache[K, V]) lookupEntry(key K) (V, bool) {
 	c.mutex.RLock()
 	defer c.mutex.RUnlock()
 

@@ -38,7 +38,7 @@ func Test_Add_cachesEntry_withExpectedExpiry(t *testing.T) {
 	// The cache should now contain the expected
 	entry, found := cache.entries["test-key"]
 	g.Expect(found).To(BeTrue())
-	g.Expect(entry.value).To(Equal("test-value"))
+	g.Expect(entry).To(Equal("test-value"))
 }
 
 func Test_AddAll_MergesEntriesAndOverwritesExistingEntries(t *testing.T) {
@@ -115,7 +115,7 @@ func Test_AddAllAndReplaceAll_CanonicalizeKeys(t *testing.T) {
 	cache.AddAll(entriesToAdd)
 	entry, found := cache.entries["add-all"]
 	g.Expect(found).To(BeTrue())
-	g.Expect(entry.value).To(Equal("Value")) // Values should not be canonicalized
+	g.Expect(entry).To(Equal("Value")) // Values should not be canonicalized
 
 	// Replace entries using ReplaceAll and verify they are stored with canonicalized keys
 	replacementEntries := map[string]string{
