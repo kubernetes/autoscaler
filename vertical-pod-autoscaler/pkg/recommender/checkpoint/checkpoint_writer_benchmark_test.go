@@ -50,31 +50,42 @@ func (*benchmarkCheckpointClient) Patch(context.Context, string, types.PatchType
 // sorting, pod scanning, histogram aggregation, serialization, and worker dispatch.
 // Each VPA matches five pods with two containers each. Setup is excluded from timing.
 func BenchmarkStoreCheckpoints(b *testing.B) {
-	for _, vpaCount := range []int{1, 10, 100, 1000} {
-		for _, workers := range []int{1, 4} {
-			b.Run(fmt.Sprintf("vpas=%d/workers=%d", vpaCount, workers), func(b *testing.B) {
-				cluster := newCheckpointBenchmarkCluster(b, vpaCount)
-				containerCount := 0
-				for _, pod := range cluster.Pods() {
-					containerCount += len(pod.Containers)
-				}
-				writer := NewCheckpointWriter(cluster, &benchmarkCheckpointClient{})
-				ctx := context.Background()
+	testCases := []struct {
+		vpaCount int
+		workers  int
+	}{
+		{vpaCount: 1, workers: 1},
+		{vpaCount: 1, workers: 4},
+		{vpaCount: 10, workers: 1},
+		{vpaCount: 10, workers: 4},
+		{vpaCount: 100, workers: 1},
+		{vpaCount: 100, workers: 4},
+		{vpaCount: 1000, workers: 1},
+		{vpaCount: 1000, workers: 4},
+	}
+	for _, tc := range testCases {
+		b.Run(fmt.Sprintf("vpas=%d/workers=%d", tc.vpaCount, tc.workers), func(b *testing.B) {
+			cluster := newCheckpointBenchmarkCluster(b, tc.vpaCount)
+			containerCount := 0
+			for _, pod := range cluster.Pods() {
+				containerCount += len(pod.Containers)
+			}
+			writer := NewCheckpointWriter(cluster, &benchmarkCheckpointClient{})
+			ctx := context.Background()
 
-				writer.StoreCheckpoints(ctx, workers)
-				for id, vpa := range cluster.VPAs() {
-					if vpa.CheckpointWritten.IsZero() {
-						b.Fatalf("no checkpoint written for %v", id)
-					}
+			writer.StoreCheckpoints(ctx, tc.workers)
+			for id, vpa := range cluster.VPAs() {
+				if vpa.CheckpointWritten.IsZero() {
+					b.Fatalf("no checkpoint written for %v", id)
 				}
+			}
 
-				b.ReportAllocs()
-				for b.Loop() {
-					writer.StoreCheckpoints(ctx, workers)
-				}
-				b.ReportMetric(float64(len(cluster.VPAs()))*float64(containerCount), "container-visits/op")
-			})
-		}
+			b.ReportAllocs()
+			for b.Loop() {
+				writer.StoreCheckpoints(ctx, tc.workers)
+			}
+			b.ReportMetric(float64(len(cluster.VPAs()))*float64(containerCount), "container-visits/op")
+		})
 	}
 }
 
