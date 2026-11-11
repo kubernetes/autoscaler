@@ -521,7 +521,7 @@ func TestAgentPoolNodes(t *testing.T) {
 	assert.Equal(t, cloudprovider.InstanceRunning, nodes[0].Status.State)
 
 	expectedVMs[1].Properties = &armcompute.VirtualMachineProperties{ProvisioningState: ptr.To(VMProvisioningStateDeleting)}
-	as.manager.azureCache.virtualMachines["as"] = expectedVMs
+	as.manager.azureCache.virtualMachines.Add("as", expectedVMs)
 	nodes, err = as.Nodes(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, cloudprovider.InstanceDeleting, nodes[0].Status.State)

@@ -87,7 +87,7 @@ type azureCache struct {
 
 	// virtualMachines keeps the set of all VMs in the resource group.
 	// It is only used/populated if vmType is vmTypeStandard.
-	virtualMachines map[string][]*armcompute.VirtualMachine
+	virtualMachines *cache.Cache[string, []*armcompute.VirtualMachine]
 
 	// registeredNodeGroups represents all known NodeGroups.
 	registeredNodeGroups []cloudprovider.NodeGroup
@@ -141,6 +141,11 @@ func newAzureCache(client *azClient, cacheTTL time.Duration, config Config) (*az
 		cache.WithKeyCanonicalizer(strings.ToLower),
 	)
 
+	virtualMachinesCache := cache.New[string, []*armcompute.VirtualMachine](
+		klog.Background(),
+		cache.WithKeyCanonicalizer(strings.ToLower),
+	)
+
 	cache := &azureCache{
 		interrupt:            make(chan struct{}),
 		azClient:             client,
@@ -152,7 +157,7 @@ func newAzureCache(client *azClient, cacheTTL time.Duration, config Config) (*az
 		vmType:               config.VMType,
 		vmsPools:             vmsPoolCache,
 		scaleSets:            scaleSetsCache,
-		virtualMachines:      make(map[string][]*armcompute.VirtualMachine),
+		virtualMachines:      virtualMachinesCache,
 		registeredNodeGroups: make([]cloudprovider.NodeGroup, 0),
 		instanceToNodeGroup:  instanceToNodeGroup,
 		instanceStates:       instanceStates,
@@ -181,7 +186,7 @@ func (m *azureCache) getVMsPoolCache() *cache.Cache[string, armcontainerservice.
 	return m.vmsPools
 }
 
-func (m *azureCache) getVirtualMachines() map[string][]*armcompute.VirtualMachine {
+func (m *azureCache) getVirtualMachinesCache() *cache.Cache[string, []*armcompute.VirtualMachine] {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -197,6 +202,10 @@ func (m *azureCache) getScaleSetsCache() *cache.Cache[string, *armcompute.Virtua
 
 // setScaleSet replaces the cached entry for a single VMSS, e.g. after a fresh GET.
 func (m *azureCache) setScaleSet(name string, vmss *armcompute.VirtualMachineScaleSet) {
+	// Cache access doesn't need this, but we need to not run concurrently with other things using this mutex
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	m.scaleSets.Add(name, vmss)
 }
 
@@ -290,8 +299,10 @@ func (m *azureCache) fetchAzureResources() error {
 	if err != nil {
 		return err
 	}
+
 	// we fetch both sets of resources since CAS may operate on mixed nodepools
-	m.virtualMachines = vmResult
+	m.virtualMachines.ReplaceAll(vmResult)
+
 	// fetch VMs pools if enabled
 	if m.enableVMsAgentPool {
 		vmsPoolMap, err := m.fetchVMsPools()

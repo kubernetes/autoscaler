@@ -301,7 +301,7 @@ func TestAtomicIncreaseSize(t *testing.T) {
 
 	// Simulate Azure having created the new VM by seeding the cache with the
 	// post-scale VM list, then assert the pool reports the new target size.
-	ap.manager.azureCache.virtualMachines[vmsAgentPoolName] = newTestVMsPoolVMList(4)
+	ap.manager.azureCache.virtualMachines.Add(vmsAgentPoolName, newTestVMsPoolVMList(4))
 	targetSize, err = ap.TargetSize(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, 4, targetSize)
@@ -444,9 +444,14 @@ func TestGetVMsFromCache(t *testing.T) {
 				cache.WithKeyCanonicalizer(strings.ToLower),
 			)
 
+			virtualMachinesCache := cache.New[string, []*armcompute.VirtualMachine](
+				klog.Background(),
+				cache.WithKeyCanonicalizer(strings.ToLower),
+			)
+
 			manager := &AzureManager{
 				azureCache: &azureCache{
-					virtualMachines: make(map[string][]*armcompute.VirtualMachine),
+					virtualMachines: virtualMachinesCache,
 					vmsPools:        vmsPoolCache,
 				},
 			}
@@ -457,7 +462,7 @@ func TestGetVMsFromCache(t *testing.T) {
 			}
 
 			if tt.setupVMList != nil {
-				manager.azureCache.virtualMachines[vmsAgentPoolName] = tt.setupVMList()
+				manager.azureCache.virtualMachines.Add(vmsAgentPoolName, tt.setupVMList())
 			}
 
 			vms, err := agentPool.getVMsFromCache(tt.skipOption)
@@ -691,7 +696,7 @@ func TestVMsPoolNodesReportsProvisioningState(t *testing.T) {
 
 	vms := newTestVMsPoolVMList(3)
 	vms[0].Properties.ProvisioningState = ptr.To(VMProvisioningStateDeleting)
-	manager.azureCache.virtualMachines[vmsAgentPoolName] = vms
+	manager.azureCache.virtualMachines.Add(vmsAgentPoolName, vms)
 
 	instances, err := ap.Nodes(context.Background())
 	assert.NoError(t, err)

@@ -428,29 +428,33 @@ func (vmPool *VMPool) getSpotPoolSize() (int32, error) {
 // If excludeDeleting is true, it skips VMs in the "Deleting" state.
 // https://learn.microsoft.com/en-us/azure/virtual-machines/states-billing#provisioning-states
 func (vmPool *VMPool) getVMsFromCache(op skipOption) ([]*armcompute.VirtualMachine, error) {
-	vmsMap := vmPool.manager.azureCache.getVirtualMachines()
+	vmsMap := vmPool.manager.azureCache.getVirtualMachinesCache()
+
 	var filteredVMs []*armcompute.VirtualMachine
+	vms, ok := vmsMap.Read(vmPool.agentPoolName)
+	if ok {
+		for _, vm := range vms {
+			if vm.Properties == nil ||
+				vm.Properties.HardwareProfile == nil ||
+				vm.Properties.HardwareProfile.VMSize == nil ||
+				!strings.EqualFold(string(*vm.Properties.HardwareProfile.VMSize), vmPool.sku) {
+				continue
+			}
 
-	for _, vm := range vmsMap[vmPool.agentPoolName] {
-		if vm.Properties == nil ||
-			vm.Properties.HardwareProfile == nil ||
-			vm.Properties.HardwareProfile.VMSize == nil ||
-			!strings.EqualFold(string(*vm.Properties.HardwareProfile.VMSize), vmPool.sku) {
-			continue
+			if op.skipDeleting && strings.Contains(ptr.Deref(vm.Properties.ProvisioningState, ""), "Deleting") {
+				klog.V(4).Infof("Skipping VM %s in deleting state", ptr.Deref(vm.ID, ""))
+				continue
+			}
+
+			if op.skipFailed && strings.Contains(ptr.Deref(vm.Properties.ProvisioningState, ""), "Failed") {
+				klog.V(4).Infof("Skipping VM %s in failed state", ptr.Deref(vm.ID, ""))
+				continue
+			}
+
+			filteredVMs = append(filteredVMs, vm)
 		}
-
-		if op.skipDeleting && strings.Contains(ptr.Deref(vm.Properties.ProvisioningState, ""), "Deleting") {
-			klog.V(4).Infof("Skipping VM %s in deleting state", ptr.Deref(vm.ID, ""))
-			continue
-		}
-
-		if op.skipFailed && strings.Contains(ptr.Deref(vm.Properties.ProvisioningState, ""), "Failed") {
-			klog.V(4).Infof("Skipping VM %s in failed state", ptr.Deref(vm.ID, ""))
-			continue
-		}
-
-		filteredVMs = append(filteredVMs, vm)
 	}
+
 	return filteredVMs, nil
 }
 
