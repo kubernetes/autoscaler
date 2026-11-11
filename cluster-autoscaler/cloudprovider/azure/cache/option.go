@@ -16,28 +16,8 @@ limitations under the License.
 
 package cache
 
-import (
-	"time"
-
-	"k8s.io/utils/clock"
-)
-
 // Option is a functional option for configuring the cache.
 type Option func(*config)
-
-// WithClock sets the clock implementation to use for time-based operations in the cache.
-func WithClock(clk clock.PassiveClock) Option {
-	return func(c *config) {
-		c.clock = clk
-	}
-}
-
-// WithTTL sets the time-to-live for cache entries.
-func WithTTL(ttl time.Duration) Option {
-	return func(c *config) {
-		c.ttl = ttl
-	}
-}
 
 // WithKeyCanonicalizer sets the function used to transform keys before cache operations.
 func WithKeyCanonicalizer[K comparable](canonicalize func(K) K) Option {

@@ -19,54 +19,49 @@ package cache
 import (
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/go-logr/logr"
 
 	. "github.com/onsi/gomega"
-
-	clock "k8s.io/utils/clock/testing"
 )
 
 func Test_Add_cachesEntry_withExpectedExpiry(t *testing.T) {
 	t.Parallel()
 	g := NewWithT(t)
 
-	clock := newFakePassiveClock()
+	// Create a new cache
+	cache := New[string, string](logr.Discard())
 
-	cache := New[string, string](
-		logr.Discard(),
-		WithClock(clock),
-		WithTTL(5*time.Minute),
-	)
-
-	// Directly add an entry to the cache
+	// Add an entry to the cache
 	cache.Add("test-key", "test-value")
 
-	// The cache should now contain the entry with the expected expiry
+	// The cache should now contain the expected
 	entry, found := cache.entries["test-key"]
 	g.Expect(found).To(BeTrue())
 	g.Expect(entry.value).To(Equal("test-value"))
-	g.Expect(entry.expiry).To(Equal(clock.Now().Add(5 * time.Minute)))
 }
 
 func Test_AddAll_MergesEntriesAndOverwritesExistingEntries(t *testing.T) {
 	t.Parallel()
 	g := NewWithT(t)
 
+	// Create a new cache with a known initial entry
 	cache := New[string, string](logr.Discard())
 	cache.Add("existing", "old-value")
 
+	// Add new entries to the cache
 	entriesToAdd := map[string]string{
 		"existing": "new-value",
 		"new":      "new-entry",
 	}
 	cache.AddAll(entriesToAdd)
 
+	// Verify the existing value was overwritten
 	value, found := cache.Read("existing")
 	g.Expect(found).To(BeTrue())
 	g.Expect(value).To(Equal("new-value"))
 
+	// Verify the new entry was added
 	value, found = cache.Read("new")
 	g.Expect(found).To(BeTrue())
 	g.Expect(value).To(Equal("new-entry"))
@@ -76,48 +71,53 @@ func Test_ReplaceAll_ReplacesExistingEntries(t *testing.T) {
 	t.Parallel()
 	g := NewWithT(t)
 
+	// Create a new cache with some initial entries
 	cache := New[string, string](logr.Discard())
 	cache.Add("removed", "old-entry")
 	cache.Add("retained", "old-value")
 
+	// Replace cache entries with the new set of entries
 	replacementEntries := map[string]string{
 		"retained": "new-value",
 		"new":      "new-entry",
 	}
 	cache.ReplaceAll(replacementEntries)
 
+	// Verify the removed entry is no longer in the cache
 	_, found := cache.Read("removed")
 	g.Expect(found).To(BeFalse())
 
+	// Verify the retained entry has the new value
 	value, found := cache.Read("retained")
 	g.Expect(found).To(BeTrue())
 	g.Expect(value).To(Equal("new-value"))
 
+	// Verify the new entry was added
 	value, found = cache.Read("new")
 	g.Expect(found).To(BeTrue())
 	g.Expect(value).To(Equal("new-entry"))
 }
 
-func Test_AddAllAndReplaceAll_CanonicalizeKeysAndSetExpectedExpiry(t *testing.T) {
+func Test_AddAllAndReplaceAll_CanonicalizeKeys(t *testing.T) {
 	t.Parallel()
 	g := NewWithT(t)
 
-	clock := newFakePassiveClock()
+	// Create a new cache with a key canonicalizer that converts keys to lowercase
 	cache := New[string, string](
 		logr.Discard(),
-		WithClock(clock),
-		WithTTL(5*time.Minute),
 		WithKeyCanonicalizer(strings.ToLower),
 	)
 
+	// Add entries using AddAll and verify they are stored with canonicalized keys
 	entriesToAdd := map[string]string{
-		"ADD-ALL": "value",
+		"ADD-ALL": "Value",
 	}
 	cache.AddAll(entriesToAdd)
 	entry, found := cache.entries["add-all"]
 	g.Expect(found).To(BeTrue())
-	g.Expect(entry.expiry).To(Equal(clock.Now().Add(5 * time.Minute)))
+	g.Expect(entry.value).To(Equal("Value")) // Values should not be canonicalized
 
+	// Replace entries using ReplaceAll and verify they are stored with canonicalized keys
 	replacementEntries := map[string]string{
 		"REPLACE-ALL": "value",
 	}
@@ -129,22 +129,17 @@ func Test_AddAllAndReplaceAll_CanonicalizeKeysAndSetExpectedExpiry(t *testing.T)
 	value, found := cache.Read("replace-all")
 	g.Expect(found).To(BeTrue())
 	g.Expect(value).To(Equal("value"))
+
 	entry, found = cache.entries["replace-all"]
 	g.Expect(found).To(BeTrue())
-	g.Expect(entry.expiry).To(Equal(clock.Now().Add(5 * time.Minute)))
 }
 
 func Test_Read_WhenCachePopulated_ReturnsCachedItem(t *testing.T) {
 	t.Parallel()
 	g := NewWithT(t)
 
-	clock := newFakePassiveClock()
-
-	cache := New[string, string](
-		logr.Discard(),
-		WithClock(clock),
-		WithTTL(5*time.Minute),
-	)
+	// Create a new cache
+	cache := New[string, string](logr.Discard())
 
 	// First populate the cache
 	cache.Add("test-key", "test-value")
@@ -160,64 +155,11 @@ func Test_Read_WhenCachePopulated_ReturnsCachedItem(t *testing.T) {
 	g.Expect(value).To(Equal("test-value"))
 }
 
-func Test_Read_WhenCacheEntryExpired_ReturnsNoValue(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
-
-	clock := newFakePassiveClock()
-
-	cache := New[string, string](
-		logr.Discard(),
-		WithClock(clock),
-		WithTTL(5*time.Minute),
-	)
-
-	// Populate the cache
-	cache.Add("test-key", "loaded-value-1")
-
-	// Verify the cache entry is present before advancing time
-	value, ok := cache.Read("test-key")
-	g.Expect(ok).To(BeTrue())
-	g.Expect(value).To(Equal("loaded-value-1"))
-
-	// Advance time to expire the cache entry
-	clock.SetTime(clock.Now().Add(6 * time.Minute))
-
-	// Second read should return no-value
-	_, ok = cache.Read("test-key")
-	g.Expect(ok).To(BeFalse())
-}
-
-func Test_ReadAll_ReturnsOnlyCurrentEntries(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
-
-	clock := newFakePassiveClock()
-	cache := New[string, string](
-		logr.Discard(),
-		WithClock(clock),
-		WithTTL(5*time.Minute),
-	)
-
-	cache.Add("stale", "stale-value")
-	clock.SetTime(clock.Now().Add(4 * time.Minute))
-	cache.Add("current", "current-value")
-	clock.SetTime(clock.Now().Add(2 * time.Minute))
-
-	g.Expect(cache.ReadAll()).To(ConsistOf("current-value"))
-}
-
 func Test_Evict_RemovesCacheEntry(t *testing.T) {
 	t.Parallel()
 	g := NewWithT(t)
 
-	clock := newFakePassiveClock()
-
-	cache := New[string, string](
-		logr.Discard(),
-		WithClock(clock),
-		WithTTL(5*time.Minute),
-	)
+	cache := New[string, string](logr.Discard())
 
 	// Populate the cache
 	cache.Add("test-key", "test-value")
@@ -239,12 +181,15 @@ func Test_IsEmpty_ReflectsStoredEntries(t *testing.T) {
 	t.Parallel()
 	g := NewWithT(t)
 
+	// Empty cache is empty
 	cache := New[string, string](logr.Discard())
 	g.Expect(cache.IsEmpty()).To(BeTrue())
 
+	// Adding an entry should make the cache non-empty
 	cache.Add("test-key", "test-value")
 	g.Expect(cache.IsEmpty()).To(BeFalse())
 
+	// Evicting the entry should make the cache empty again
 	cache.Evict("test-key")
 	g.Expect(cache.IsEmpty()).To(BeTrue())
 }
@@ -280,9 +225,4 @@ func Test_Cache_WithoutKeyCanonicalizer_PreservesKeyComparison(t *testing.T) {
 
 	_, ok := cache.Read("test-key")
 	g.Expect(ok).To(BeFalse())
-}
-
-func newFakePassiveClock() *clock.FakePassiveClock {
-	now, _ := time.Parse(time.RFC3339, "2026-08-01T15:00:00Z")
-	return clock.NewFakePassiveClock(now)
 }

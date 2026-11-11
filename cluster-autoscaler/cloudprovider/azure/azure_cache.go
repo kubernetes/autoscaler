@@ -28,7 +28,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v7"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v8"
 	skewer "github.com/Azure/skewer/v2"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure/cache"
 	providerazureconsts "sigs.k8s.io/cloud-provider-azure/pkg/consts"
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
@@ -124,25 +123,21 @@ func newAzureCache(client *azClient, cacheTTL time.Duration, config Config) (*az
 
 	instanceToNodeGroup := cache.New[azureRef, cloudprovider.NodeGroup](
 		klog.Background(),
-		cache.WithTTL(cacheTTL),
 		cache.WithKeyCanonicalizer(azureRef.canonicalize),
 	)
 
 	instanceStates := cache.New[azureRef, cloudprovider.InstanceState](
 		klog.Background(),
-		cache.WithTTL(cacheTTL),
 		cache.WithKeyCanonicalizer(azureRef.canonicalize),
 	)
 
 	vmsPoolCache := cache.New[string, armcontainerservice.AgentPool](
 		klog.Background(),
-		cache.WithTTL(cacheTTL),
 		cache.WithKeyCanonicalizer(strings.ToLower),
 	)
 
 	scaleSetsCache := cache.New[string, *armcompute.VirtualMachineScaleSet](
 		klog.Background(),
-		cache.WithTTL(cacheTTL),
 		cache.WithKeyCanonicalizer(strings.ToLower),
 	)
 

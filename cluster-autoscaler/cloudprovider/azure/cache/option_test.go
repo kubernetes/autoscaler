@@ -18,35 +18,24 @@ package cache
 
 import (
 	"testing"
-	"time"
 
 	. "github.com/onsi/gomega"
 
 	"github.com/go-logr/logr"
 )
 
-func Test_WithClock_whenPassedToNew_ConfiguresClock(t *testing.T) {
+func Test_WithKeyCanonicalizer_whenPassedToNew_ConfiguresKeyCanonicalizer(t *testing.T) {
 	t.Parallel()
 	g := NewWithT(t)
 
-	clk := newFakePassiveClock()
+	canonicalizer := func(key string) string {
+		return "canonical-" + key
+	}
 
 	cache := New[string, string](
 		logr.Discard(),
-		WithClock(clk))
+		WithKeyCanonicalizer(canonicalizer))
 
-	g.Expect(cache.clock).To(Equal(clk))
-}
-
-func Test_WithEntryTTL_whenPassedToNew_ConfiguresEntryTTL(t *testing.T) {
-	t.Parallel()
-	g := NewWithT(t)
-
-	ttl := 42 * time.Second
-
-	cache := New[string, string](
-		logr.Discard(),
-		WithTTL(ttl))
-
-	g.Expect(cache.ttl).To(Equal(ttl))
+	// Check the requested key canonicalizer is correctly in place
+	g.Expect(cache.keyCanonicalizer("example")).To(Equal("canonical-example"))
 }

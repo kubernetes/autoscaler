@@ -112,6 +112,7 @@ func (azure *AzureCloudProvider) NodeGroups(ctx context.Context) []cloudprovider
 	for i, asg := range asgs {
 		ngs[i] = asg
 	}
+
 	return ngs
 }
 

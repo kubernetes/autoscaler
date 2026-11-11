@@ -16,18 +16,8 @@ limitations under the License.
 
 package cache
 
-import "time"
-
 // Entry represents a single cache item.
 type item[V any] struct {
 	// value is the cached value.
 	value V
-	// expiry is the time at which the cache entry expires.
-	expiry time.Time
-}
-
-// ExpiryString returns the expiry time of the cache entry as a formatted string.
-// Used for logging
-func (i *item[V]) ExpiryString() string {
-	return i.expiry.Format(time.RFC3339)
 }

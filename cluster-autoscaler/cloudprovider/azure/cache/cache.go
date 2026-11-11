@@ -18,10 +18,8 @@ package cache
 
 import (
 	"sync"
-	"time"
 
 	"github.com/go-logr/logr"
-	"k8s.io/utils/clock"
 )
 
 type Cache[K comparable, V any] struct {
@@ -30,13 +28,6 @@ type Cache[K comparable, V any] struct {
 
 	// keyCanonicalizer transforms keys before they are used to access entries.
 	keyCanonicalizer func(K) K
-
-	// ttl is the time-to-live for cache entries.
-	ttl time.Duration
-
-	// Clock implementation to use for time-based operations.
-	// Overridden in tests to use a fake clock.
-	clock clock.PassiveClock
 
 	// log is a logger for logging cache operations.
 	log logr.Logger
@@ -55,8 +46,6 @@ func New[K comparable, V any](
 	options ...Option,
 ) *Cache[K, V] {
 	cfg := &config{
-		clock:            clock.RealClock{},
-		ttl:              5 * time.Minute,
 		keyCanonicalizer: func(key K) K { return key },
 	}
 
@@ -68,49 +57,31 @@ func New[K comparable, V any](
 		entries:          make(map[K]*item[V]),
 		keyCanonicalizer: cfg.keyCanonicalizer.(func(K) K),
 		log:              log,
-		clock:            cfg.clock,
-		ttl:              cfg.ttl,
 	}
 }
 
-// Read returns the cached value for the given key, or loads it if not present or expired.
+// Read returns the cached value for the given key.
 func (c *Cache[K, V]) Read(key K) (V, bool) {
-	now := c.clock.Now()
 	canonicalKey := c.keyCanonicalizer(key)
 
 	// Check if the entry is present and not expired.
 	entry, entryFound := c.lookupEntry(canonicalKey)
 	if entryFound {
-		if now.Before(entry.expiry) {
-			c.log.V(4).Info("Cache hit",
-				"key", key,
-				"expiry", entry.ExpiryString())
-			return entry.value, true
-		}
-
-		// Entry is expired, evict it.
-		c.log.V(4).Info("Cache entry expired, evicting",
-			"key", canonicalKey,
-			"expiry", entry.ExpiryString())
-		c.evict(canonicalKey)
+		return entry.value, true
 	}
 
 	var zero V
 	return zero, false
 }
 
-// ReadAll returns all non-expired cached values. The returned values have no guaranteed order.
+// ReadAll returns all cached values. The returned values have no guaranteed order.
 func (c *Cache[K, V]) ReadAll() []V {
-	now := c.clock.Now()
-
 	c.mutex.RLock()
 	defer c.mutex.RUnlock()
 
 	values := make([]V, 0, len(c.entries))
 	for _, entry := range c.entries {
-		if now.Before(entry.expiry) {
-			values = append(values, entry.value)
-		}
+		values = append(values, entry.value)
 	}
 
 	return values
@@ -124,14 +95,12 @@ func (c *Cache[K, V]) ReadAll() []V {
 func (c *Cache[K, V]) Add(key K, value V) {
 	canonicalKey := c.keyCanonicalizer(key)
 	toCache := item[V]{
-		value:  value,
-		expiry: c.clock.Now().Add(c.ttl),
+		value: value,
 	}
 
 	c.log.V(4).Info(
 		"Adding cache entry",
-		"key", canonicalKey,
-		"expiry", toCache.ExpiryString())
+		"key", canonicalKey)
 
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
@@ -182,13 +151,11 @@ func (c *Cache[K, V]) evict(key K) {
 }
 
 func (c *Cache[K, V]) newEntries(entries map[K]V) map[K]*item[V] {
-	expiry := c.clock.Now().Add(c.ttl)
 	toCache := make(map[K]*item[V], len(entries))
 
 	for key, value := range entries {
 		toCache[c.keyCanonicalizer(key)] = &item[V]{
-			value:  value,
-			expiry: expiry,
+			value: value,
 		}
 	}
 
