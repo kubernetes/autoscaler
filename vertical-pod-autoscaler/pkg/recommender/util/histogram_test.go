@@ -65,6 +65,17 @@ func TestPercentiles(t *testing.T) {
 	assert.InEpsilon(t, 5, h.Percentile(1.0), valueEpsilon)
 }
 
+// Verifies that subtracting a sample from an empty bucket does not change the
+// percentiles of the remaining samples: { 1: 1, 4: 1 } minus a sample at 2.
+func TestPercentilesAfterSubtractingFromEmptyBucket(t *testing.T) {
+	h := NewHistogram(testHistogramOptions)
+	h.AddSample(1, 1, anyTime)
+	h.AddSample(4, 1, anyTime)
+	h.SubtractSample(2, 1, anyTime)
+	assert.InEpsilon(t, 2, h.Percentile(0.5), valueEpsilon)
+	assert.InEpsilon(t, 5, h.Percentile(0.99), valueEpsilon)
+}
+
 // Verifies that querying percentile < 0.0 returns the minimum value in the
 // histogram, while querying percentile > 1.0 returns the maximum of the
 // histogram.
