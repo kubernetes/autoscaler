@@ -22,6 +22,8 @@ import (
 	"github.com/go-logr/logr"
 )
 
+// Cache is a generic cache implementation that stores key-value pairs
+// with optional key canonicalization and logging support.
 type Cache[K comparable, V any] struct {
 	// entries is a map of cache entries, keyed by the cache key.
 	entries map[K]V

@@ -192,13 +192,13 @@ func (ref azureRef) canonicalize() azureRef {
 }
 
 // GetKey returns key of the given azure reference.
-func (m *azureRef) GetKey() string {
-	return m.Name
+func (ref *azureRef) GetKey() string {
+	return ref.Name
 }
 
 // String is represented by calling GetKey()
-func (m *azureRef) String() string {
-	return m.GetKey()
+func (ref *azureRef) String() string {
+	return ref.GetKey()
 }
 
 // BuildAzure builds Azure cloud provider, manager etc.
