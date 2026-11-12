@@ -260,6 +260,7 @@ func isTerminatingLifecycleState(lifecycle autoscalingtypes.LifecycleState) bool
 	return lifecycle == autoscalingtypes.LifecycleStateTerminated ||
 		lifecycle == autoscalingtypes.LifecycleStateTerminating ||
 		lifecycle == autoscalingtypes.LifecycleStateTerminatingWait ||
+		lifecycle == autoscalingtypes.LifecycleStateTerminatingRetained ||
 		lifecycle == autoscalingtypes.LifecycleStateTerminatingProceed
 }
 

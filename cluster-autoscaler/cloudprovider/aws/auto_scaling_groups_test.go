@@ -180,6 +180,7 @@ func TestIsTerminatingLifecycleState(t *testing.T) {
 		{autoscalingtypes.LifecycleStateTerminating, true},
 		{autoscalingtypes.LifecycleStateTerminatingWait, true},
 		{autoscalingtypes.LifecycleStateTerminatingProceed, true},
+		{autoscalingtypes.LifecycleStateTerminatingRetained, true},
 		{autoscalingtypes.LifecycleStateTerminated, true},
 		{autoscalingtypes.LifecycleStatePending, false},
 		{autoscalingtypes.LifecycleStateInService, false},
