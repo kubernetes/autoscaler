@@ -24,6 +24,7 @@ import (
 
 // Cache is a generic cache implementation that stores key-value pairs
 // with optional key canonicalization and logging support.
+// Cache expiry is handled outside of this implementation.
 type Cache[K comparable, V any] struct {
 	// entries is a map of cache entries, keyed by the cache key.
 	entries map[K]V
@@ -66,7 +67,7 @@ func New[K comparable, V any](
 func (c *Cache[K, V]) Read(key K) (V, bool) {
 	canonicalKey := c.keyCanonicalizer(key)
 
-	// Check if the entry is present and not expired.
+	// Check if the entry is present
 	entry, entryFound := c.lookupEntry(canonicalKey)
 	if entryFound {
 		return entry, true
@@ -89,11 +90,10 @@ func (c *Cache[K, V]) ReadAll() []V {
 	return values
 }
 
-// Add adds a new entry to the cache with the given key and value, and sets its expiry time.
+// Add adds a new entry to the cache with the given key and value.
 // If an entry with the same key already exists, it will be overwritten.
 // key is the cache key.
 // value is the value to be cached.
-// now is the current time, used to calculate the expiry time.
 func (c *Cache[K, V]) Add(key K, value V) {
 	canonicalKey := c.keyCanonicalizer(key)
 
