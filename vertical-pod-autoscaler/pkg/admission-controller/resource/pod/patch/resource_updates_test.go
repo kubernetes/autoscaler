@@ -391,7 +391,7 @@ func TestCalculatePatches_InitialDelay(t *testing.T) {
 			assert.NoError(t, err)
 			if assert.Len(t, patches, len(tc.expectPatches), fmt.Sprintf("got %+v, want %+v", patches, tc.expectPatches)) {
 				for i, gotPatch := range patches {
-					assert.True(t, EqPatch(gotPatch, tc.expectPatches[i]), "patch %d: got %+v, want %+v", i, gotPatch, tc.expectPatches[i])
+					assert.Equal(t, tc.expectPatches[i], gotPatch, "patch at position %d", i)
 				}
 			}
 		})
