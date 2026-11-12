@@ -56,7 +56,9 @@ type percentileCPUEstimator struct {
 
 type percentileMemoryEstimator struct {
 	percentile float64
-	// overrideFn: see percentileCPUEstimator.
+	// overrideFn, when non-nil, returns the per-container memory percentile override
+	// from the AggregateContainerState (0 if unset). A positive value replaces the
+	// construction-time global percentile.
 	overrideFn func(*model.AggregateContainerState) float64
 }
 
