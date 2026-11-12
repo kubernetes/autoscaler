@@ -28,9 +28,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
+	featuregatetesting "k8s.io/component-base/featuregate/testing"
 
 	vpaautoscalingv1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_fake "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/fake"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/logic"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
@@ -379,4 +381,86 @@ func TestMaintainCheckpointsGCUsesIndependentTimeout(t *testing.T) {
 
 	// Ensure that garbage collection was invoked and succeeded
 	assert.False(t, r.lastCheckpointGC.IsZero())
+}
+
+func percentilePolicy(container string, cpuTarget, memoryTarget int32) *vpaautoscalingv1.PodResourcePolicy {
+	percentiles := &vpaautoscalingv1.RecommendationPercentiles{}
+	if cpuTarget > 0 {
+		percentiles.CPU = &vpaautoscalingv1.ResourcePercentiles{Target: cpuTarget}
+	}
+	if memoryTarget > 0 {
+		percentiles.Memory = &vpaautoscalingv1.ResourcePercentiles{Target: memoryTarget}
+	}
+	return &vpaautoscalingv1.PodResourcePolicy{
+		ContainerPolicies: []vpaautoscalingv1.ContainerResourcePolicy{
+			{ContainerName: container, RecommendationPercentiles: percentiles},
+		},
+	}
+}
+
+func TestInvalidTargetPercentileMessage(t *testing.T) {
+	bounds := PercentileBounds{LowerBoundCPU: 0.5, UpperBoundCPU: 0.95, LowerBoundMemory: 0.5, UpperBoundMemory: 0.95}
+	testCases := []struct {
+		name     string
+		policy   *vpaautoscalingv1.PodResourcePolicy
+		expected string
+	}{
+		{name: "nil policy", policy: nil},
+		{name: "no percentiles", policy: &vpaautoscalingv1.PodResourcePolicy{ContainerPolicies: []vpaautoscalingv1.ContainerResourcePolicy{{ContainerName: "app"}}}},
+		{name: "targets within bounds", policy: percentilePolicy("app", 90, 80)},
+		{name: "targets equal to bounds", policy: percentilePolicy("app", 50, 95)},
+		{
+			name:     "cpu target above upper bound",
+			policy:   percentilePolicy("app", 99, 0),
+			expected: `container "app": cpu target percentile 99 is outside the recommender's bound percentiles [50, 95]`,
+		},
+		{
+			name:     "memory target below lower bound",
+			policy:   percentilePolicy("*", 0, 40),
+			expected: `container "*": memory target percentile 40 is outside the recommender's bound percentiles [50, 95]`,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.expected, invalidTargetPercentileMessage(tc.policy, bounds))
+		})
+	}
+}
+
+func TestUpdateConfigInvalidCondition(t *testing.T) {
+	bounds := PercentileBounds{LowerBoundCPU: 0.5, UpperBoundCPU: 0.95, LowerBoundMemory: 0.5, UpperBoundMemory: 0.95}
+	newVpa := func(policy *vpaautoscalingv1.PodResourcePolicy) *model.Vpa {
+		vpa := model.NewVpa(model.VpaID{Namespace: "default", VpaName: "vpa"}, labels.Everything(), time.Now())
+		vpa.ResourcePolicy = policy
+		return vpa
+	}
+
+	t.Run("sets the condition for an out of bounds target", func(t *testing.T) {
+		featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.PerVPAConfig, true)
+		vpa := newVpa(percentilePolicy("app", 99, 0))
+		updateConfigInvalidCondition(vpa, bounds)
+		condition, found := vpa.GetConditionsMap()[vpaautoscalingv1.ConfigInvalid]
+		assert.True(t, found)
+		assert.Equal(t, "TargetPercentileOutOfBounds", condition.Reason)
+		assert.True(t, vpa.ConditionActive(vpaautoscalingv1.ConfigInvalid))
+	})
+
+	t.Run("clears the condition once the target is fixed", func(t *testing.T) {
+		featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.PerVPAConfig, true)
+		vpa := newVpa(percentilePolicy("app", 99, 0))
+		updateConfigInvalidCondition(vpa, bounds)
+		vpa.ResourcePolicy = percentilePolicy("app", 90, 0)
+		updateConfigInvalidCondition(vpa, bounds)
+		_, found := vpa.GetConditionsMap()[vpaautoscalingv1.ConfigInvalid]
+		assert.False(t, found)
+	})
+
+	t.Run("clears the condition when PerVPAConfig is disabled", func(t *testing.T) {
+		featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.PerVPAConfig, false)
+		vpa := newVpa(percentilePolicy("app", 99, 0))
+		vpa.SetCondition(vpaautoscalingv1.ConfigInvalid, true, "TargetPercentileOutOfBounds", "")
+		updateConfigInvalidCondition(vpa, bounds)
+		_, found := vpa.GetConditionsMap()[vpaautoscalingv1.ConfigInvalid]
+		assert.False(t, found)
+	})
 }

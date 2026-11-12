@@ -140,8 +140,8 @@ This document is auto-generated from the flag definitions in the VPA recommender
 | `skip-log-headers` | bool | false | If true, avoid headers when opening log files (no effect when -logtostderr=true) |
 | `stderrthreshold` | severity | info | set the log level threshold for writing to standard error |
 | `storage` | string | checkpoint | Specifies storage mode. Supported values: prometheus, checkpoint |
-| `target-cpu-percentile` | float | 0.9 | CPU usage percentile that will be used as a base for CPU target recommendation. Doesn't affect CPU lower bound, CPU upper bound nor memory recommendations. |
-| `target-memory-percentile` | float | 0.9 | Memory usage percentile that will be used as a base for memory target recommendation. Doesn't affect memory lower bound nor memory upper bound. |
+| `target-cpu-percentile` | float | 0.9 | Default CPU usage percentile that will be used as a base for CPU target recommendation. Doesn't affect CPU lower bound, CPU upper bound nor memory recommendations. Can be overridden per container with recommendationPercentiles. |
+| `target-memory-percentile` | float | 0.9 | Default memory usage percentile that will be used as a base for memory target recommendation. Doesn't affect memory lower bound nor memory upper bound. Can be overridden per container with recommendationPercentiles. |
 | `update-worker-count` | int | 10 | Number of concurrent workers to update VPA recommendations and checkpoints. When increasing this setting, make sure the client-side rate limits ('kube-api-qps' and 'kube-api-burst') are either increased or turned off as well. Determines the minimum number of VPA checkpoints written per recommender loop. |
 | `use-external-metrics` | bool | false | ALPHA. Use an external metrics provider instead of metrics_server. |
 | `username` | string |  | The username used in the Prometheus server basic auth. Can also be set via the PROMETHEUS_USERNAME environment variable |
