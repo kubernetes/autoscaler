@@ -324,20 +324,23 @@ func (m *AzureManager) GetNodeGroupForInstance(instance *azureRef) (cloudprovide
 
 // GetScaleSetOptions parse options extracted from VMSS tags and merges them with provided defaults
 func (m *AzureManager) GetScaleSetOptions(scaleSetName string, defaults config.NodeGroupAutoscalingOptions) *config.NodeGroupAutoscalingOptions {
-	options := m.azureCache.getAutoscalingOptions(azureRef{Name: scaleSetName})
-	if options == nil || len(options) == 0 {
+	options, ok := m.azureCache.getAutoscalingOptions(azureRef{Name: scaleSetName})
+	if !ok || len(options) == 0 {
 		return &defaults
 	}
 
 	if opt, ok := getFloat64Option(options, scaleSetName, config.DefaultScaleDownUtilizationThresholdKey); ok {
 		defaults.ScaleDownUtilizationThreshold = opt
 	}
+
 	if opt, ok := getFloat64Option(options, scaleSetName, config.DefaultScaleDownGpuUtilizationThresholdKey); ok {
 		defaults.ScaleDownGpuUtilizationThreshold = opt
 	}
+
 	if opt, ok := getDurationOption(options, scaleSetName, config.DefaultScaleDownUnneededTimeKey); ok {
 		defaults.ScaleDownUnneededTime = opt
 	}
+
 	if opt, ok := getDurationOption(options, scaleSetName, config.DefaultScaleDownUnreadyTimeKey); ok {
 		defaults.ScaleDownUnreadyTime = opt
 	}

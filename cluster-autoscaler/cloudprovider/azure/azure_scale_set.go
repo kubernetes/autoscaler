@@ -1192,18 +1192,17 @@ func (scaleSet *ScaleSet) getOrchestrationMode() (*armcompute.OrchestrationMode,
 func (scaleSet *ScaleSet) cseErrors(extensions []*armcompute.VirtualMachineExtensionInstanceView) ([]string, bool) {
 	var errs []string
 	failed := false
-	if extensions != nil {
-		for _, extension := range extensions {
-			if strings.EqualFold(ptr.Deref(extension.Name, ""), vmssCSEExtensionName) && extension.Statuses != nil {
-				for _, status := range extension.Statuses {
-					if status.Level != nil && *status.Level == armcompute.StatusLevelTypesError {
-						errs = append(errs, ptr.Deref(status.Message, ""))
-						failed = true
-					}
+	for _, extension := range extensions {
+		if strings.EqualFold(ptr.Deref(extension.Name, ""), vmssCSEExtensionName) && extension.Statuses != nil {
+			for _, status := range extension.Statuses {
+				if status.Level != nil && *status.Level == armcompute.StatusLevelTypesError {
+					errs = append(errs, ptr.Deref(status.Message, ""))
+					failed = true
 				}
 			}
 		}
 	}
+
 	return errs, failed
 }
 

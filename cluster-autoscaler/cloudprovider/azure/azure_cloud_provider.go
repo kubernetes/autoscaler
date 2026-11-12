@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"slices"
 	"strings"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -106,14 +107,9 @@ func (azure *AzureCloudProvider) GetNodeGpuConfig(ctx context.Context, node *api
 
 // NodeGroups returns all node groups configured for this cloud provider.
 func (azure *AzureCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
-	asgs := azure.azureManager.getNodeGroups()
+	nodeGroups := azure.azureManager.getNodeGroups()
 
-	ngs := make([]cloudprovider.NodeGroup, len(asgs))
-	for i, asg := range asgs {
-		ngs[i] = asg
-	}
-
-	return ngs
+	return slices.Clone(nodeGroups)
 }
 
 // NodeGroupForNode returns the node group for the given node.

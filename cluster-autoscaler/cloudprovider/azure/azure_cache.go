@@ -19,7 +19,7 @@ package azure
 import (
 	"context"
 	"errors"
-	"reflect"
+	"maps"
 	"regexp"
 	"strings"
 	"sync"
@@ -109,8 +109,11 @@ type azureCache struct {
 	// It is reset by invalidateUnownedInstanceCache().
 	unownedInstances map[azureRef]bool
 
-	autoscalingOptions map[azureRef]map[string]string
-	skus               *skewer.Cache
+	// autoscalingOptions keeps the autoscaling options extracted from VMSS tags.
+	// It is merged with provided defaults when determining the effective autoscaling options for a scale set.
+	autoscalingOptions *cache.Cache[azureRef, map[string]string]
+
+	skus *skewer.Cache
 }
 
 func newAzureCache(client *azClient, cacheTTL time.Duration, config Config) (*azureCache, error) {
@@ -146,6 +149,11 @@ func newAzureCache(client *azClient, cacheTTL time.Duration, config Config) (*az
 		cache.WithKeyCanonicalizer(strings.ToLower),
 	)
 
+	autoscalingOptions := cache.New[azureRef, map[string]string](
+		klog.Background(),
+		cache.WithKeyCanonicalizer(azureRef.canonicalize),
+	)
+
 	cache := &azureCache{
 		interrupt:            make(chan struct{}),
 		azClient:             client,
@@ -162,7 +170,7 @@ func newAzureCache(client *azClient, cacheTTL time.Duration, config Config) (*az
 		instanceToNodeGroup:  instanceToNodeGroup,
 		instanceStates:       instanceStates,
 		unownedInstances:     make(map[azureRef]bool),
-		autoscalingOptions:   make(map[azureRef]map[string]string),
+		autoscalingOptions:   autoscalingOptions,
 		skus:                 &skewer.Cache{}, // populated iff config.EnableDynamicInstanceList
 	}
 
@@ -254,7 +262,8 @@ func (m *azureCache) regenerate() error {
 			Name: *vmss.Name,
 		}
 		options := extractAutoscalingOptionsFromScaleSetTags(vmss.Tags)
-		if !reflect.DeepEqual(m.getAutoscalingOptions(ref), options) {
+		oldOptions, ok := m.getAutoscalingOptions(ref)
+		if !ok || !maps.Equal(oldOptions, options) {
 			klog.V(4).Infof("Extracted autoscaling options from %q ScaleSet tags: %v", *vmss.Name, options)
 		}
 
@@ -266,7 +275,7 @@ func (m *azureCache) regenerate() error {
 
 	m.instanceToNodeGroup.ReplaceAll(newInstanceToNodeGroupCache)
 	m.instanceStates.ReplaceAll(newInstanceStates)
-	m.autoscalingOptions = newAutoscalingOptions
+	m.autoscalingOptions.ReplaceAll(newAutoscalingOptions)
 
 	// Reset unowned instances cache.
 	m.unownedInstances = make(map[azureRef]bool)
@@ -496,11 +505,11 @@ func (m *azureCache) getRegisteredNodeGroups() []cloudprovider.NodeGroup {
 	return m.registeredNodeGroups
 }
 
-func (m *azureCache) getAutoscalingOptions(ref azureRef) map[string]string {
+func (m *azureCache) getAutoscalingOptions(ref azureRef) (map[string]string, bool) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	return m.autoscalingOptions[ref]
+	return m.autoscalingOptions.Read(ref)
 }
 
 // HasInstance returns if a given instance exists in the azure cache
