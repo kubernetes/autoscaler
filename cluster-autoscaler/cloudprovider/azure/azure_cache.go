@@ -188,30 +188,18 @@ func newAzureCache(client *azClient, cacheTTL time.Duration, config Config) (*az
 }
 
 func (m *azureCache) readVMsPool(poolName string) (armcontainerservice.AgentPool, bool) {
-	m.mutex.Lock()
-	defer m.mutex.Unlock()
-
 	return m.vmsPools.Read(poolName)
 }
 
 func (m *azureCache) readVirtualMachines(poolName string) ([]*armcompute.VirtualMachine, bool) {
-	m.mutex.Lock()
-	defer m.mutex.Unlock()
-
 	return m.virtualMachines.Read(poolName)
 }
 
 func (m *azureCache) readScaleSet(vmssName string) (*armcompute.VirtualMachineScaleSet, bool) {
-	m.mutex.Lock()
-	defer m.mutex.Unlock()
-
 	return m.scaleSets.Read(vmssName)
 }
 
 func (m *azureCache) readAllScaleSets() []*armcompute.VirtualMachineScaleSet {
-	m.mutex.Lock()
-	defer m.mutex.Unlock()
-
 	return m.scaleSets.ReadAll()
 }
 
