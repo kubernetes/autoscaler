@@ -196,8 +196,7 @@ func (scaleSet *ScaleSet) MaxSize(ctx context.Context) int {
 // Callers that read or write mutable fields shared with resize paths,
 // especially SKU.Capacity and Etag, must hold vmssSizeMutex.
 func (scaleSet *ScaleSet) getVMSSFromCache() (*armcompute.VirtualMachineScaleSet, error) {
-	scaleSets := scaleSet.manager.azureCache.getScaleSetsCache()
-	vmss, exists := scaleSets.Read(scaleSet.Name)
+	vmss, exists := scaleSet.manager.azureCache.readScaleSetsCache(scaleSet.Name)
 	if !exists {
 		return nil, fmt.Errorf("could not find vmss: %s", scaleSet.Name)
 	}

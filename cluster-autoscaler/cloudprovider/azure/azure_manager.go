@@ -364,7 +364,7 @@ func (m *AzureManager) getFilteredNodeGroups(filter []labelAutoDiscoveryConfig) 
 
 // getFilteredScaleSets gets a list of scale sets and instanceIDs.
 func (m *AzureManager) getFilteredScaleSets(filter []labelAutoDiscoveryConfig) ([]cloudprovider.NodeGroup, error) {
-	vmssList := m.azureCache.getScaleSetsCache().ReadAll()
+	vmssList := m.azureCache.readAllScaleSetsCache()
 
 	var nodeGroups []cloudprovider.NodeGroup
 	for _, scaleSet := range vmssList {

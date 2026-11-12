@@ -193,11 +193,18 @@ func (m *azureCache) readVirtualMachinesCache(poolName string) ([]*armcompute.Vi
 	return m.virtualMachines.Read(poolName)
 }
 
-func (m *azureCache) getScaleSetsCache() *cache.Cache[string, *armcompute.VirtualMachineScaleSet] {
+func (m *azureCache) readScaleSetsCache(vmssName string) (*armcompute.VirtualMachineScaleSet, bool) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	return m.scaleSets
+	return m.scaleSets.Read(vmssName)
+}
+
+func (m *azureCache) readAllScaleSetsCache() []*armcompute.VirtualMachineScaleSet {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	return m.scaleSets.ReadAll()
 }
 
 // setScaleSet replaces the cached entry for a single VMSS, e.g. after a fresh GET.
@@ -242,12 +249,15 @@ func (m *azureCache) regenerate() error {
 
 	// Regenerate VMSS to autoscaling options mapping.
 	newAutoscalingOptions := make(map[azureRef]map[string]string)
-	for _, vmss := range m.getScaleSetsCache().ReadAll() {
-		ref := azureRef{Name: *vmss.Name}
+	for _, vmss := range m.readAllScaleSetsCache() {
+		ref := azureRef{
+			Name: *vmss.Name,
+		}
 		options := extractAutoscalingOptionsFromScaleSetTags(vmss.Tags)
 		if !reflect.DeepEqual(m.getAutoscalingOptions(ref), options) {
 			klog.V(4).Infof("Extracted autoscaling options from %q ScaleSet tags: %v", *vmss.Name, options)
 		}
+
 		newAutoscalingOptions[ref] = options
 	}
 
