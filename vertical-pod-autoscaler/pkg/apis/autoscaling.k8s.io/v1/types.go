@@ -166,7 +166,7 @@ const (
 )
 
 // EvictionChangeRequirement refers to the relationship between the new target recommendation for a Pod and its current requests, what kind of change is necessary for the Pod to be evicted
-// +kubebuilder:validation:Enum:=TargetHigherThanRequests;TargetLowerThanRequests
+// +kubebuilder:validation:Enum:=TargetHigherThanRequests;TargetLowerThanRequests;TargetHigherThanRequestsAndOOM
 type EvictionChangeRequirement string
 
 const (
@@ -174,6 +174,8 @@ const (
 	TargetHigherThanRequests EvictionChangeRequirement = "TargetHigherThanRequests"
 	// TargetLowerThanRequests means the new target recommendation for a Pod is lower than its current requests, i.e. the Pod is scaled down
 	TargetLowerThanRequests EvictionChangeRequirement = "TargetLowerThanRequests"
+	// TargetHigherThanRequestsAndOOM means the new target recommendation for at least one container in a Pod is higher than its current requests and that container has OOMed, i.e. the container was most likely OOM killed with a request lower than the recommendation that will be applied after eviction. The OOM event needs to be recent: within the VPA's evictAfterOOMSeconds if set and the PerVPAConfig feature gate is enabled, otherwise within the --evict-after-oom-threshold flag value (default 10 minutes).
+	TargetHigherThanRequestsAndOOM EvictionChangeRequirement = "TargetHigherThanRequestsAndOOM"
 )
 
 // EvictionRequirement defines a single condition which needs to be true in

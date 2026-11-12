@@ -18,12 +18,17 @@ package priority
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	featuregatetesting "k8s.io/component-base/featuregate/testing"
+	"k8s.io/utils/ptr"
 
 	vpaautoscalingv1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
 
@@ -67,14 +72,14 @@ func TestLoopInit(t *testing.T) {
 		newVpaToPodMap := map[*vpaautoscalingv1.VerticalPodAutoscaler][]*corev1.Pod{newTestVPA: {pod, pod2}}
 
 		sdpea.LoopInit(nil, newVpaToPodMap)
-		assert.Len(t, sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements, 0)
+		assert.Len(t, storedEvictionRequirements(sdpea), 0)
 	})
 
 	t.Run("it should store EvictionRequirements from VPA in a map per Pod", func(t *testing.T) {
 		sdpea := NewScalingDirectionPodEvictionAdmission()
 		sdpea.LoopInit(nil, vpaToPodMap)
-		assert.Len(t, sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements, 2)
-		assert.Equal(t, sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements, expectedEvictionRequirements)
+		assert.Len(t, storedEvictionRequirements(sdpea), 2)
+		assert.Equal(t, storedEvictionRequirements(sdpea), expectedEvictionRequirements)
 	})
 
 	t.Run("it should change the stored EvictionRequirement if EvictionRequirement on the VPA changed", func(t *testing.T) {
@@ -98,8 +103,8 @@ func TestLoopInit(t *testing.T) {
 			pod2: newPodEvictionRequirements,
 		}
 		sdpea.LoopInit(nil, newVpaToPodMap)
-		assert.Len(t, sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements, 2)
-		assert.Equal(t, sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements, newExpectedEvictionRequirements)
+		assert.Len(t, storedEvictionRequirements(sdpea), 2)
+		assert.Equal(t, storedEvictionRequirements(sdpea), newExpectedEvictionRequirements)
 	})
 
 	t.Run("it should remove a Pod from the stored EvictionRequirements when it no longer exists", func(t *testing.T) {
@@ -122,8 +127,8 @@ func TestLoopInit(t *testing.T) {
 			pod2: newPodEvictionRequirements,
 		}
 		sdpea.LoopInit(nil, newVpaToPodMap)
-		assert.Len(t, sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements, 1)
-		assert.Equal(t, sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements, newExpectedEvictionRequirements)
+		assert.Len(t, storedEvictionRequirements(sdpea), 1)
+		assert.Equal(t, storedEvictionRequirements(sdpea), newExpectedEvictionRequirements)
 	})
 }
 
@@ -150,7 +155,7 @@ func TestAdmitForSingleContainer(t *testing.T) {
 			},
 		}}
 		sdpea := NewScalingDirectionPodEvictionAdmission()
-		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = evictionRequirements
+		setEvictionRequirements(sdpea, evictionRequirements)
 		recommendation := test.Recommendation().WithContainer("test-container-without-requests").WithTarget("600m", "10Gi").Get()
 
 		assert.Equal(t, true, sdpea.Admit(podWithoutRequests, recommendation))
@@ -173,7 +178,7 @@ func TestAdmitForSingleContainer(t *testing.T) {
 			},
 		}
 		sdpea := NewScalingDirectionPodEvictionAdmission()
-		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = evictionRequirements
+		setEvictionRequirements(sdpea, evictionRequirements)
 		// Recommendation is higher than ContainerStatus requests, but lower than
 		// PodSpec requests. This should be admitted (eviction requirement is
 		// TargetHigherThanRequests), given that ContainerStatus has priority over
@@ -185,7 +190,7 @@ func TestAdmitForSingleContainer(t *testing.T) {
 
 	t.Run("it should admit a Pod for eviction if no config is given", func(t *testing.T) {
 		sdpea := NewScalingDirectionPodEvictionAdmission()
-		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = map[*corev1.Pod][]*vpaautoscalingv1.EvictionRequirement{pod: {}}
+		setEvictionRequirements(sdpea, map[*corev1.Pod][]*vpaautoscalingv1.EvictionRequirement{pod: {}})
 		recommendation := test.Recommendation().WithContainer(containerName).WithTarget("600m", "10Gi").Get()
 
 		assert.Equal(t, true, sdpea.Admit(pod, recommendation))
@@ -201,7 +206,7 @@ func TestAdmitForSingleContainer(t *testing.T) {
 			},
 		}
 		sdpea := NewScalingDirectionPodEvictionAdmission()
-		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = evictionRequirements
+		setEvictionRequirements(sdpea, evictionRequirements)
 		recommendation := test.Recommendation().WithContainer(containerName).WithTarget("600m", "10Gi").Get()
 
 		assert.Equal(t, true, sdpea.Admit(pod, recommendation))
@@ -217,7 +222,7 @@ func TestAdmitForSingleContainer(t *testing.T) {
 			},
 		}
 		sdpea := NewScalingDirectionPodEvictionAdmission()
-		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = evictionRequirements
+		setEvictionRequirements(sdpea, evictionRequirements)
 		recommendation := test.Recommendation().WithContainer(containerName).WithTarget("400m", "10Gi").Get()
 
 		assert.Equal(t, true, sdpea.Admit(pod, recommendation))
@@ -232,7 +237,7 @@ func TestAdmitForSingleContainer(t *testing.T) {
 			},
 		}
 		sdpea := NewScalingDirectionPodEvictionAdmission()
-		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = evictionRequirements
+		setEvictionRequirements(sdpea, evictionRequirements)
 		recommendation := test.Recommendation().WithContainer(containerName).WithTarget("500m", "10Gi").Get()
 
 		assert.Equal(t, false, sdpea.Admit(pod, recommendation))
@@ -247,7 +252,7 @@ func TestAdmitForSingleContainer(t *testing.T) {
 			},
 		}
 		sdpea := NewScalingDirectionPodEvictionAdmission()
-		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = evictionRequirements
+		setEvictionRequirements(sdpea, evictionRequirements)
 		recommendation := test.Recommendation().WithContainer(containerName).WithTarget("500m", "11Gi").Get()
 
 		assert.Equal(t, true, sdpea.Admit(pod, recommendation))
@@ -263,7 +268,7 @@ func TestAdmitForSingleContainer(t *testing.T) {
 			},
 		}
 		sdpea := NewScalingDirectionPodEvictionAdmission()
-		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = evictionRequirements
+		setEvictionRequirements(sdpea, evictionRequirements)
 		recommendation := test.Recommendation().WithContainer(containerName).WithTarget("500m", "11Gi").Get()
 
 		assert.Equal(t, true, sdpea.Admit(pod, recommendation))
@@ -279,7 +284,7 @@ func TestAdmitForSingleContainer(t *testing.T) {
 			},
 		}
 		sdpea := NewScalingDirectionPodEvictionAdmission()
-		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = evictionRequirements
+		setEvictionRequirements(sdpea, evictionRequirements)
 		recommendation := test.Recommendation().WithContainer(containerName).WithTarget("500m", "9Gi").Get()
 
 		assert.Equal(t, true, sdpea.Admit(pod, recommendation))
@@ -295,7 +300,7 @@ func TestAdmitForSingleContainer(t *testing.T) {
 			},
 		}
 		sdpea := NewScalingDirectionPodEvictionAdmission()
-		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = evictionRequirements
+		setEvictionRequirements(sdpea, evictionRequirements)
 		recommendation := test.Recommendation().WithContainer(containerName).WithTarget("500m", "9Gi").Get()
 
 		assert.Equal(t, false, sdpea.Admit(pod, recommendation))
@@ -315,7 +320,7 @@ func TestAdmitForSingleContainer(t *testing.T) {
 			},
 		}
 		sdpea := NewScalingDirectionPodEvictionAdmission()
-		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = evictionRequirements
+		setEvictionRequirements(sdpea, evictionRequirements)
 		recommendation := test.Recommendation().WithContainer(containerName).WithTarget("600m", "9Gi").Get()
 
 		assert.Equal(t, true, sdpea.Admit(pod, recommendation))
@@ -331,7 +336,7 @@ func TestAdmitForSingleContainer(t *testing.T) {
 			},
 		}
 		sdpea := NewScalingDirectionPodEvictionAdmission()
-		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = evictionRequirements
+		setEvictionRequirements(sdpea, evictionRequirements)
 		recommendation := test.Recommendation().WithContainer(containerName).WithTarget("1000m", "9Gi").Get()
 
 		assert.Equal(t, false, sdpea.Admit(pod, recommendation))
@@ -351,7 +356,7 @@ func TestAdmitForSingleContainer(t *testing.T) {
 			},
 		}
 		sdpea := NewScalingDirectionPodEvictionAdmission()
-		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = evictionRequirements
+		setEvictionRequirements(sdpea, evictionRequirements)
 		recommendation := test.Recommendation().WithContainer(containerName).WithTarget("600m", "9Gi").Get()
 
 		assert.Equal(t, false, sdpea.Admit(pod, recommendation))
@@ -376,7 +381,7 @@ func TestAdmitForMultipleContainer(t *testing.T) {
 			},
 		}
 		sdpea := NewScalingDirectionPodEvictionAdmission()
-		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = evictionRequirements
+		setEvictionRequirements(sdpea, evictionRequirements)
 		recommendation := &vpaautoscalingv1.RecommendedPodResources{
 			ContainerRecommendations: []vpaautoscalingv1.RecommendedContainerResources{
 				test.Recommendation().WithContainer(container1Name).WithTarget("600m", "10Gi").GetContainerResources(),
@@ -397,7 +402,7 @@ func TestAdmitForMultipleContainer(t *testing.T) {
 			},
 		}
 		sdpea := NewScalingDirectionPodEvictionAdmission()
-		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = evictionRequirements
+		setEvictionRequirements(sdpea, evictionRequirements)
 		recommendation := &vpaautoscalingv1.RecommendedPodResources{
 			ContainerRecommendations: []vpaautoscalingv1.RecommendedContainerResources{
 				test.Recommendation().WithContainer(container1Name).WithTarget("200m", "10Gi").GetContainerResources(),
@@ -418,7 +423,7 @@ func TestAdmitForMultipleContainer(t *testing.T) {
 			},
 		}
 		sdpea := NewScalingDirectionPodEvictionAdmission()
-		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = evictionRequirements
+		setEvictionRequirements(sdpea, evictionRequirements)
 		recommendation := &vpaautoscalingv1.RecommendedPodResources{
 			ContainerRecommendations: []vpaautoscalingv1.RecommendedContainerResources{
 				test.Recommendation().WithContainer(container1Name).WithTarget("200m", "10Gi").GetContainerResources(),
@@ -439,7 +444,7 @@ func TestAdmitForMultipleContainer(t *testing.T) {
 			},
 		}
 		sdpea := NewScalingDirectionPodEvictionAdmission()
-		sdpea.(*scalingDirectionPodEvictionAdmission).EvictionRequirements = evictionRequirements
+		setEvictionRequirements(sdpea, evictionRequirements)
 		recommendation := &vpaautoscalingv1.RecommendedPodResources{
 			ContainerRecommendations: []vpaautoscalingv1.RecommendedContainerResources{
 				test.Recommendation().WithContainer(container2Name).WithTarget("300m", "10Gi").GetContainerResources(),
@@ -448,4 +453,167 @@ func TestAdmitForMultipleContainer(t *testing.T) {
 
 		assert.Equal(tt, false, sdpea.Admit(pod, recommendation))
 	})
+}
+
+func TestAdmitTargetHigherThanRequestsAndOOM(t *testing.T) {
+	container1Name := "test-container-1"
+	container2Name := "test-container-2"
+	memoryOOMRequirement := &vpaautoscalingv1.EvictionRequirement{
+		Resources:         []corev1.ResourceName{corev1.ResourceMemory},
+		ChangeRequirement: vpaautoscalingv1.TargetHigherThanRequestsAndOOM,
+	}
+	terminatedStatus := func(containerName, reason string, finishedAgo time.Duration) corev1.ContainerStatus {
+		return corev1.ContainerStatus{
+			Name: containerName,
+			LastTerminationState: corev1.ContainerState{
+				Terminated: &corev1.ContainerStateTerminated{
+					Reason:     reason,
+					StartedAt:  metav1.NewTime(time.Now().Add(-finishedAgo - time.Minute)),
+					FinishedAt: metav1.NewTime(time.Now().Add(-finishedAgo)),
+				},
+			},
+		}
+	}
+	newPod := func(statuses ...corev1.ContainerStatus) *corev1.Pod {
+		builder := test.Pod().WithName("test-pod").
+			AddContainer(test.Container().WithName(container1Name).WithCPURequest(resource.MustParse("500m")).WithMemRequest(resource.MustParse("1Gi")).Get()).
+			AddContainer(test.Container().WithName(container2Name).WithCPURequest(resource.MustParse("500m")).WithMemRequest(resource.MustParse("1Gi")).Get())
+		for _, status := range statuses {
+			builder = builder.AddContainerStatus(status)
+		}
+		return builder.Get()
+	}
+	newAdmission := func(pod *corev1.Pod, evictAfterOOMSeconds *int32, reqs []*vpaautoscalingv1.EvictionRequirement, opts ...ScalingDirectionPodEvictionAdmissionOption) PodEvictionAdmission {
+		vpa := test.VerticalPodAutoscaler().
+			WithName("test-vpa").
+			WithContainer(container1Name).
+			WithEvictionRequirements(reqs).
+			WithEvictAfterOOMSeconds(evictAfterOOMSeconds).
+			Get()
+		sdpea := NewScalingDirectionPodEvictionAdmission(opts...)
+		sdpea.LoopInit(nil, map[*vpaautoscalingv1.VerticalPodAutoscaler][]*corev1.Pod{vpa: {pod}})
+		return sdpea
+	}
+	recommendation := func(container1Target, container2Target string) *vpaautoscalingv1.RecommendedPodResources {
+		return &vpaautoscalingv1.RecommendedPodResources{
+			ContainerRecommendations: []vpaautoscalingv1.RecommendedContainerResources{
+				test.Recommendation().WithContainer(container1Name).WithTarget("500m", container1Target).GetContainerResources(),
+				test.Recommendation().WithContainer(container2Name).WithTarget("500m", container2Target).GetContainerResources(),
+			},
+		}
+	}
+
+	t.Run("it should admit a Pod if memory is scaled up for a container that recently OOMed", func(t *testing.T) {
+		pod := newPod(terminatedStatus(container1Name, "OOMKilled", time.Minute))
+		sdpea := newAdmission(pod, nil, []*vpaautoscalingv1.EvictionRequirement{memoryOOMRequirement})
+
+		assert.Equal(t, true, sdpea.Admit(pod, recommendation("1.5Gi", "1Gi")))
+	})
+
+	t.Run("it should admit a Pod if memory is scaled up for a container that is currently in terminated state due to OOM", func(t *testing.T) {
+		status := terminatedStatus(container1Name, "OOMKilled", time.Minute)
+		status.State.Terminated = status.LastTerminationState.Terminated
+		status.LastTerminationState.Terminated = nil
+		pod := newPod(status)
+		sdpea := newAdmission(pod, nil, []*vpaautoscalingv1.EvictionRequirement{memoryOOMRequirement})
+
+		assert.Equal(t, true, sdpea.Admit(pod, recommendation("1.5Gi", "1Gi")))
+	})
+
+	t.Run("it should not admit a Pod if memory is scaled up for a container that has not OOMed", func(t *testing.T) {
+		pod := newPod()
+		sdpea := newAdmission(pod, nil, []*vpaautoscalingv1.EvictionRequirement{memoryOOMRequirement})
+
+		assert.Equal(t, false, sdpea.Admit(pod, recommendation("1.5Gi", "1Gi")))
+	})
+
+	t.Run("it should not admit a Pod if the container OOMed longer ago than the threshold", func(t *testing.T) {
+		pod := newPod(terminatedStatus(container1Name, "OOMKilled", 20*time.Minute))
+		sdpea := newAdmission(pod, nil, []*vpaautoscalingv1.EvictionRequirement{memoryOOMRequirement})
+
+		assert.Equal(t, false, sdpea.Admit(pod, recommendation("1.5Gi", "1Gi")))
+	})
+
+	t.Run("it should not admit a Pod if the container was terminated for a reason other than OOM", func(t *testing.T) {
+		pod := newPod(terminatedStatus(container1Name, "Error", time.Minute))
+		sdpea := newAdmission(pod, nil, []*vpaautoscalingv1.EvictionRequirement{memoryOOMRequirement})
+
+		assert.Equal(t, false, sdpea.Admit(pod, recommendation("1.5Gi", "1Gi")))
+	})
+
+	t.Run("it should not admit a Pod if memory is scaled down for a container that recently OOMed", func(t *testing.T) {
+		pod := newPod(terminatedStatus(container1Name, "OOMKilled", time.Minute))
+		sdpea := newAdmission(pod, nil, []*vpaautoscalingv1.EvictionRequirement{memoryOOMRequirement})
+
+		assert.Equal(t, false, sdpea.Admit(pod, recommendation("512Mi", "1Gi")))
+	})
+
+	t.Run("it should not admit a Pod if the container that recently OOMed is not the one scaled up", func(t *testing.T) {
+		pod := newPod(terminatedStatus(container1Name, "OOMKilled", time.Minute))
+		sdpea := newAdmission(pod, nil, []*vpaautoscalingv1.EvictionRequirement{memoryOOMRequirement})
+
+		assert.Equal(t, false, sdpea.Admit(pod, recommendation("1Gi", "1.5Gi")))
+	})
+
+	t.Run("it should admit a Pod only if both EvictionRequirements are fulfilled", func(t *testing.T) {
+		pod := newPod(terminatedStatus(container1Name, "OOMKilled", time.Minute))
+		reqs := []*vpaautoscalingv1.EvictionRequirement{
+			memoryOOMRequirement,
+			{
+				Resources:         []corev1.ResourceName{corev1.ResourceCPU},
+				ChangeRequirement: vpaautoscalingv1.TargetHigherThanRequests,
+			},
+		}
+		sdpea := newAdmission(pod, nil, reqs)
+		cpuAndMemoryScaledUp := &vpaautoscalingv1.RecommendedPodResources{
+			ContainerRecommendations: []vpaautoscalingv1.RecommendedContainerResources{
+				test.Recommendation().WithContainer(container1Name).WithTarget("600m", "1.5Gi").GetContainerResources(),
+			},
+		}
+
+		assert.Equal(t, true, sdpea.Admit(pod, cpuAndMemoryScaledUp))
+		assert.Equal(t, false, sdpea.Admit(pod, recommendation("1.5Gi", "1Gi")))
+	})
+
+	t.Run("it should use the threshold passed with WithEvictAfterOOMThreshold", func(t *testing.T) {
+		thirtyMinutes := 30 * time.Minute
+		pod := newPod(terminatedStatus(container1Name, "OOMKilled", 20*time.Minute))
+		sdpea := newAdmission(pod, nil, []*vpaautoscalingv1.EvictionRequirement{memoryOOMRequirement}, WithEvictAfterOOMThreshold(thirtyMinutes))
+
+		assert.Equal(t, true, sdpea.Admit(pod, recommendation("1.5Gi", "1Gi")))
+	})
+
+	t.Run("it should use the per-VPA evictAfterOOMSeconds when PerVPAConfig is enabled", func(t *testing.T) {
+		thirtyMinutes := int32(30 * 60)
+		featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.PerVPAConfig, true)
+		pod := newPod(terminatedStatus(container1Name, "OOMKilled", 20*time.Minute))
+		sdpea := newAdmission(pod, ptr.To(thirtyMinutes), []*vpaautoscalingv1.EvictionRequirement{memoryOOMRequirement})
+
+		assert.Equal(t, true, sdpea.Admit(pod, recommendation("1.5Gi", "1Gi")))
+	})
+
+	t.Run("it should ignore the per-VPA evictAfterOOMSeconds when PerVPAConfig is disabled", func(t *testing.T) {
+		thirtyMinutes := int32(30 * 60)
+		featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.PerVPAConfig, false)
+		pod := newPod(terminatedStatus(container1Name, "OOMKilled", 20*time.Minute))
+		sdpea := newAdmission(pod, ptr.To(thirtyMinutes), []*vpaautoscalingv1.EvictionRequirement{memoryOOMRequirement})
+
+		assert.Equal(t, false, sdpea.Admit(pod, recommendation("1.5Gi", "1Gi")))
+	})
+}
+
+func setEvictionRequirements(admission PodEvictionAdmission, reqs map[*corev1.Pod][]*vpaautoscalingv1.EvictionRequirement) {
+	configs := make(map[*corev1.Pod]vpaEvictionConfig)
+	for pod, podReqs := range reqs {
+		configs[pod] = vpaEvictionConfig{requirements: podReqs}
+	}
+	admission.(*scalingDirectionPodEvictionAdmission).evictionConfigs = configs
+}
+
+func storedEvictionRequirements(admission PodEvictionAdmission) map[*corev1.Pod][]*vpaautoscalingv1.EvictionRequirement {
+	reqs := make(map[*corev1.Pod][]*vpaautoscalingv1.EvictionRequirement)
+	for pod, config := range admission.(*scalingDirectionPodEvictionAdmission).evictionConfigs {
+		reqs[pod] = config.requirements
+	}
+	return reqs
 }
