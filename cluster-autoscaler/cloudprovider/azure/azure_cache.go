@@ -179,28 +179,28 @@ func newAzureCache(client *azClient, cacheTTL time.Duration, config Config) (*az
 	return cache, nil
 }
 
-func (m *azureCache) readVMsPoolCache(poolName string) (armcontainerservice.AgentPool, bool) {
+func (m *azureCache) readVMsPool(poolName string) (armcontainerservice.AgentPool, bool) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	return m.vmsPools.Read(poolName)
 }
 
-func (m *azureCache) readVirtualMachinesCache(poolName string) ([]*armcompute.VirtualMachine, bool) {
+func (m *azureCache) readVirtualMachines(poolName string) ([]*armcompute.VirtualMachine, bool) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	return m.virtualMachines.Read(poolName)
 }
 
-func (m *azureCache) readScaleSetsCache(vmssName string) (*armcompute.VirtualMachineScaleSet, bool) {
+func (m *azureCache) readScaleSet(vmssName string) (*armcompute.VirtualMachineScaleSet, bool) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	return m.scaleSets.Read(vmssName)
 }
 
-func (m *azureCache) readAllScaleSetsCache() []*armcompute.VirtualMachineScaleSet {
+func (m *azureCache) readAllScaleSets() []*armcompute.VirtualMachineScaleSet {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -249,7 +249,7 @@ func (m *azureCache) regenerate() error {
 
 	// Regenerate VMSS to autoscaling options mapping.
 	newAutoscalingOptions := make(map[azureRef]map[string]string)
-	for _, vmss := range m.readAllScaleSetsCache() {
+	for _, vmss := range m.readAllScaleSets() {
 		ref := azureRef{
 			Name: *vmss.Name,
 		}

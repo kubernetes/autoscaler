@@ -197,7 +197,7 @@ func (m *AzureManager) parseSKUAndVMsAgentpoolNameFromSpecName(name string) (boo
 		agentPoolName := parts[0]
 		sku := parts[1]
 
-		if _, ok := m.azureCache.readVMsPoolCache(agentPoolName); ok {
+		if _, ok := m.azureCache.readVMsPool(agentPoolName); ok {
 			return true, agentPoolName, sku
 		}
 	}
@@ -364,7 +364,7 @@ func (m *AzureManager) getFilteredNodeGroups(filter []labelAutoDiscoveryConfig) 
 
 // getFilteredScaleSets gets a list of scale sets and instanceIDs.
 func (m *AzureManager) getFilteredScaleSets(filter []labelAutoDiscoveryConfig) ([]cloudprovider.NodeGroup, error) {
-	vmssList := m.azureCache.readAllScaleSetsCache()
+	vmssList := m.azureCache.readAllScaleSets()
 
 	var nodeGroups []cloudprovider.NodeGroup
 	for _, scaleSet := range vmssList {

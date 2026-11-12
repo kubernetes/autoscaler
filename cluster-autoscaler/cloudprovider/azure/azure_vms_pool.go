@@ -429,7 +429,7 @@ func (vmPool *VMPool) getSpotPoolSize() (int32, error) {
 // https://learn.microsoft.com/en-us/azure/virtual-machines/states-billing#provisioning-states
 func (vmPool *VMPool) getVMsFromCache(op skipOption) ([]*armcompute.VirtualMachine, error) {
 	var filteredVMs []*armcompute.VirtualMachine
-	if vms, ok := vmPool.manager.azureCache.readVirtualMachinesCache(vmPool.agentPoolName); ok {
+	if vms, ok := vmPool.manager.azureCache.readVirtualMachines(vmPool.agentPoolName); ok {
 		for _, vm := range vms {
 			if vm.Properties == nil ||
 				vm.Properties.HardwareProfile == nil ||
@@ -509,7 +509,7 @@ func (vmPool *VMPool) TemplateNodeInfo(ctx context.Context) (*framework.NodeInfo
 }
 
 func (vmPool *VMPool) getAgentpoolFromCache() (armcontainerservice.AgentPool, error) {
-	agentPool, exists := vmPool.manager.azureCache.readVMsPoolCache(vmPool.agentPoolName)
+	agentPool, exists := vmPool.manager.azureCache.readVMsPool(vmPool.agentPoolName)
 	if !exists {
 		return armcontainerservice.AgentPool{}, fmt.Errorf("VMs agent pool %s not found in cache", vmPool.agentPoolName)
 	}
