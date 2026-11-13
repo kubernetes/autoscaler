@@ -27,12 +27,16 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 )
 
+// maxInitialDelaySeconds is the largest allowed initialDelaySeconds (90 days).
+const maxInitialDelaySeconds = 7776000
+
 // VPAValidationOptions contains the different settings for VPA validation
 type VPAValidationOptions struct {
 	IsVPACreate          bool
 	AllowCPUStartupBoost bool
 	AllowPerVPAConfig    bool
 	AllowInPlace         bool
+	AllowInitialDelay    bool
 	// ExistingControlledResources contains the controlled resources already
 	// present in the old VPA object, which stay allowed on update even if
 	// they wouldn't be accepted on create.
@@ -45,6 +49,7 @@ func getValidationOptionsForVPA(oldObj *vpa_types.VerticalPodAutoscaler) VPAVali
 		AllowCPUStartupBoost:        allowCPUBoost(oldObj),
 		AllowPerVPAConfig:           allowPerVPAConfig(oldObj),
 		AllowInPlace:                allowInPlace(oldObj),
+		AllowInitialDelay:           allowInitialDelay(oldObj),
 		ExistingControlledResources: existingControlledResources(oldObj),
 	}
 
@@ -130,6 +135,14 @@ func allowInPlace(oldObj *vpa_types.VerticalPodAutoscaler) bool {
 	return false
 }
 
+func allowInitialDelay(oldObj *vpa_types.VerticalPodAutoscaler) bool {
+	if features.Enabled(features.VPAInitialDelay) {
+		return true
+	}
+
+	return oldObj != nil && oldObj.Spec.UpdatePolicy != nil && oldObj.Spec.UpdatePolicy.InitialDelaySeconds != nil
+}
+
 func validateVPA(vpa *vpa_types.VerticalPodAutoscaler, opts VPAValidationOptions) ([]string, field.ErrorList) {
 	return validateVPASpec(&vpa.Spec, field.NewPath("spec"), opts)
 }
@@ -196,6 +209,14 @@ func validateVPASpecUpdatePolicy(updatePolicy *vpa_types.PodUpdatePolicy, fldPat
 			}
 		} else {
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("evictAfterOOMSeconds"), fmt.Sprintf("not supported when feature flag %s is disabled", features.PerVPAConfig)))
+		}
+	}
+
+	if delay := updatePolicy.InitialDelaySeconds; delay != nil {
+		if !opts.AllowInitialDelay {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("initialDelaySeconds"), fmt.Sprintf("not supported when feature flag %s is disabled", features.VPAInitialDelay)))
+		} else if *delay < 1 || *delay > maxInitialDelaySeconds {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("initialDelaySeconds"), *delay, fmt.Sprintf("must be between 1 and %d", maxInitialDelaySeconds)))
 		}
 	}
 
