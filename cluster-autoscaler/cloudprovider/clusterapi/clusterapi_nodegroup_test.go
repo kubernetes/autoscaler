@@ -354,15 +354,67 @@ func TestNodeGroupIncreaseSizeErrors(t *testing.T) {
 
 func TestNodeGroupIncreaseSize(t *testing.T) {
 	type testCase struct {
-		description string
-		delta       int
-		initial     int32
-		expected    int32
+		description    string
+		delta          int
+		initial        int32
+		expected       int32
+		annotations    map[string]string
+		enforceMinSize bool
+		errorMsg       string
 	}
+
+	// A group at 0 replicas is only registered when it can scale from zero.
+	scaleFromZero := map[string]string{
+		nodeGroupMinSizeAnnotationKey: "2",
+		nodeGroupMaxSizeAnnotationKey: "10",
+		cpuKey:                        "1",
+		memoryKey:                     "1024Mi",
+	}
+
+	testCases := []testCase{{
+		description: "increase by 1",
+		delta:       1,
+		initial:     3,
+		expected:    4,
+		annotations: map[string]string{
+			nodeGroupMinSizeAnnotationKey: "1",
+			nodeGroupMaxSizeAnnotationKey: "10",
+		},
+	}, {
+		description: "increase from below min size is rejected without enforce-node-group-min-size",
+		delta:       1,
+		initial:     0,
+		expected:    0,
+		annotations: scaleFromZero,
+		errorMsg:    "size decrease too large - desired:1 min:2",
+	}, {
+		description:    "increase from below min size with enforce-node-group-min-size",
+		delta:          1,
+		initial:        0,
+		expected:       2,
+		annotations:    scaleFromZero,
+		enforceMinSize: true,
+	}, {
+		description: "increase by more than the gap to min size",
+		delta:       3,
+		initial:     0,
+		expected:    3,
+		annotations: scaleFromZero,
+	}, {
+		description: "increase from min size",
+		delta:       1,
+		initial:     2,
+		expected:    3,
+		annotations: map[string]string{
+			nodeGroupMinSizeAnnotationKey: "2",
+			nodeGroupMaxSizeAnnotationKey: "10",
+		},
+	}}
 
 	test := func(t *testing.T, tc *testCase, testConfig *TestConfig) {
 		controller := NewTestMachineController(t)
 		defer controller.Stop()
+		controller.enforceNodeGroupMinSize = tc.enforceMinSize
 		controller.AddTestConfigs(testConfig)
 
 		nodegroups, err := controller.nodeGroups()
@@ -384,7 +436,15 @@ func TestNodeGroupIncreaseSize(t *testing.T) {
 			t.Errorf("initially expected %v, got %v", tc.initial, currReplicas)
 		}
 
-		if err := ng.IncreaseSize(context.Background(), tc.delta); err != nil {
+		err = ng.IncreaseSize(context.Background(), tc.delta)
+		if tc.errorMsg != "" {
+			if err == nil {
+				t.Fatal("expected an error")
+			}
+			if !strings.Contains(err.Error(), tc.errorMsg) {
+				t.Errorf("expected error message to contain %q, got %q", tc.errorMsg, err.Error())
+			}
+		} else if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
@@ -404,39 +464,30 @@ func TestNodeGroupIncreaseSize(t *testing.T) {
 		}
 	}
 
-	annotations := map[string]string{
-		nodeGroupMinSizeAnnotationKey: "1",
-		nodeGroupMaxSizeAnnotationKey: "10",
-	}
-
 	t.Run("MachineSet", func(t *testing.T) {
-		tc := testCase{
-			description: "increase by 1",
-			initial:     3,
-			expected:    4,
-			delta:       1,
+		for _, tc := range testCases {
+			t.Run(tc.description, func(t *testing.T) {
+				testConfig := NewTestConfigBuilder().
+					ForMachineSet().
+					WithNodeCount(int(tc.initial)).
+					WithAnnotations(tc.annotations).
+					Build()
+				test(t, &tc, testConfig)
+			})
 		}
-		testConfig := NewTestConfigBuilder().
-			ForMachineSet().
-			WithNodeCount(int(tc.initial)).
-			WithAnnotations(annotations).
-			Build()
-		test(t, &tc, testConfig)
 	})
 
 	t.Run("MachineDeployment", func(t *testing.T) {
-		tc := testCase{
-			description: "increase by 1",
-			initial:     3,
-			expected:    4,
-			delta:       1,
+		for _, tc := range testCases {
+			t.Run(tc.description, func(t *testing.T) {
+				testConfig := NewTestConfigBuilder().
+					ForMachineDeployment().
+					WithNodeCount(int(tc.initial)).
+					WithAnnotations(tc.annotations).
+					Build()
+				test(t, &tc, testConfig)
+			})
 		}
-		testConfig := NewTestConfigBuilder().
-			ForMachineDeployment().
-			WithNodeCount(int(tc.initial)).
-			WithAnnotations(annotations).
-			Build()
-		test(t, &tc, testConfig)
 	})
 }
 
