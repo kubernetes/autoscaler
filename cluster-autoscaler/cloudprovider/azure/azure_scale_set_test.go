@@ -38,6 +38,9 @@ import (
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/virtualmachinescalesetclient/mock_virtualmachinescalesetclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/virtualmachinescalesetvmclient/mock_virtualmachinescalesetvmclient"
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	coretest "sigs.k8s.io/cluster-autoscaler/pkg/core/test"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/taints"
+	testutils "sigs.k8s.io/cluster-autoscaler/pkg/utils/test"
 )
 
 const (
@@ -1639,6 +1642,15 @@ func TestScaleSetTemplateNodeInfo(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
+	// Restore these global lookup functions after the subtests so their fake SKU
+	// results do not leak into later tests.
+	originalDynamicLookup := GetInstanceTypeDynamically
+	originalStaticLookup := GetInstanceTypeStatically
+	t.Cleanup(func() {
+		GetInstanceTypeDynamically = originalDynamicLookup
+		GetInstanceTypeStatically = originalStaticLookup
+	})
+
 	expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus", armcompute.OrchestrationModeUniform)
 
 	provider := newTestProvider(t)
@@ -3146,6 +3158,73 @@ func TestScaleSetTargetSizeSpotReadErrors(t *testing.T) {
 				assert.ErrorIs(t, err, tt.err)
 				assert.Equal(t, -1, size)
 			}
+		})
+	}
+}
+
+func TestScaleSetMissingVMSSDoesNotBlockHealthyScaleUp(t *testing.T) {
+	// Ensure we test both cached and uncached templates for the missing VMSS.
+	// cached=true simulates the case where the VMSS disappeared after working successfully previously.
+	// cached=false simulates the case where the VMSS was never cached successfully (create never worked)
+	for _, cachedTemplate := range []bool{false, true} {
+		t.Run(fmt.Sprintf("cached_missing_group_template=%t", cachedTemplate), func(t *testing.T) {
+			ctx := t.Context()
+			now := time.Now()
+			fixture := newTestAzureAutoscaler(t)
+
+			fixture.azure.mocks.vmssClient.EXPECT().List(gomock.Any(), fixture.azure.provider.azureManager.config.ResourceGroup).
+				Return(newTestVMSSList(0, testASG, testLocation, armcompute.OrchestrationModeUniform), nil)
+			fixture.azure.mocks.vmssVMClient.EXPECT().ListVMInstanceView(gomock.Any(), fixture.azure.provider.azureManager.config.ResourceGroup, testASG).
+				Return([]*armcompute.VirtualMachineScaleSetVM{}, nil).AnyTimes()
+			fixture.azure.mocks.deleteClient.EXPECT().BeginCreateOrUpdate(gomock.Any(), fixture.azure.provider.azureManager.config.ResourceGroup, testASG,
+				gomock.Cond(func(vmss armcompute.VirtualMachineScaleSet) bool {
+					return vmss.SKU != nil && vmss.SKU.Capacity != nil && *vmss.SKU.Capacity == 1
+				}), gomock.Any()).Return(nil, nil)
+			require.NoError(t, fixture.azure.provider.azureManager.forceRefresh())
+
+			// Configure 1 missing and 1 healthy VMSS.
+			missing := newTestScaleSet(fixture.azure.provider.azureManager, "missing-vmss")
+			healthy := newTestScaleSet(fixture.azure.provider.azureManager, testASG)
+			require.True(t, fixture.azure.provider.azureManager.RegisterNodeGroup(missing))
+			require.True(t, fixture.azure.provider.azureManager.RegisterNodeGroup(healthy))
+
+			templates := fixture.core.autoscalingCtx.TemplateNodeInfoRegistry
+			if cachedTemplate {
+				fixture.azure.provider.azureManager.azureCache.setScaleSet(missing.Id(),
+					newTestVMSSList(0, missing.Id(), testLocation, armcompute.OrchestrationModeUniform)[0])
+			}
+			require.NoError(t, templates.Recompute(ctx, fixture.core.autoscalingCtx, nil, nil, taints.TaintConfig{}, now))
+			nodeInfos := templates.GetNodeInfos()
+			require.Contains(t, nodeInfos, healthy.Id())
+			if cachedTemplate {
+				// Model a template retained from before the VMSS disappeared.
+				require.Contains(t, nodeInfos, missing.Id())
+				fixture.azure.provider.azureManager.azureCache.mutex.Lock()
+				delete(fixture.azure.provider.azureManager.azureCache.scaleSets, missing.Id())
+				fixture.azure.provider.azureManager.azureCache.mutex.Unlock()
+			} else {
+				require.NotContains(t, nodeInfos, missing.Id())
+			}
+
+			require.NoError(t, fixture.core.registry.UpdateNodes(ctx, nil, now))
+			pods := []*apiv1.Pod{testutils.BuildTestPod("pending", 1000, 1000)}
+
+			if cachedTemplate {
+				fixture.core.autoscalingCtx.ExpanderStrategy = coretest.NewMockReportingStrategy(t,
+					&coretest.GroupSizeChange{GroupName: missing.Id(), SizeChange: 1}, nil)
+				_, err := fixture.core.scaleUp.ScaleUp(ctx, pods, nil, nil, nodeInfos, false)
+				require.ErrorContains(t, err, "could not find vmss: missing-vmss")
+				require.True(t, fixture.core.registry.BackoffStatusForNodeGroup(ctx, missing, time.Now()).IsBackedOff)
+			}
+
+			fixture.core.autoscalingCtx.ExpanderStrategy = coretest.NewMockReportingStrategy(t,
+				&coretest.GroupSizeChange{GroupName: healthy.Id(), SizeChange: 1}, nil)
+			result, scaleUpErr := fixture.core.scaleUp.ScaleUp(ctx, pods, nil, nil, nodeInfos, false)
+			require.NoError(t, scaleUpErr)
+			require.True(t, result.WasSuccessful())
+			size, err := healthy.TargetSize(ctx)
+			require.NoError(t, err)
+			assert.Equal(t, 1, size)
 		})
 	}
 }
