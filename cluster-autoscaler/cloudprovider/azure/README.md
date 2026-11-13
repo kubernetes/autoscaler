@@ -56,6 +56,49 @@ k8s.io_cluster-autoscaler_node-template_resources_memory: 11Gi
 
 > **_NOTE_**: GPU autoscaling on VMSS is informed by the presence of the `kubernetes.azure.com/accelerator` Node label. A VMSS with GPUs whose Nodes do not have the label may not be scaled correctly. The `accelerator` label was used for this purpose in versions 1.31 and older.
 
+#### NVIDIA GPUs exposed via DRA
+
+The Azure provider uses an explicit, per-node label to distinguish NVIDIA GPUs
+exposed through Dynamic Resource Allocation (DRA) from GPUs exposed through the
+device plugin:
+
+```yaml
+kubernetes.azure.com/accelerator: nvidia
+kubernetes.azure.com/gpu-dra-driver: "true"
+```
+
+Only the exact value `"true"` enables this classification. The provider sets the
+GPU DRA driver name to `gpu.nvidia.com` instead of using an extended resource name.
+This lets the DRA readiness processor, rather than the legacy GPU allocatable
+check, assess the node. The label declares the configured GPU exposure mode; it
+does not assert readiness, install a driver, or cause a device plugin to be disabled.
+Do not use it to work around a missing or failed device plugin. Nodes without the
+opt-in retain their existing device-plugin behavior.
+
+This is a label contract consumed by Cluster Autoscaler, not automatic detection
+of an AKS node-pool setting or a running DRA driver. The cluster/node-pool
+provisioner must publish and maintain both labels on existing and new nodes and
+in their node-group template metadata. This also applies to self-managed DRA
+installations. Cluster Autoscaler does not add these labels to live nodes.
+
+For VMSS templates, the corresponding tags are:
+
+```yaml
+k8s.io_cluster-autoscaler_node-template_label_kubernetes.azure.com_accelerator: nvidia
+k8s.io_cluster-autoscaler_node-template_label_kubernetes.azure.com_gpu-dra-driver: "true"
+```
+
+These tags describe the synthetic template; they do not label the live nodes.
+Explicit template labels supplied by the provisioner take precedence over VMSS
+tags. VM pool templates use the node-pool labels, with explicit template labels
+taking precedence.
+
+Marked templates do not advertise `nvidia.com/gpu` capacity or allocatable, even
+if a VMSS resource-override tag supplies it, so DRA-only pools are not considered
+for device-plugin GPU requests. DRA scheduling and readiness still require
+appropriate ResourceSlice data and templates. This label does not synthesize
+ResourceSlices and is not, by itself, sufficient to enable DRA scale-from-zero.
+
 #### Autoscaling options
 
 Some autoscaling options can be defined per VM Scale Set, with tags.
