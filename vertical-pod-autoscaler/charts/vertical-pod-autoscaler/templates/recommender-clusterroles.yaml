@@ -35,6 +35,22 @@ rules:
       - get
       - list
       - watch
+  {{- if .Values.recommender.memoryPressure.nodeStatsAccess }}
+  - apiGroups:
+      - ""
+    resources:
+      - nodes/stats
+    verbs:
+      - get
+  {{- end }}
+  {{- if .Values.recommender.memoryPressure.nodeProxyAccess }}
+  - apiGroups:
+      - ""
+    resources:
+      - nodes/proxy
+    verbs:
+      - get
+  {{- end }}
   - apiGroups:
       - ""
       - events.k8s.io

@@ -208,6 +208,8 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 		config.DefaultUpdateThreshold,
 		config.PodLifetimeUpdateThreshold,
 		config.EvictAfterOOMThreshold,
+		config.PressureQuickUpdateWindow,
+		config.PressureQuickUpdateFraction,
 		config.AdmissionControllerStatusLeaseName,
 		admissionControllerStatusNamespace,
 		config.AdmissionControllerStatusLeaseTimeout,

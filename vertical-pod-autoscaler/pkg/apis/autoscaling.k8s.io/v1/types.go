@@ -302,6 +302,12 @@ type ContainerResourcePolicy struct {
 	// +optional
 	OOMMinBumpUp *resource.Quantity `json:"oomMinBumpUp,omitempty"`
 
+	// pressureDetection controls whether the recommender observes this container for sustained
+	// memory reclaim stall. Defaults to Disabled.
+	// +kubebuilder:validation:Enum=Enabled;Disabled
+	// +optional
+	PressureDetection *PressureDetectionMode `json:"pressureDetection,omitempty"`
+
 	// memoryAggregationIntervalSeconds is the length of a single interval
 	// (in seconds) for which the peak memory usage is computed.
 	// Memory usage peaks are aggregated in multiples of this interval.
@@ -413,7 +419,20 @@ type RecommendedContainerResources struct {
 	// Used only as status indication, will not affect actual resource assignment.
 	// +optional
 	UncappedTarget corev1.ResourceList `json:"uncappedTarget,omitempty"`
+	// lastPressureTime is when the recommender last accepted a memory pressure sample for this container.
+	// +optional
+	LastPressureTime *metav1.Time `json:"lastPressureTime,omitempty"`
 }
+
+// PressureDetectionMode controls memory pressure observation for a container.
+type PressureDetectionMode string
+
+const (
+	// PressureDetectionEnabled opts the container into memory pressure observation.
+	PressureDetectionEnabled PressureDetectionMode = "Enabled"
+	// PressureDetectionDisabled disables memory pressure observation.
+	PressureDetectionDisabled PressureDetectionMode = "Disabled"
+)
 
 // VerticalPodAutoscalerConditionType are the valid conditions of
 // a VerticalPodAutoscaler.

@@ -413,3 +413,15 @@ func TestAggregateContainerStateIsExpiredWithCustomIntervalCount(t *testing.T) {
 	assert.False(t, csEmpty.isExpired(testTimestamp.Add(windowLength-time.Hour)))
 	assert.True(t, csEmpty.isExpired(testTimestamp.Add(windowLength)))
 }
+
+func TestMergeAggregateContainerStateKeepsLatestPressureTime(t *testing.T) {
+	older, newer := NewAggregateContainerState(), NewAggregateContainerState()
+	older.RecordPressureObserved(testTimestamp)
+	newer.RecordPressureObserved(testTimestamp.Add(time.Minute))
+
+	older.MergeContainerState(newer)
+	assert.Equal(t, testTimestamp.Add(time.Minute), older.LastPressureTime)
+
+	newer.MergeContainerState(NewAggregateContainerState())
+	assert.Equal(t, testTimestamp.Add(time.Minute), newer.LastPressureTime, "merging a state with no pressure keeps the time")
+}

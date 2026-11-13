@@ -21,10 +21,12 @@ import (
 	"sync"
 	"time"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
 
 	vpaautoscalingv1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/checkpoint"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/logic"
@@ -77,13 +79,17 @@ func (r *recommender) GetClusterStateFeeder() input.ClusterStateFeeder {
 }
 
 func processVPAUpdate(r *recommender, vpa *model.Vpa, observedVpa *vpaautoscalingv1.VerticalPodAutoscaler) {
-	resources := r.podResourceRecommender.GetRecommendedPodResources(GetContainerNameToAggregateStateMap(vpa))
+	aggregates := GetContainerNameToAggregateStateMap(vpa)
+	resources := r.podResourceRecommender.GetRecommendedPodResources(aggregates)
 	had := vpa.HasRecommendation()
 
 	listOfResourceRecommendation := logic.MapToListOfRecommendedContainerResources(resources, r.recommendationFormat)
 
 	for _, postProcessor := range r.recommendationPostProcessor {
 		listOfResourceRecommendation = postProcessor.Process(observedVpa, listOfResourceRecommendation)
+	}
+	if features.Enabled(features.ReactiveMemoryPressureDetection) && listOfResourceRecommendation != nil {
+		setLastPressureTime(vpa, aggregates, observedVpa, listOfResourceRecommendation)
 	}
 
 	vpa.UpdateRecommendation(listOfResourceRecommendation)
@@ -150,6 +156,34 @@ func (r *recommender) UpdateVPAs() {
 
 	// Wait for all workers to finish
 	wg.Wait()
+}
+
+// setLastPressureTime stamps each opted-in container's recommendation with the time a pressure sample
+// was last accepted for it and carries an existing stamp forward otherwise. recs is built fresh every
+// loop, so a container that is no longer opted in loses its stamp by not having it carried forward.
+func setLastPressureTime(vpa *model.Vpa, aggregates model.ContainerNameToAggregateStateMap, observedVpa *vpaautoscalingv1.VerticalPodAutoscaler, recs *vpaautoscalingv1.RecommendedPodResources) {
+	previous := map[string]*metav1.Time{}
+	if observedVpa.Status.Recommendation != nil {
+		for _, r := range observedVpa.Status.Recommendation.ContainerRecommendations {
+			previous[r.ContainerName] = r.LastPressureTime
+		}
+	}
+	for i := range recs.ContainerRecommendations {
+		rec := &recs.ContainerRecommendations[i]
+		if !vpa_utils.IsPressureDetectionEnabled(rec.ContainerName, vpa.ResourcePolicy) {
+			continue
+		}
+		rec.LastPressureTime = previous[rec.ContainerName]
+		agg, ok := aggregates[rec.ContainerName]
+		if !ok || agg.LastPressureTime.IsZero() {
+			continue
+		}
+		if rec.LastPressureTime == nil || agg.LastPressureTime.After(rec.LastPressureTime.Time) {
+			t := metav1.NewTime(agg.LastPressureTime)
+			rec.LastPressureTime = &t
+			klog.V(4).InfoS("Stamping lastPressureTime", "vpa", klog.KRef(vpa.ID.Namespace, vpa.ID.VpaName), "container", rec.ContainerName, "time", t.Time)
+		}
+	}
 }
 
 func (r *recommender) MaintainCheckpoints(ctx context.Context) {

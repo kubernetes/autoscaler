@@ -422,6 +422,14 @@ spec:
                             when OOM is detected.
                           pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                           x-kubernetes-int-or-string: true
+                        pressureDetection:
+                          description: |-
+                            pressureDetection controls whether the recommender observes this container for sustained
+                            memory reclaim stall. Defaults to Disabled.
+                          enum:
+                          - Enabled
+                          - Disabled
+                          type: string
                         startupBoost:
                           description: |-
                             startupBoost specifies the startup boost policy for the container.
@@ -698,6 +706,11 @@ spec:
                       properties:
                         containerName:
                           description: Name of the container.
+                          type: string
+                        lastPressureTime:
+                          description: lastPressureTime is when the recommender last
+                            accepted a memory pressure sample for this container.
+                          format: date-time
                           type: string
                         lowerBound:
                           additionalProperties:
