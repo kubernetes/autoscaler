@@ -30,6 +30,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	corev1 "k8s.io/api/core/v1"
+	lifecyclev1alpha1 "k8s.io/api/lifecycle/v1alpha1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -1174,4 +1175,193 @@ func TestProcessNextBoostItem_RetryExhaustion_ThenResync(t *testing.T) {
 	assert.True(t, u.processNextBoostItem(ctx))
 	inplace.AssertNumberOfCalls(t, "InPlaceUpdate", 1)
 	assert.Equal(t, 0, queue.Len(), "queue should be empty after successful unboost")
+}
+
+func TestReconcileEvictionRequests_CleanupOnPodDeleted(t *testing.T) {
+	ctx := context.Background()
+	fakeClient := fake.NewSimpleClientset()
+
+	podUID := types.UID("deleted-pod-uid")
+	req := &lifecyclev1alpha1.EvictionRequest{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test-req-1",
+			Namespace: "default",
+			Labels: map[string]string{
+				"app.kubernetes.io/managed-by": "vpa-updater",
+			},
+		},
+		Spec: lifecyclev1alpha1.EvictionRequestSpec{
+			Target: lifecyclev1alpha1.EvictionRequestTarget{
+				Pod: &lifecyclev1alpha1.EvictionRequestPodReference{
+					Name: "deleted-pod",
+					UID:  podUID,
+				},
+			},
+			Requester: "vpa.autoscaling.k8s.io/updater",
+			Intent:    lifecyclev1alpha1.EvictionRequestIntentEviction,
+		},
+	}
+	_, err := fakeClient.LifecycleV1alpha1().EvictionRequests("default").Create(ctx, req, metav1.CreateOptions{})
+	require.NoError(t, err)
+
+	u := &updater{
+		kubeClient:               fakeClient,
+		vpaNamespace:             "default",
+		useEvictionRequest:       true,
+		evictionRequestRequester: "vpa.autoscaling.k8s.io/updater",
+		evictionRequestTimeout:   10 * time.Minute,
+	}
+
+	livePodUIDs := set.New[types.UID]()
+	allLivePods := []*corev1.Pod{}
+
+	activeUIDs := u.reconcileEvictionRequests(ctx, allLivePods, livePodUIDs)
+	assert.Equal(t, 0, activeUIDs.Len())
+
+	// Verify request was cleaned up (deleted)
+	_, err = fakeClient.LifecycleV1alpha1().EvictionRequests("default").Get(ctx, "test-req-1", metav1.GetOptions{})
+	assert.True(t, apierrors.IsNotFound(err))
+}
+
+func TestReconcileEvictionRequests_WithdrawalOnTimeout(t *testing.T) {
+	ctx := context.Background()
+	fakeClient := fake.NewSimpleClientset()
+
+	podUID := types.UID("timedout-pod-uid")
+	req := &lifecyclev1alpha1.EvictionRequest{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              "test-req-timeout",
+			Namespace:         "default",
+			CreationTimestamp: metav1.NewTime(time.Now().Add(-20 * time.Minute)),
+			Labels: map[string]string{
+				"app.kubernetes.io/managed-by": "vpa-updater",
+			},
+		},
+		Spec: lifecyclev1alpha1.EvictionRequestSpec{
+			Target: lifecyclev1alpha1.EvictionRequestTarget{
+				Pod: &lifecyclev1alpha1.EvictionRequestPodReference{
+					Name: "timedout-pod",
+					UID:  podUID,
+				},
+			},
+			Requester: "vpa.autoscaling.k8s.io/updater",
+			Intent:    lifecyclev1alpha1.EvictionRequestIntentEviction,
+		},
+	}
+	_, err := fakeClient.LifecycleV1alpha1().EvictionRequests("default").Create(ctx, req, metav1.CreateOptions{})
+	require.NoError(t, err)
+
+	pod := test.Pod().WithName("timedout-pod").AddContainer(test.Container().WithName("c").Get()).Get()
+	pod.UID = podUID
+
+	u := &updater{
+		kubeClient:               fakeClient,
+		vpaNamespace:             "default",
+		useEvictionRequest:       true,
+		evictionRequestRequester: "vpa.autoscaling.k8s.io/updater",
+		evictionRequestTimeout:   10 * time.Minute,
+	}
+
+	livePodUIDs := set.New[types.UID](podUID)
+	allLivePods := []*corev1.Pod{pod}
+
+	activeUIDs := u.reconcileEvictionRequests(ctx, allLivePods, livePodUIDs)
+	assert.Equal(t, 0, activeUIDs.Len())
+
+	// Verify request was updated to Withdrawn
+	updated, err := fakeClient.LifecycleV1alpha1().EvictionRequests("default").Get(ctx, "test-req-timeout", metav1.GetOptions{})
+	require.NoError(t, err)
+	assert.Equal(t, lifecyclev1alpha1.EvictionRequestIntentWithdrawn, updated.Spec.Intent)
+}
+
+func TestReconcileEvictionRequests_ActiveRetained(t *testing.T) {
+	ctx := context.Background()
+	fakeClient := fake.NewSimpleClientset()
+
+	podUID := types.UID("active-pod-uid")
+	req := &lifecyclev1alpha1.EvictionRequest{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              "test-req-active",
+			Namespace:         "default",
+			CreationTimestamp: metav1.NewTime(time.Now()),
+			Labels: map[string]string{
+				"app.kubernetes.io/managed-by": "vpa-updater",
+			},
+		},
+		Spec: lifecyclev1alpha1.EvictionRequestSpec{
+			Target: lifecyclev1alpha1.EvictionRequestTarget{
+				Pod: &lifecyclev1alpha1.EvictionRequestPodReference{
+					Name: "active-pod",
+					UID:  podUID,
+				},
+			},
+			Requester: "vpa.autoscaling.k8s.io/updater",
+			Intent:    lifecyclev1alpha1.EvictionRequestIntentEviction,
+		},
+	}
+	_, err := fakeClient.LifecycleV1alpha1().EvictionRequests("default").Create(ctx, req, metav1.CreateOptions{})
+	require.NoError(t, err)
+
+	replicas := int32(1)
+	rs := appsv1.ReplicaSet{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "ReplicaSet",
+			APIVersion: "apps/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rs",
+			Namespace: "default",
+		},
+		Spec: appsv1.ReplicaSetSpec{
+			Replicas: &replicas,
+		},
+	}
+
+	pod := test.Pod().WithName("active-pod").
+		WithLabels(map[string]string{"app": "test"}).
+		WithCreator(&rs.ObjectMeta, &rs.TypeMeta).
+		AddContainer(test.Container().WithName("c").WithCPURequest(resource.MustParse("10m")).Get()).
+		Get()
+	pod.UID = podUID
+
+	targetRef := &autoscalingv1.CrossVersionObjectReference{
+		Kind: "ReplicaSet", Name: "rs", APIVersion: "apps/v1",
+	}
+	vpaObj := test.VerticalPodAutoscaler().
+		WithName("vpa").
+		WithNamespace("default").
+		WithContainer("c").
+		WithTarget("100m", "500Mi").
+		WithTargetRef(targetRef).
+		Get()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockSelectorFetcher := target_mock.NewMockVpaTargetSelectorFetcher(ctrl)
+	mockSelectorFetcher.EXPECT().Fetch(gomock.Eq(vpaObj)).Return(labels.Everything(), nil).AnyTimes()
+
+	vpasByTarget := make(vpasByTargetController)
+	vpasByTarget.add(vpaObj, labels.Everything())
+
+	u := &updater{
+		kubeClient:               fakeClient,
+		vpaNamespace:             "default",
+		useEvictionRequest:       true,
+		evictionRequestRequester: "vpa.autoscaling.k8s.io/updater",
+		evictionRequestTimeout:   10 * time.Minute,
+		vpaIndexer:               newVPAIndexer(t, vpaObj),
+		vpasByTarget:             vpasByTarget,
+		selectorFetcher:          mockSelectorFetcher,
+		controllerFetcher:        controllerfetcher.FakeControllerFetcher{},
+		recommendationProcessor:  &test.FakeRecommendationProcessor{},
+		priorityProcessor:        priority.NewProcessor(),
+		evictionAdmission:        priority.NewDefaultPodEvictionAdmission(),
+	}
+
+	livePodUIDs := set.New[types.UID](podUID)
+	allLivePods := []*corev1.Pod{pod}
+
+	activeUIDs := u.reconcileEvictionRequests(ctx, allLivePods, livePodUIDs)
+	// Active request is retained and tracked
+	assert.True(t, activeUIDs.Has(podUID))
 }
