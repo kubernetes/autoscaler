@@ -129,6 +129,8 @@ Note that this doesn't prevent scaling down entirely, as Pods may get recreated 
 
 Here is an example configuration which allows evictions only when memory gets scaled up for a container that was recently OOMKilled
 
+_Available from VPA 1.9.0 as an alpha feature behind the `EvictionRequirementOOMScaleUp` feature gate (disabled by default). Enable it on both the admission-controller and the updater with `--feature-gates=EvictionRequirementOOMScaleUp=true`._
+
 ```yaml
  updatePolicy:
    evictionRequirements:

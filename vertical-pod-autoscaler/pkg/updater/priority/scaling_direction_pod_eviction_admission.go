@@ -136,6 +136,9 @@ func (c container) checkChangeRequirement(resource corev1.ResourceName, req vpa_
 	case vpa_types.TargetLowerThanRequests:
 		return target.MilliValue() < request.MilliValue()
 	case vpa_types.TargetHigherThanRequestsAndOOM:
+		if !features.Enabled(features.EvictionRequirementOOMScaleUp) {
+			return false
+		}
 		return c.hasRecentOOM && target.MilliValue() > request.MilliValue()
 	}
 	return false

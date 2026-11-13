@@ -456,6 +456,7 @@ func TestAdmitForMultipleContainer(t *testing.T) {
 }
 
 func TestAdmitTargetHigherThanRequestsAndOOM(t *testing.T) {
+	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.EvictionRequirementOOMScaleUp, true)
 	container1Name := "test-container-1"
 	container2Name := "test-container-2"
 	memoryOOMRequirement := &vpaautoscalingv1.EvictionRequirement{
@@ -597,6 +598,14 @@ func TestAdmitTargetHigherThanRequestsAndOOM(t *testing.T) {
 		featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.PerVPAConfig, false)
 		pod := newPod(terminatedStatus(container1Name, "OOMKilled", 20*time.Minute))
 		sdpea := newAdmission(pod, ptr.To(thirtyMinutes), []*vpaautoscalingv1.EvictionRequirement{memoryOOMRequirement})
+
+		assert.Equal(t, false, sdpea.Admit(pod, recommendation("1.5Gi", "1Gi")))
+	})
+
+	t.Run("it should not admit a Pod when EvictionRequirementOOMScaleUp is disabled", func(t *testing.T) {
+		featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.EvictionRequirementOOMScaleUp, false)
+		pod := newPod(terminatedStatus(container1Name, "OOMKilled", time.Minute))
+		sdpea := newAdmission(pod, nil, []*vpaautoscalingv1.EvictionRequirement{memoryOOMRequirement})
 
 		assert.Equal(t, false, sdpea.Admit(pod, recommendation("1.5Gi", "1Gi")))
 	})

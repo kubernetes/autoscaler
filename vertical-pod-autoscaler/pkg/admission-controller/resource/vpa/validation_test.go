@@ -245,6 +245,70 @@ func TestAllowPerVPAConfig(t *testing.T) {
 	}
 }
 
+func TestAllowEvictionRequirementOOMScaleUp(t *testing.T) {
+	tests := []struct {
+		name        string
+		oldObj      *vpa_types.VerticalPodAutoscaler
+		featureFlag bool
+		expected    bool
+	}{
+		{
+			name:        "feature enabled returns true",
+			oldObj:      nil,
+			featureFlag: true,
+			expected:    true,
+		},
+		{
+			name:        "feature disabled and no oldObj returns false",
+			oldObj:      nil,
+			featureFlag: false,
+			expected:    false,
+		},
+		{
+			name: "feature disabled but oldObj has TargetHigherThanRequestsAndOOM set returns true",
+			oldObj: &vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						EvictionRequirements: []*vpa_types.EvictionRequirement{
+							{
+								Resources:         []corev1.ResourceName{corev1.ResourceMemory},
+								ChangeRequirement: vpa_types.TargetHigherThanRequestsAndOOM,
+							},
+						},
+					},
+				},
+			},
+			featureFlag: false,
+			expected:    true,
+		},
+		{
+			name: "feature disabled oldOjb has some other ChangeRequirements set returns false",
+			oldObj: &vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						EvictionRequirements: []*vpa_types.EvictionRequirement{
+							{
+								Resources:         []corev1.ResourceName{corev1.ResourceMemory},
+								ChangeRequirement: vpa_types.TargetHigherThanRequests,
+							},
+						},
+					},
+				},
+			},
+			featureFlag: false,
+			expected:    false,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.EvictionRequirementOOMScaleUp, tc.featureFlag)
+			result := allowEvictionRequirementOOMScaleUp(tc.oldObj)
+			assert.Equal(t, tc.expected, result)
+		})
+	}
+}
+
 func TestValidateVPA(t *testing.T) {
 	badUpdateMode := vpa_types.UpdateMode("bad")
 	validUpdateMode := vpa_types.UpdateModeOff
@@ -1326,6 +1390,49 @@ func TestValidateVPA(t *testing.T) {
 			},
 			opts:        VPAValidationOptions{IsVPACreate: true, AllowInPlace: false},
 			expectError: fmt.Errorf("spec.updatePolicy.updateMode: Forbidden: in order to use UpdateMode %s, you must enable feature gate %s in the admission-controller args", vpa_types.UpdateModeInPlace, features.InPlace),
+		},
+		{
+			name: "creating VPA with TargetHigherThanRequestsAndOOM not allowed by disabled feature gate",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: &inPlaceOrRecreateUpdateMode,
+						EvictionRequirements: []*vpa_types.EvictionRequirement{
+							{
+								Resources:         []corev1.ResourceName{corev1.ResourceMemory},
+								ChangeRequirement: vpa_types.TargetHigherThanRequestsAndOOM,
+							},
+						},
+					},
+				},
+			},
+			opts:        VPAValidationOptions{IsVPACreate: true, AllowEvictionRequirementOOMScaleUp: false},
+			expectError: fmt.Errorf("spec.updatePolicy.evictionRequirements[0].changeRequirement: Forbidden: in order to use ChangeRequirement %s, you must enable feature gate %s in the admission-controller args", vpa_types.TargetHigherThanRequestsAndOOM, features.EvictionRequirementOOMScaleUp),
+		},
+		{
+			name: "creating VPA with TargetHigherThanRequestsAndOOM allowed by enabled feature gate",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					TargetRef: &autoscalingv1.CrossVersionObjectReference{
+						Kind: "Deployment",
+						Name: "my-app",
+					},
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: &inPlaceOrRecreateUpdateMode,
+						EvictionRequirements: []*vpa_types.EvictionRequirement{
+							{
+								Resources:         []corev1.ResourceName{corev1.ResourceMemory},
+								ChangeRequirement: vpa_types.TargetHigherThanRequestsAndOOM,
+							},
+						},
+					},
+				},
+			},
+			opts: VPAValidationOptions{IsVPACreate: true, AllowEvictionRequirementOOMScaleUp: true},
 		},
 		{
 			name: "InPlace update mode with minReplicas",

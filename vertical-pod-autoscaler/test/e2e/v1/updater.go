@@ -137,7 +137,7 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 		CheckNoPodsEvicted(f, MakePodSet(podList))
 	})
 	// Sets up a lease object updated periodically to signal - requires WithSerial()
-	framework.It("does not evict pods for upscaling when EvictionRequirement requires a recent OOM and the pods have not OOMed", framework.WithSerial(), func() {
+	framework.It("does not evict pods for upscaling when EvictionRequirement requires a recent OOM and the pods have not OOMed", framework.WithSerial(), framework.WithFeatureGate(features.EvictionRequirementOOMScaleUp), func() {
 		const statusUpdateInterval = 10 * time.Second
 
 		ginkgo.By("Setting up the Admission Controller status")
