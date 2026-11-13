@@ -39,7 +39,7 @@ In this mode:
 - Helm creates the MutatingWebhookConfiguration and sets its `caBundle` from the same CA, so the two always match
 - On `helm upgrade` the existing Secret is reused when Helm can look it up
 
-Helm cannot look up the Secret under `helm template`, Argo CD or Flux, so there a new certificate is generated on every render (the Secret and `caBundle` still match). This mode is meant for getting started and testing. For production, supply your own certificate by setting `tls.caCert`, `tls.cert` and `tls.key` (for example from an encrypted values file), or use one of the modes below.
+Offline rendering, such as `helm template` or Argo CD (which renders with `helm template`), cannot look up the Secret, so a new certificate is generated on every render (the Secret and `caBundle` still match). Flux `HelmRelease` runs Helm install and upgrade against the cluster, so it can reuse the existing Secret. This mode is meant for getting started and testing. For production, supply your own certificate by setting `tls.caCert`, `tls.cert` and `tls.key` (for example from an encrypted values file), or use one of the modes below.
 
 #### Rotating a supplied certificate
 The webhook `caBundle` is updated as soon as Helm applies a change, but running admission controller pods only pick up a new serving certificate when the kubelet refreshes the mounted Secret (up to about a minute). If the new certificate is signed by a different CA, requests in that window fail verification (with `failurePolicy: Ignore` pods are admitted without VPA mutation). To avoid the gap, rotate in two upgrades: first set `tls.caCert` to the old and new CA certificates concatenated, keeping the old `cert` and `key`; then switch `cert` and `key` to the new certificate while keeping both CAs in `tls.caCert`. Remove the old CA in a later upgrade.
@@ -291,7 +291,7 @@ This chart includes [helm-unittest](https://github.com/helm-unittest/helm-unitte
 | admissionController.strategy | object | `{}` |  |
 | admissionController.tls.caCert | string | `""` | Optional PEM CA certificate. If caCert, cert and key are all set, they are used instead of generating a certificate. |
 | admissionController.tls.cert | string | `""` | Optional PEM server certificate, see tls.caCert. |
-| admissionController.tls.create | bool | `true` | If true (default), Helm generates a CA and server certificate with genCA/genSignedCert, stores them in the Secret named by tls.secretName and sets the webhook caBundle from the same CA. The certificate changes on every render when lookup is unavailable (helm template, Argo CD, Flux); for production or GitOps set tls.caCert/cert/key, or set create to false and use registerWebhook or certManager. |
+| admissionController.tls.create | bool | `true` | If true (default), Helm generates a CA and server certificate with genCA/genSignedCert, stores them in the Secret named by tls.secretName and sets the webhook caBundle from the same CA. The certificate changes on every render when lookup is unavailable (offline rendering such as helm template or Argo CD); for production or GitOps set tls.caCert/cert/key, or set create to false and use registerWebhook or certManager. |
 | admissionController.tls.key | string | `""` | Optional PEM server private key, see tls.caCert. |
 | admissionController.tls.secretName | string | `"vpa-tls-certs"` | Name of the TLS Secret (keys: ca, cert, key). |
 | admissionController.tls.validityDays | int | `36500` | Validity in days of the generated CA and server certificate (36500 is about 100 years). |

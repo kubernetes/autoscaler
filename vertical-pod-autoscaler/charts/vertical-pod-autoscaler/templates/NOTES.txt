@@ -32,7 +32,7 @@ Webhook Configuration:
    - The Secret and the webhook caBundle are rendered from the same CA
 
    ⚠️  The certificate is regenerated on every render when Helm cannot look up the existing
-   Secret (helm template, Argo CD, Flux). For production or GitOps, set
+   Secret (offline rendering such as helm template or Argo CD). For production or GitOps, set
    admissionController.tls.caCert/cert/key, use cert-manager, or use registerWebhook with your own Secret.
 {{- else if .Values.admissionController.certManager.enabled }}
    Mode: cert-manager

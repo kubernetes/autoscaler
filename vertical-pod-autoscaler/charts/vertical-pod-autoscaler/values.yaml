@@ -171,7 +171,7 @@ admissionController:
 
 
   tls:
-    # admissionController.tls.create -- If true (default), Helm generates a CA and server certificate with genCA/genSignedCert, stores them in the Secret named by tls.secretName and sets the webhook caBundle from the same CA. The certificate changes on every render when lookup is unavailable (helm template, Argo CD, Flux); for production or GitOps set tls.caCert/cert/key, or set create to false and use registerWebhook or certManager.
+    # admissionController.tls.create -- If true (default), Helm generates a CA and server certificate with genCA/genSignedCert, stores them in the Secret named by tls.secretName and sets the webhook caBundle from the same CA. The certificate changes on every render when lookup is unavailable (offline rendering such as helm template or Argo CD); for production or GitOps set tls.caCert/cert/key, or set create to false and use registerWebhook or certManager.
     create: true
     # admissionController.tls.secretName -- Name of the TLS Secret (keys: ca, cert, key).
     secretName: vpa-tls-certs
