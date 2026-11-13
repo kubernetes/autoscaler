@@ -120,7 +120,11 @@ func main() {
 		hostname,
 	)
 
-	calculators := []patch.Calculator{patch.NewResourceUpdatesCalculator(recommendationProvider, config.MaxAllowedCPUBoost), patch.NewObservedContainersCalculator()}
+	calculators := []patch.Calculator{
+		patch.NewResourceUpdatesCalculator(recommendationProvider, config.MaxAllowedCPUBoost),
+		patch.NewObservedContainersCalculator(),
+		patch.NewManagedLabelCalculator(),
+	}
 	as := logic.NewAdmissionServer(podPreprocessor, vpaPreprocessor, limitRangeCalculator, vpaMatcher, calculators)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		as.Serve(w, r)
