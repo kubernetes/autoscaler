@@ -44,7 +44,7 @@ func (m *gceManagerMock) GetMigSize(ctx context.Context, mig Mig) (int64, error)
 	return args.Get(0).(int64), args.Error(1)
 }
 
-func (m *gceManagerMock) IsMigStable(mig Mig) (bool, error) {
+func (m *gceManagerMock) IsMigStable(ctx context.Context, mig Mig) (bool, error) {
 	args := m.Called(mig)
 	return args.Get(0).(bool), args.Error(1)
 }

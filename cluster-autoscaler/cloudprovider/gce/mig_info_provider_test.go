@@ -965,16 +965,16 @@ func migInfoGetters() []migInfoGetter {
 		},
 		{
 			name: "GetMigIsStable",
-			get: func(_ context.Context, provider MigInfoProvider, migRef GceRef) error {
-				_, err := provider.GetMigIsStable(migRef)
+			get: func(ctx context.Context, provider MigInfoProvider, migRef GceRef) error {
+				_, err := provider.GetMigIsStable(ctx, migRef)
 				return err
 			},
 			invalidateAll: func(cache *GceCache) { cache.InvalidateAllMigIsStable(context.Background()) },
 		},
 		{
 			name: "GetListManagedInstancesResults",
-			get: func(_ context.Context, provider MigInfoProvider, migRef GceRef) error {
-				_, err := provider.GetListManagedInstancesResults(migRef)
+			get: func(ctx context.Context, provider MigInfoProvider, migRef GceRef) error {
+				_, err := provider.GetListManagedInstancesResults(ctx, migRef)
 				return err
 			},
 			invalidateAll: func(cache *GceCache) { cache.InvalidateAllListManagedInstancesResults() },
@@ -1134,7 +1134,7 @@ func TestRefreshMigInfo(t *testing.T) {
 			migLister := NewMigLister(tc.cache)
 			provider := NewCachingMigInfoProvider(tc.cache, migLister, client, mig.GceRef().Project, 1, 0*time.Second, false, true)
 
-			err := provider.RefreshMigInfo(tc.migQuery.GceRef())
+			err := provider.RefreshMigInfo(context.Background(), tc.migQuery.GceRef())
 			assert.Equal(t, tc.expectedErr, err)
 
 			cachedTargetSize, found := tc.cache.GetMigTargetSize(context.Background(), tc.migQuery.GceRef())
@@ -1310,7 +1310,7 @@ func TestGetListManagedInstancesResults(t *testing.T) {
 			migLister := NewMigLister(tc.cache)
 			provider := NewCachingMigInfoProvider(tc.cache, migLister, client, mig.GceRef().Project, 1, 0*time.Second, false, false)
 
-			results, err := provider.GetListManagedInstancesResults(mig.GceRef())
+			results, err := provider.GetListManagedInstancesResults(context.Background(), mig.GceRef())
 			cachedResults, found := tc.cache.GetListManagedInstancesResults(mig.GceRef())
 
 			assert.Equal(t, tc.expectedErr, err)
