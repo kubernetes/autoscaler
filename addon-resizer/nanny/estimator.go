@@ -17,11 +17,13 @@ limitations under the License.
 package nanny
 
 import (
-	"fmt"
+	"math"
+	"math/big"
+
+	inf "gopkg.in/inf.v0"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/klog/v2"
 )
 
 const (
@@ -95,29 +97,26 @@ func (e ExponentialEstimator) updatedResourceEstimator(resources []Resource) Res
 // Note this function takes into account resource units allowing it to compute
 // resource overhead values even with fractional values. For example, it can
 // handle incremental values of 0.5m for cpu resources.
-func computeResourceOverheadValueString(clusterSize uint64, resource Resource) string {
-	perResourceOverhead := resource.ExtraPerResource.String()
-	var perResourceValue float64
-	var perResourceUnit string
-	_, err := fmt.Sscanf(perResourceOverhead, "%f%s", &perResourceValue, &perResourceUnit)
-	if err != nil && err.Error() != "EOF" {
-		klog.Warningf(
-			"Failed to parse the per resource overhead string '%s'; error=%s",
-			perResourceOverhead, err)
-		// Default to not specifying any unit to maintain existing
-		// behaviour.
-		perResourceUnit = ""
+func computeResourceOverhead(clusterSize uint64, extra resource.Quantity) resource.Quantity {
+	overhead := extra.DeepCopy()
+	if clusterSize <= math.MaxInt64 && overhead.Mul(int64(clusterSize)) {
+		return overhead
 	}
-	return fmt.Sprintf("%f%s", perResourceValue*float64(clusterSize), perResourceUnit)
+	// Use arbitrary precision for counts outside int64 and products whose
+	// decimal representation cannot be handled by Mul's fast path.
+	original := extra.DeepCopy()
+	multiplier := inf.NewDecBig(new(big.Int).SetUint64(clusterSize), 0)
+	product := new(inf.Dec).Mul(original.AsDec(), multiplier)
+	return *resource.NewDecimalQuantity(*product, extra.Format)
 }
 
 func calculateResources(clusterSize uint64, resources []Resource) *corev1.ResourceRequirements {
 	limits := make(corev1.ResourceList)
 	requests := make(corev1.ResourceList)
 	for _, r := range resources {
-		overhead := computeResourceOverheadValueString(clusterSize, r)
-		newRes := r.Base
-		newRes.Add(resource.MustParse(overhead))
+		overhead := computeResourceOverhead(clusterSize, r.ExtraPerResource)
+		newRes := r.Base.DeepCopy()
+		newRes.Add(overhead)
 		limits[r.Name] = newRes
 		requests[r.Name] = newRes
 	}
