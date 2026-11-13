@@ -87,6 +87,7 @@ type Updater interface {
 type updater struct {
 	// vpaIndexer must have the vpa_api_util.TargetRefIndex index registered.
 	vpaIndexer                   cache.Indexer
+	vpaClient                    vpa_clientset.Interface
 	podLister                    listersv1.PodLister
 	eventRecorder                record.EventRecorder
 	restrictionFactory           restriction.PodsRestrictionFactory
@@ -153,6 +154,7 @@ func NewUpdater(
 	_, vpaIndexer := vpa_api_util.NewVpasListerWithIndexer(vpaClient, make(chan struct{}), namespace)
 	u := &updater{
 		vpaIndexer:                   vpaIndexer,
+		vpaClient:                    vpaClient,
 		podLister:                    podInformerFactory.Core().V1().Pods().Lister(),
 		eventRecorder:                newEventRecorder(kubeClient),
 		restrictionFactory:           factory,
@@ -220,6 +222,9 @@ func (u *updater) RunOnce(ctx context.Context) {
 		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
 	}
 	timer.ObserveStep("ListVPAs")
+
+	u.reconcileTargetConflicts(vpaList)
+	timer.ObserveStep("ReconcileTargetConflicts")
 
 	inPlaceFeatureEnabled := features.Enabled(features.InPlace)
 	if u.vpasByTarget == nil {
