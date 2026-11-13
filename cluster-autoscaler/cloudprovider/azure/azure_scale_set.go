@@ -196,13 +196,12 @@ func (scaleSet *ScaleSet) MaxSize(ctx context.Context) int {
 // Callers that read or write mutable fields shared with resize paths,
 // especially SKU.Capacity and Etag, must hold vmssSizeMutex.
 func (scaleSet *ScaleSet) getVMSSFromCache() (*armcompute.VirtualMachineScaleSet, error) {
-	allVMSS := scaleSet.manager.azureCache.getScaleSets()
-
-	if _, exists := allVMSS[scaleSet.Name]; !exists {
+	vmss, exists := scaleSet.manager.azureCache.readScaleSet(scaleSet.Name)
+	if !exists {
 		return nil, fmt.Errorf("could not find vmss: %s", scaleSet.Name)
 	}
 
-	return allVMSS[scaleSet.Name], nil
+	return vmss, nil
 }
 
 func (scaleSet *ScaleSet) getCurSize() (int64, *GetVMSSFailedError) {
@@ -1193,18 +1192,17 @@ func (scaleSet *ScaleSet) getOrchestrationMode() (*armcompute.OrchestrationMode,
 func (scaleSet *ScaleSet) cseErrors(extensions []*armcompute.VirtualMachineExtensionInstanceView) ([]string, bool) {
 	var errs []string
 	failed := false
-	if extensions != nil {
-		for _, extension := range extensions {
-			if strings.EqualFold(ptr.Deref(extension.Name, ""), vmssCSEExtensionName) && extension.Statuses != nil {
-				for _, status := range extension.Statuses {
-					if status.Level != nil && *status.Level == armcompute.StatusLevelTypesError {
-						errs = append(errs, ptr.Deref(status.Message, ""))
-						failed = true
-					}
+	for _, extension := range extensions {
+		if strings.EqualFold(ptr.Deref(extension.Name, ""), vmssCSEExtensionName) && extension.Statuses != nil {
+			for _, status := range extension.Statuses {
+				if status.Level != nil && *status.Level == armcompute.StatusLevelTypesError {
+					errs = append(errs, ptr.Deref(status.Message, ""))
+					failed = true
 				}
 			}
 		}
 	}
+
 	return errs, failed
 }
 
