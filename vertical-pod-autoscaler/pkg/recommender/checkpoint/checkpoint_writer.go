@@ -163,14 +163,16 @@ func groupContainersByAggregate(cluster model.ClusterState) containersAggregateM
 // excluding current memory peaks.
 func buildAggregateContainerStateMap(vpa *model.Vpa, containers containersAggregateMap, now time.Time) map[string]*model.AggregateContainerState {
 	states := vpa.AggregateStateByContainerName()
-	for key, group := range containers {
-		if !vpa.UsesAggregation(key) {
+	// Note: the memory peak from the current (ongoing) aggregation interval is not included in the
+	// checkpoint to avoid having multiple peaks in the same interval after the state is restored from
+	// the checkpoint. Therefore we are extracting the current peak from all containers.
+	for key := range vpa.AggregationKeys() {
+		state, exists := states[key.ContainerName()]
+		if !exists {
 			continue
 		}
-		if state, exists := states[key.ContainerName()]; exists {
-			for _, container := range group {
-				subtractCurrentContainerMemoryPeak(state, container, now)
-			}
+		for _, container := range containers[key] {
+			subtractCurrentContainerMemoryPeak(state, container, now)
 		}
 	}
 	return states
