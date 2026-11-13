@@ -45,6 +45,10 @@ type checkpointWriter struct {
 	cluster             model.ClusterState
 }
 
+// containersAggregateMap groups containers that contribute to the same usage
+// aggregate. Replicas with the same labels and container names share a key.
+type containersAggregateMap map[model.AggregateStateKey][]*model.ContainerState
+
 // NewCheckpointWriter returns new instance of a CheckpointWriter
 func NewCheckpointWriter(cluster model.ClusterState, vpaCheckpointClient vpa_api.VerticalPodAutoscalerCheckpointsGetter) CheckpointWriter {
 	return &checkpointWriter{
@@ -72,9 +76,9 @@ func getVpasToCheckpoint(clusterVpas map[model.VpaID]*model.Vpa) []*model.Vpa {
 	return vpas
 }
 
-func processCheckpointUpdateForVPA(vpa *model.Vpa, writer *checkpointWriter) {
+func processCheckpointUpdateForVPA(vpa *model.Vpa, writer *checkpointWriter, containers containersAggregateMap) {
 	now := time.Now()
-	aggregateContainerStateMap := buildAggregateContainerStateMap(vpa, writer.cluster, now)
+	aggregateContainerStateMap := buildAggregateContainerStateMap(vpa, containers, now)
 	for container, aggregatedContainerState := range aggregateContainerStateMap {
 		containerCheckpoint, err := aggregatedContainerState.SaveToCheckpoint()
 		if err != nil {
@@ -103,6 +107,12 @@ func processCheckpointUpdateForVPA(vpa *model.Vpa, writer *checkpointWriter) {
 func (writer *checkpointWriter) StoreCheckpoints(ctx context.Context, concurrentWorkers int) {
 	vpas := getVpasToCheckpoint(writer.cluster.VPAs())
 
+	// Build this map once per pass.
+	var containers containersAggregateMap
+	if len(vpas) > 0 && concurrentWorkers > 0 {
+		containers = groupContainersByAggregate(writer.cluster)
+	}
+
 	// Create a channel to send VPA updates to workers
 	vpaCheckpointUpdates := make(chan *model.Vpa, len(vpas))
 
@@ -112,7 +122,7 @@ func (writer *checkpointWriter) StoreCheckpoints(ctx context.Context, concurrent
 	for range concurrentWorkers {
 		wg.Go(func() {
 			for vpaToCheckpoint := range vpaCheckpointUpdates {
-				processCheckpointUpdateForVPA(vpaToCheckpoint, writer)
+				processCheckpointUpdateForVPA(vpaToCheckpoint, writer, containers)
 				select {
 				case <-ctx.Done():
 					return
@@ -138,26 +148,34 @@ func (writer *checkpointWriter) StoreCheckpoints(ctx context.Context, concurrent
 	}
 }
 
-// Build the AggregateContainerState for the purpose of the checkpoint. This is an aggregation of state of all
-// containers that belong to pods matched by the VPA.
-// Note however that we exclude the most recent memory peak for each container (see below).
-func buildAggregateContainerStateMap(vpa *model.Vpa, cluster model.ClusterState, now time.Time) map[string]*model.AggregateContainerState {
-	aggregateContainerStateMap := vpa.AggregateStateByContainerName()
+func groupContainersByAggregate(cluster model.ClusterState) containersAggregateMap {
+	groups := make(containersAggregateMap)
+	for _, pod := range cluster.Pods() {
+		for name, container := range pod.Containers {
+			key := cluster.MakeAggregateStateKey(pod, name)
+			groups[key] = append(groups[key], container)
+		}
+	}
+	return groups
+}
+
+// buildAggregateContainerStateMap merges a VPAs usage history for checkpointing,
+// excluding current memory peaks.
+func buildAggregateContainerStateMap(vpa *model.Vpa, containers containersAggregateMap, now time.Time) map[string]*model.AggregateContainerState {
+	states := vpa.AggregateStateByContainerName()
 	// Note: the memory peak from the current (ongoing) aggregation interval is not included in the
 	// checkpoint to avoid having multiple peaks in the same interval after the state is restored from
 	// the checkpoint. Therefore we are extracting the current peak from all containers.
-	// TODO: Avoid the nested loop over all containers for each VPA.
-	for _, pod := range cluster.Pods() {
-		for containerName, container := range pod.Containers {
-			aggregateKey := cluster.MakeAggregateStateKey(pod, containerName)
-			if vpa.UsesAggregation(aggregateKey) {
-				if aggregateContainerState, exists := aggregateContainerStateMap[containerName]; exists {
-					subtractCurrentContainerMemoryPeak(aggregateContainerState, container, now)
-				}
-			}
+	for key := range vpa.AggregationKeys() {
+		state, exists := states[key.ContainerName()]
+		if !exists {
+			continue
+		}
+		for _, container := range containers[key] {
+			subtractCurrentContainerMemoryPeak(state, container, now)
 		}
 	}
-	return aggregateContainerStateMap
+	return states
 }
 
 func subtractCurrentContainerMemoryPeak(a *model.AggregateContainerState, container *model.ContainerState, now time.Time) {
