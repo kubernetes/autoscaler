@@ -24,6 +24,7 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog/v2"
@@ -32,8 +33,10 @@ import (
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
-const targetConflictReason = "MultipleActiveVPATargetsFound"
-const noTargetConflictReason = "NoConflictingActiveVPATargets"
+const (
+	targetConflictReason   = "MultipleActiveVPATargetsFound"
+	noTargetConflictReason = "NoConflictingActiveVPATargets"
+)
 
 // targetConflictPatchAttempts bounds how often a TargetConflict patch is retried
 // when other writers keep changing the VPA's conditions.
@@ -120,7 +123,7 @@ func (u *updater) updateTargetConflictCondition(vpa *vpa_types.VerticalPodAutosc
 	if conflicting {
 		condStatus = corev1.ConditionTrue
 		reason = targetConflictReason
-		message = fmt.Sprintf("Conflict: multiple active VPAs target the same resource; VPA %q controls it and this VPA is not applied", controllingVpaName)
+		message = fmt.Sprintf("Conflict: multiple active VPAs target the same resource; VPA %q takes precedence and this VPA may not be fully applied", controllingVpaName)
 	}
 
 	if err := u.applyTargetConflictCondition(vpa, condStatus, reason, message); err != nil {
@@ -160,13 +163,14 @@ func (u *updater) applyTargetConflictCondition(vpa *vpa_types.VerticalPodAutosca
 		if err == nil {
 			return nil
 		}
-		// Only retry if the conditions really changed underneath us; any other
+		// Only retry if the VPA really changed underneath us (a conflict on the
+		// resourceVersion guard, or different conditions); any other
 		// failure (RBAC, VPA deleted, ...) won't be fixed by retrying.
 		fresh, getErr := vpaClient.Get(context.TODO(), vpa.Name, metav1.GetOptions{})
 		if getErr != nil {
 			return fmt.Errorf("%w (refetching the VPA also failed: %v)", err, getErr)
 		}
-		if attempt >= targetConflictPatchAttempts || apiequality.Semantic.DeepEqual(fresh.Status.Conditions, current.Status.Conditions) {
+		if attempt >= targetConflictPatchAttempts || (!apierrors.IsConflict(err) && apiequality.Semantic.DeepEqual(fresh.Status.Conditions, current.Status.Conditions)) {
 			return err
 		}
 		// The conflict was computed from the VPA as listed. If its spec changed since
@@ -198,14 +202,21 @@ type jsonPatchOp struct {
 // before the recommender has populated it), and a JSON Patch "add" fails if the
 // parent path is missing. JSON Patch also has no "path does not exist" test, so
 // this case uses a JSON merge patch on status.conditions instead: it creates
-// /status if needed, leaves the other status fields alone, and is unguarded.
+// /status if needed, leaves the other status fields alone, and is guarded by
+// metadata.resourceVersion.
 func (u *updater) patchTargetConflictConditions(vpa *vpa_types.VerticalPodAutoscaler, conditions []vpa_types.VerticalPodAutoscalerCondition) error {
 	vpaClient := u.vpaClient.AutoscalingV1().VerticalPodAutoscalers(vpa.Namespace)
 
 	if len(vpa.Status.Conditions) == 0 {
-		mergePatch, err := json.Marshal(map[string]any{
+		patchBody := map[string]any{
 			"status": map[string]any{"conditions": conditions},
-		})
+		}
+		// Optimistic concurrency: the API server rejects the patch with a
+		// conflict if the VPA changed since we read it.
+		if vpa.ResourceVersion != "" {
+			patchBody["metadata"] = map[string]any{"resourceVersion": vpa.ResourceVersion}
+		}
+		mergePatch, err := json.Marshal(patchBody)
 		if err != nil {
 			return fmt.Errorf("marshal TargetConflict merge patch: %v", err)
 		}

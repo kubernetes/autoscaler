@@ -37,7 +37,7 @@ func countStatusPatches(t *testing.T, vpas []conflictVpa) int {
 
 func TestReconcileTargetConflictsPatches(t *testing.T) {
 	// The message updateTargetConflictCondition builds for vpa-2 when vpa-1 controls the target.
-	const upToDate = `Conflict: multiple active VPAs target the same resource; VPA "vpa-1" controls it and this VPA is not applied`
+	const upToDate = `Conflict: multiple active VPAs target the same resource; VPA "vpa-1" takes precedence and this VPA may not be fully applied`
 
 	tests := []struct {
 		name        string

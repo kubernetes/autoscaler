@@ -177,6 +177,16 @@ func TestReconcileTargetConflicts(t *testing.T) {
 			wantConflict: map[string]string{"vpa-2": "vpa-1"},
 		},
 		{
+			// The admission controller counts Initial VPAs, so this is a real
+			// conflict even though the updater only evicts for the newer one.
+			name: "older Initial and newer Recreate still conflict",
+			vpas: []conflictVpa{
+				{name: "vpa-1", age: 2 * time.Hour, mode: vpa_types.UpdateModeInitial},
+				{name: "vpa-2", age: time.Hour},
+			},
+			wantConflict: map[string]string{"vpa-2": "vpa-1"},
+		},
+		{
 			name: "Off VPA is ignored",
 			vpas: []conflictVpa{
 				{name: "vpa-1", age: 2 * time.Hour, mode: vpa_types.UpdateModeOff},
