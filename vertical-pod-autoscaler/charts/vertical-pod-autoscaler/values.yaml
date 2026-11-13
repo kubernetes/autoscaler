@@ -10,6 +10,12 @@ fullnameOverride:
 # Labels to add to all chart resources.
 commonLabels: {}
 
+# vpaObjectNamespace -- Restrict all VPA components to VerticalPodAutoscaler objects and their workloads in this namespace.
+# When set, every component gets `--vpa-object-namespace`, the component ClusterRoles are bound with RoleBindings
+# in this namespace instead of ClusterRoleBindings, and the webhook only receives pods from this namespace unless
+# `admissionController.mutatingWebhookConfiguration.namespaceSelector` is set. Requires `admissionController.registerWebhook: false`.
+vpaObjectNamespace: ""
+
 rbac:
   # If `true`, create `ClusterRole` & `ClusterRoleBinding` resources to enable access to the Kubernetes API.
   create: true
