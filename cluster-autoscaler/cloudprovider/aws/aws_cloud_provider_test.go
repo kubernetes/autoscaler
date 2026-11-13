@@ -805,7 +805,7 @@ func TestHasInstance(t *testing.T) {
 			ProviderID: "aws:///us-east-1a/terminating-instance-id",
 		},
 	}
-	present, err = provider.HasInstance(node5)
+	present, err = provider.HasInstance(context.Background(), node5)
 	assert.NoError(t, err)
 	assert.False(t, present)
 }
@@ -814,7 +814,7 @@ func TestHasInstanceAfterDeleteNodes(t *testing.T) {
 	a := &autoScalingMock{}
 	m := newTestAwsManagerWithAsgs(t, a, nil, []string{"1:5:test-asg"})
 	provider := testProvider(t, m)
-	asgs := provider.NodeGroups()
+	asgs := provider.NodeGroups(context.Background())
 
 	markHealthy := func(out *autoscaling.DescribeAutoScalingGroupsOutput) *autoscaling.DescribeAutoScalingGroupsOutput {
 		for i := range out.AutoScalingGroups[0].Instances {
@@ -841,7 +841,7 @@ func TestHasInstanceAfterDeleteNodes(t *testing.T) {
 		},
 	).Return(markHealthy(testNamedDescribeAutoScalingGroupsOutput("test-asg", 2, "test-instance-id", "second-test-instance-id")), nil).Once()
 
-	err := provider.Refresh()
+	err := provider.Refresh(context.Background())
 	assert.NoError(t, err)
 
 	node := &apiv1.Node{
@@ -855,12 +855,12 @@ func TestHasInstanceAfterDeleteNodes(t *testing.T) {
 		},
 	}
 
-	err = asgs[0].DeleteNodes([]*apiv1.Node{node})
+	err = asgs[0].DeleteNodes(context.Background(), []*apiv1.Node{node})
 	assert.NoError(t, err)
 
 	// The instance must be reported as gone right after DeleteNodes(),
 	// before the cache is regenerated
-	present, err := provider.HasInstance(node)
+	present, err := provider.HasInstance(context.Background(), node)
 	assert.NoError(t, err)
 	assert.False(t, present)
 
@@ -877,7 +877,7 @@ func TestHasInstanceAfterDeleteNodes(t *testing.T) {
 	err = m.forceRefresh()
 	assert.NoError(t, err)
 
-	present, err = provider.HasInstance(node)
+	present, err = provider.HasInstance(context.Background(), node)
 	assert.NoError(t, err)
 	assert.False(t, present)
 
@@ -898,12 +898,12 @@ func TestHasInstanceAfterDeleteNodes(t *testing.T) {
 
 	// The instance must still be reported as gone after the regenerated
 	// cache picked it up from the API in the Terminating state
-	present, err = provider.HasInstance(node)
+	present, err = provider.HasInstance(context.Background(), node)
 	assert.NoError(t, err)
 	assert.False(t, present)
 
 	// The remaining instance is unaffected
-	present, err = provider.HasInstance(remainingNode)
+	present, err = provider.HasInstance(context.Background(), remainingNode)
 	assert.NoError(t, err)
 	assert.True(t, present)
 }
