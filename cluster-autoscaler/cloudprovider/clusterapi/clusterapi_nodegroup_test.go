@@ -27,11 +27,17 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	authv1 "k8s.io/api/authorization/v1"
 	corev1 "k8s.io/api/core/v1"
 	storagev1 "k8s.io/api/storage/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
+	clientgotesting "k8s.io/client-go/testing"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/utils/ptr"
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
@@ -2679,5 +2685,80 @@ func validateCSIDrivers(t *testing.T, expectedDrivers []storagev1.CSINodeDriver,
 		if !foundDriver {
 			t.Fatalf("Expected CSI driver %s not found in got drivers", gotDriver.Name)
 		}
+	}
+}
+
+// TestNodeGroupTemplateNodeInfoWithoutInfrastructureAccess verifies that
+// nodeGroups discovery and TemplateNodeInfo succeed using capacity annotations
+// when the autoscaler lacks RBAC access to infrastructure machine templates.
+func TestNodeGroupTemplateNodeInfoWithoutInfrastructureAccess(t *testing.T) {
+	annotations := map[string]string{
+		nodeGroupMinSizeAnnotationKey: "0",
+		nodeGroupMaxSizeAnnotationKey: "5",
+		cpuKey:                        "2",
+		memoryKey:                     "4Gi",
+	}
+
+	for _, scalableType := range []string{"MachineSet", "MachineDeployment"} {
+		t.Run(scalableType, func(t *testing.T) {
+			builder := NewTestConfigBuilder()
+			if scalableType == "MachineSet" {
+				builder = builder.ForMachineSet()
+			} else {
+				builder = builder.ForMachineDeployment()
+			}
+			testConfig := builder.
+				WithNodeCount(0).
+				WithAnnotations(annotations).
+				Build()
+
+			controller := NewTestMachineController(t)
+			defer controller.Stop()
+			if err := controller.AddTestConfigs(testConfig); err != nil {
+				t.Fatal(err)
+			}
+
+			controller.dynamicClientset.PrependReactor("list", "machinetemplates", func(action clientgotesting.Action) (bool, runtime.Object, error) {
+				return true, nil, apierrors.NewForbidden(
+					schema.GroupResource{Group: "infrastructure.cluster.x-k8s.io", Resource: "machinetemplates"},
+					"",
+					fmt.Errorf("machinetemplates is forbidden"),
+				)
+			})
+			controller.managementClientset.PrependReactor("create", "selfsubjectaccessreviews", func(action clientgotesting.Action) (bool, runtime.Object, error) {
+				createAction, ok := action.(clientgotesting.CreateAction)
+				if !ok {
+					return false, nil, nil
+				}
+				sar, ok := createAction.GetObject().(*authv1.SelfSubjectAccessReview)
+				if !ok {
+					return false, nil, nil
+				}
+				sar = sar.DeepCopy()
+				sar.Status.Allowed = false
+				return true, sar, nil
+			})
+
+			nodegroups, err := controller.nodeGroups()
+			if err != nil {
+				t.Fatalf("unexpected error listing nodegroups: %v", err)
+			}
+			if len(nodegroups) != 1 {
+				t.Fatalf("expected 1 nodegroup, got %d", len(nodegroups))
+			}
+
+			nodeInfo, err := nodegroups[0].TemplateNodeInfo(context.Background())
+			if err != nil {
+				t.Fatalf("unexpected error building TemplateNodeInfo: %v", err)
+			}
+			expectedCPU := resource.MustParse("2")
+			expectedMem := resource.MustParse("4Gi")
+			if gotCPU := nodeInfo.Node().Status.Capacity[corev1.ResourceCPU]; expectedCPU.Cmp(gotCPU) != 0 {
+				t.Errorf("expected CPU capacity %v, got %v", expectedCPU, gotCPU)
+			}
+			if gotMem := nodeInfo.Node().Status.Capacity[corev1.ResourceMemory]; expectedMem.Cmp(gotMem) != 0 {
+				t.Errorf("expected memory capacity %v, got %v", expectedMem, gotMem)
+			}
+		})
 	}
 }

@@ -25,6 +25,7 @@ import (
 	"sync"
 	"time"
 
+	authv1 "k8s.io/api/authorization/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -69,12 +70,24 @@ const (
 	autoDiscovererClusterNameKey  = "clusterName"
 	autoDiscovererNamespaceKey    = "namespace"
 
-	machinePhaseFailed  = "Failed"
-	kindVersionCacheTTL = time.Minute
+	machinePhaseFailed       = "Failed"
+	kindVersionCacheTTL      = time.Minute
+	infraAccessCacheTTL      = time.Minute
+	infraAccessReviewTimeout = 30 * time.Second
 )
 
 type kindVersionCacheEntry struct {
 	version  string
+	cachedAt time.Time
+}
+
+type infraAccessCacheKey struct {
+	resource  schema.GroupVersionResource
+	namespace string
+}
+
+type infraAccessCacheEntry struct {
+	allowed  bool
 	cachedAt time.Time
 }
 
@@ -91,9 +104,11 @@ type machineController struct {
 	machinePoolInformer         informers.GenericInformer
 	nodeInformer                cache.SharedIndexInformer
 	managementClient            dynamic.Interface
+	managementClientset         kubeclient.Interface
 	managementScaleClient       scale.ScalesGetter
 	managementDiscoveryClient   discovery.DiscoveryInterface
 	kindVersionCache            sync.Map
+	infraAccessCache            sync.Map
 	machineSetResource          schema.GroupVersionResource
 	machineResource             schema.GroupVersionResource
 	machinePoolResource         schema.GroupVersionResource
@@ -453,6 +468,7 @@ func getCAPIVersion() string {
 // the cluster.
 func newMachineController(
 	managementClient dynamic.Interface,
+	managementClientset kubeclient.Interface,
 	workloadClient kubeclient.Interface,
 	managementDiscoveryClient discovery.DiscoveryInterface,
 	managementScaleClient scale.ScalesGetter,
@@ -572,6 +588,7 @@ func newMachineController(
 		machinePoolInformer:         machinePoolInformer,
 		nodeInformer:                nodeInformer,
 		managementClient:            managementClient,
+		managementClientset:         managementClientset,
 		managementScaleClient:       managementScaleClient,
 		managementDiscoveryClient:   managementDiscoveryClient,
 		machineSetResource:          gvrMachineSet,
@@ -1061,8 +1078,70 @@ func (c *machineController) allowedByAutoDiscoverySpecs(r *unstructured.Unstruct
 	return false
 }
 
+// allowedAccessToInfrastructureResource checks whether the management client has
+// RBAC permissions to list and watch the given infrastructure resource in the
+// namespace scope used by managementInformerFactory, caching allowed and denied
+// decisions for infraAccessCacheTTL so repeated wrapper rebuilds across node
+// groups do not issue redundant SelfSubjectAccessReview calls.
+func (c *machineController) allowedAccessToInfrastructureResource(resource schema.GroupVersionResource) (bool, error) {
+	watchNamespace := namespaceToWatch(c.autoDiscoverySpecs)
+	key := infraAccessCacheKey{
+		resource:  resource,
+		namespace: watchNamespace,
+	}
+
+	if cached, ok := c.infraAccessCache.Load(key); ok {
+		entry := cached.(infraAccessCacheEntry)
+		if time.Since(entry.cachedAt) < infraAccessCacheTTL {
+			return entry.allowed, nil
+		}
+		c.infraAccessCache.Delete(key)
+	}
+
+	for _, verb := range []string{"list", "watch"} {
+		sar := &authv1.SelfSubjectAccessReview{
+			Spec: authv1.SelfSubjectAccessReviewSpec{
+				ResourceAttributes: &authv1.ResourceAttributes{
+					Namespace: watchNamespace,
+					Verb:      verb,
+					Group:     resource.Group,
+					Version:   resource.Version,
+					Resource:  resource.Resource,
+				},
+			},
+		}
+		ctx, cancel := context.WithTimeout(context.TODO(), infraAccessReviewTimeout)
+		resp, err := c.managementClientset.AuthorizationV1().
+			SelfSubjectAccessReviews().
+			Create(ctx, sar, metav1.CreateOptions{})
+		cancel()
+		if err != nil {
+			return false, err
+		}
+		if !resp.Status.Allowed {
+			c.infraAccessCache.Store(key, infraAccessCacheEntry{
+				allowed:  false,
+				cachedAt: time.Now(),
+			})
+			return false, nil
+		}
+	}
+
+	c.infraAccessCache.Store(key, infraAccessCacheEntry{
+		allowed:  true,
+		cachedAt: time.Now(),
+	})
+	return true, nil
+}
+
 // Get an infrastructure machine template given its GVR, name, and namespace.
 func (c *machineController) getInfrastructureResource(resource schema.GroupVersionResource, name string, namespace string) (*unstructured.Unstructured, error) {
+	allowed, err := c.allowedAccessToInfrastructureResource(resource)
+	if err != nil || !allowed {
+		klog.V(4).Infof("Unable to validate infrastructure reference authorization, error: %v", err)
+		return nil, err
+	}
+
 	// get an informer for this type, this will create the informer if it does not exist
 	informer := c.managementInformerFactory.ForResource(resource)
 	// since this may be a new informer, we need to restart the informer factory
