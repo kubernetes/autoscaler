@@ -359,12 +359,7 @@ func (c *cachingMigInfoProvider) GetMigTargetSize(ctx context.Context, migRef Gc
 		return targetSize, nil
 	}
 
-	var err error
-	if c.cache.IsMigTargetSizeCacheEmpty() {
-		// Cache is cold after Refresh() -- list all MIGs and populate the cache.
-		err = c.fillMigInfoCacheUnlessZoneFailed(ctx, migRef.Zone)
-	}
-
+	err := c.fillMigInfoCacheIfCold(ctx)
 	targetSize, found = c.cache.GetMigTargetSize(ctx, migRef)
 	if found && err == nil {
 		return targetSize, nil
@@ -372,8 +367,8 @@ func (c *cachingMigInfoProvider) GetMigTargetSize(ctx context.Context, migRef Gc
 
 	// We get here in one of 3 cases:
 	//  * InvalidateMigTargetSize was called for this specific mig, so it's not found in cache
-	//  * fillMigInfoCache returned an error
-	//  * MIG not found
+	//  * fillMigInfoCache returned an error, now or earlier since the cache was last invalidated
+	//  * MIG not found, e.g. because it was deleted or registered after MIGs were listed
 	err = c.fillSingleMigInfo(ctx, migRef)
 	if err != nil {
 		return 0, err
@@ -394,7 +389,7 @@ func (c *cachingMigInfoProvider) GetMigBasename(ctx context.Context, migRef GceR
 		return basename, nil
 	}
 
-	err := c.fillMigInfoCacheUnlessZoneFailed(ctx, migRef.Zone)
+	err := c.fillMigInfoCacheIfCold(ctx)
 	basename, found = c.cache.GetMigBasename(migRef)
 	if err == nil && found {
 		return basename, nil
@@ -420,7 +415,7 @@ func (c *cachingMigInfoProvider) GetMigInstanceTemplateName(ctx context.Context,
 		return instanceTemplateName, nil
 	}
 
-	err := c.fillMigInfoCacheUnlessZoneFailed(ctx, migRef.Zone)
+	err := c.fillMigInfoCacheIfCold(ctx)
 	instanceTemplateName, found = c.cache.GetMigInstanceTemplateName(ctx, migRef)
 	if err == nil && found {
 		return instanceTemplateName, nil
@@ -480,21 +475,23 @@ func (c *cachingMigInfoProvider) GetMigKubeEnv(ctx context.Context, migRef GceRe
 	return kubeEnv, nil
 }
 
-// fillMigInfoCacheUnlessZoneFailed needs to be called with migInfoMutex locked.
-// It short-circuits with the cached listing error when the given zone already
-// failed to list in this loop, so a cache miss for a MIG in that zone does not
-// trigger re-listing the remaining (healthy) zones.
-func (c *cachingMigInfoProvider) fillMigInfoCacheUnlessZoneFailed(ctx context.Context, zone string) error {
-	if err := c.cache.GetMigListingError(zone); err != nil {
-		return err
+// fillMigInfoCacheIfCold lists all MIGs to populate the MIG info cache, unless it has already been
+// attempted since the cache was last invalidated. It needs to be called with migInfoMutex locked.
+func (c *cachingMigInfoProvider) fillMigInfoCacheIfCold(ctx context.Context) error {
+	if c.cache.IsMigInfoCacheWarm() {
+		return nil
 	}
 	return c.fillMigInfoCache(ctx)
 }
 
 // fillMigInfoCache needs to be called with migInfoMutex locked.
+//
+// It marks the MIG info cache as warm even if listing MIGs fails, so that a failed listing is only
+// retried after the cache is invalidated, rather than for every MIG missing from the cache.
 // Zones whose listing already failed in this loop are not listed again; their
 // cached error is treated as if the listing failed again.
 func (c *cachingMigInfoProvider) fillMigInfoCache(ctx context.Context) error {
+	defer c.cache.MarkMigInfoCacheWarm()
 	logger := klog.FromContext(ctx)
 	allZones := c.listAllZonesWithMigs()
 	var zones []string
@@ -644,7 +641,7 @@ func (c *cachingMigInfoProvider) GetMigIsStable(migRef GceRef) (bool, error) {
 		return isStable, nil
 	}
 
-	err := c.fillMigInfoCacheUnlessZoneFailed(context.TODO(), migRef.Zone)
+	err := c.fillMigInfoCacheIfCold(context.TODO())
 	isStable, found = c.cache.GetMigIsStable(migRef)
 	if err == nil && found {
 		return isStable, nil
@@ -726,7 +723,7 @@ func (c *cachingMigInfoProvider) GetListManagedInstancesResults(migRef GceRef) (
 		return listManagedInstancesResults, nil
 	}
 
-	err := c.fillMigInfoCacheUnlessZoneFailed(context.TODO(), migRef.Zone)
+	err := c.fillMigInfoCacheIfCold(context.TODO())
 	listManagedInstancesResults, found = c.cache.GetListManagedInstancesResults(migRef)
 	if err == nil && found {
 		return listManagedInstancesResults, nil
