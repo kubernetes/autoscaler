@@ -22,15 +22,19 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
+	featuregatetesting "k8s.io/component-base/featuregate/testing"
 
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
 
 func TestGetVpaObservedContainersValue(t *testing.T) {
+	always := corev1.ContainerRestartPolicyAlways
 	tests := []struct {
-		name string
-		pod  *corev1.Pod
-		want string
+		name                 string
+		pod                  *corev1.Pod
+		nativeSidecarEnabled bool
+		want                 string
 	}{
 		{
 			name: "creating vpa observed containers annotation",
@@ -41,9 +45,28 @@ func TestGetVpaObservedContainersValue(t *testing.T) {
 				Get(),
 			want: "test1, test2, test3",
 		},
+		{
+			name: "native sidecar included when feature gate enabled",
+			pod: test.Pod().
+				AddContainer(test.Container().WithName("app").Get()).
+				AddInitContainer(corev1.Container{Name: "sidecar", RestartPolicy: &always}).
+				AddInitContainer(corev1.Container{Name: "plain-init"}).
+				Get(),
+			nativeSidecarEnabled: true,
+			want:                 "app, sidecar",
+		},
+		{
+			name: "native sidecar excluded when feature gate disabled",
+			pod: test.Pod().
+				AddContainer(test.Container().WithName("app").Get()).
+				AddInitContainer(corev1.Container{Name: "sidecar", RestartPolicy: &always}).
+				Get(),
+			want: "app",
+		},
 	}
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("test case: %s", tc.name), func(t *testing.T) {
+			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.NativeSidecar, tc.nativeSidecarEnabled)
 			got := GetVpaObservedContainersValue(tc.pod)
 			assert.Equal(t, got, tc.want)
 		})

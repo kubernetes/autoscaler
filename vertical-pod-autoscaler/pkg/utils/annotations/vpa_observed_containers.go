@@ -22,6 +22,9 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/validation"
+
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/features"
+	resourcehelpers "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/resources"
 )
 
 const (
@@ -35,6 +38,13 @@ func GetVpaObservedContainersValue(pod *corev1.Pod) string {
 	containerNames := make([]string, len(pod.Spec.Containers))
 	for i := range pod.Spec.Containers {
 		containerNames[i] = pod.Spec.Containers[i].Name
+	}
+	if features.Enabled(features.NativeSidecar) {
+		for i := range pod.Spec.InitContainers {
+			if resourcehelpers.IsNativeSidecar(&pod.Spec.InitContainers[i]) {
+				containerNames = append(containerNames, pod.Spec.InitContainers[i].Name)
+			}
+		}
 	}
 	return strings.Join(containerNames, listSeparator)
 }
