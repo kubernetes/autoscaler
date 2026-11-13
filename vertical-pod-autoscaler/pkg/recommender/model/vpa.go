@@ -302,7 +302,7 @@ func (vpa *Vpa) DeleteAggregation(aggregationKey AggregateStateKey) {
 	delete(vpa.aggregateContainerStates, aggregationKey)
 }
 
-// Aggregationkeys returns the keys of all aggregations that contribute to the VPA.
+// AggregationKeys returns the keys of all aggregations that contribute to the VPA.
 func (vpa *Vpa) AggregationKeys() iter.Seq[AggregateStateKey] {
 	return maps.Keys(vpa.aggregateContainerStates)
 }
