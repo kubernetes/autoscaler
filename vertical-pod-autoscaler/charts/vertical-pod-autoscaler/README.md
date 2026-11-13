@@ -267,6 +267,7 @@ This chart includes [helm-unittest](https://github.com/helm-unittest/helm-unitte
 | admissionController.serviceAccount.annotations | object | `{}` |  |
 | admissionController.serviceAccount.create | bool | `true` |  |
 | admissionController.serviceAccount.labels | object | `{}` |  |
+| admissionController.serviceAccount.name | string | `""` |  |
 | admissionController.strategy | object | `{}` |  |
 | admissionController.tls.caCert | string | `""` |  |
 | admissionController.tls.cert | string | `""` |  |
@@ -333,6 +334,7 @@ This chart includes [helm-unittest](https://github.com/helm-unittest/helm-unitte
 | recommender.serviceAccount.annotations | object | `{}` |  |
 | recommender.serviceAccount.create | bool | `true` |  |
 | recommender.serviceAccount.labels | object | `{}` |  |
+| recommender.serviceAccount.name | string | `""` |  |
 | recommender.strategy | object | `{}` |  |
 | recommender.tolerations | list | `[]` |  |
 | recommender.topologySpreadConstraints | list | `[]` | Topology spread constraints for scheduling the Recommender, used to spread replicas across failure domains such as zones. |
@@ -369,6 +371,7 @@ This chart includes [helm-unittest](https://github.com/helm-unittest/helm-unitte
 | updater.serviceAccount.annotations | object | `{}` |  |
 | updater.serviceAccount.create | bool | `true` |  |
 | updater.serviceAccount.labels | object | `{}` |  |
+| updater.serviceAccount.name | string | `""` |  |
 | updater.strategy | object | `{}` |  |
 | updater.tolerations | list | `[]` |  |
 | updater.topologySpreadConstraints | list | `[]` | Topology spread constraints for scheduling the Updater, used to spread replicas across failure domains such as zones. |
