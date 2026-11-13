@@ -248,7 +248,7 @@ func buildAsgFromSpec(specStr string, asgs []AutoScalingGroup, manager CloudServ
 	}
 
 	for _, asg := range asgs {
-		if asg.groupName == spec.Name {
+		if asg.groupName == spec.Name || asg.groupID == spec.Name {
 			return &AutoScalingGroup{
 				cloudServiceManager: manager,
 				groupName:           asg.groupName,
