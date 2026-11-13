@@ -167,27 +167,45 @@ func (n *NodeGroup) DecreaseTargetSize(ctx context.Context, delta int) error {
 		return fmt.Errorf("delta must be negative, have: %d", delta)
 	}
 
+	// The ctx parameter was added to the NodeGroup interface methods, and all in-tree NodeGroup implementations were mechanically adapted as part of that (PR#10164).
+	// This particular method had already been using a Context object internally - its usage was kept as-is, it was just renamed to `emptyCtx`.
+	// This should likely be refactored away, and the method should likely just propagate the `ctx` parameter instead.
+	emptyCtx := context.Background()
+
+	// This node group can be a snapshot from an earlier refresh, e.g. when the
+	// core reverts a timed-out scale-up, so read the current node pool.
+	nodePool, _, err := n.client.GetNodePool(emptyCtx, n.clusterID, n.id)
+	if err != nil {
+		return err
+	}
+	if nodePool == nil {
+		return fmt.Errorf("node pool %q not found", n.id)
+	}
+	n.nodePool = nodePool
+
 	targetSize := n.nodePool.Count + delta
 	if targetSize < n.MinSize(context.TODO()) {
 		return fmt.Errorf("size decrease is too small. current: %d desired: %d min: %d",
 			n.nodePool.Count, targetSize, n.MinSize(context.TODO()))
 	}
 
+	existingNodes := len(n.nodePool.Nodes)
+	if targetSize < existingNodes {
+		return fmt.Errorf("attempt to delete existing nodes. current: %d desired: %d existing: %d",
+			n.nodePool.Count, targetSize, existingNodes)
+	}
+
 	req := &godo.KubernetesNodePoolUpdateRequest{
 		Count: &targetSize,
 	}
 
-	// The ctx parameter was added to the NodeGroup interface methods, and all in-tree NodeGroup implementations were mechanically adapted as part of that (PR#10164).
-	// This particular method had already been using a Context object internally - its usage was kept as-is, it was just renamed to `emptyCtx`.
-	// This should likely be refactored away, and the method should likely just propagate the `ctx` parameter instead.
-	emptyCtx := context.Background()
 	updatedNodePool, _, err := n.client.UpdateNodePool(emptyCtx, n.clusterID, n.id, req)
 	if err != nil {
 		return err
 	}
 
 	if updatedNodePool.Count != targetSize {
-		return fmt.Errorf("couldn't increase size to %d (delta: %d). Current size is: %d",
+		return fmt.Errorf("couldn't decrease size to %d (delta: %d). Current size is: %d",
 			targetSize, delta, updatedNodePool.Count)
 	}
 
