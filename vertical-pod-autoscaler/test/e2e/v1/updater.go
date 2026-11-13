@@ -136,6 +136,39 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 		ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
 		CheckNoPodsEvicted(f, MakePodSet(podList))
 	})
+	// Sets up a lease object updated periodically to signal - requires WithSerial()
+	framework.It("does not evict pods for upscaling when EvictionRequirement requires a recent OOM and the pods have not OOMed", framework.WithSerial(), framework.WithFeatureGate(features.EvictionRequirementOOMScaleUp), func() {
+		const statusUpdateInterval = 10 * time.Second
+
+		ginkgo.By("Setting up the Admission Controller status")
+		stopCh := make(chan struct{})
+		statusUpdater := status.NewUpdater(
+			f.ClientSet,
+			status.AdmissionControllerStatusName,
+			utils.VpaNamespace,
+			statusUpdateInterval,
+			"e2e test",
+		)
+		defer func() {
+			ginkgo.By("Deleting the Admission Controller status")
+			close(stopCh)
+			err := f.ClientSet.CoordinationV1().Leases(utils.VpaNamespace).
+				Delete(context.TODO(), status.AdmissionControllerStatusName, metav1.DeleteOptions{})
+			gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		}()
+		statusUpdater.Run(stopCh)
+		er := []*vpa_types.EvictionRequirement{
+			{
+				Resources:         []apiv1.ResourceName{apiv1.ResourceMemory},
+				ChangeRequirement: vpa_types.TargetHigherThanRequestsAndOOM,
+			},
+		}
+		// Set up Pods with memory request that is lower than the recommendation range.
+		podList := setupPodsForEviction(f, "100m", "100Mi", er, vpa_types.UpdateModeRecreate)
+
+		ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
+		CheckNoPodsEvicted(f, MakePodSet(podList))
+	})
 	// FIXME todo(adrianmoisey): This test seems to be flaky after running in parallel, unsure why, see if it's possible to fix
 	framework.It("doesn't evict pods when Admission Controller status unavailable", framework.WithSerial(), func() {
 		podList := setupPodsForUpscalingEviction(f, vpa_types.UpdateModeInPlaceOrRecreate)

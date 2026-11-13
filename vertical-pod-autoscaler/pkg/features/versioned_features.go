@@ -30,6 +30,9 @@ var defaultVersionedFeatureGates = map[featuregate.Feature]featuregate.Versioned
 	CPUStartupBoost: {
 		{Version: version.MustParse("1.6"), Default: false, PreRelease: featuregate.Alpha},
 	},
+	EvictionRequirementOOMScaleUp: {
+		{Version: version.MustParse("1.9"), Default: false, PreRelease: featuregate.Alpha},
+	},
 	InPlace: {
 		{Version: version.MustParse("1.7"), Default: false, PreRelease: featuregate.Alpha},
 	},

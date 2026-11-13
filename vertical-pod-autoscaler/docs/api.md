@@ -81,7 +81,7 @@ _Underlying type:_ _string_
 EvictionChangeRequirement refers to the relationship between the new target recommendation for a Pod and its current requests, what kind of change is necessary for the Pod to be evicted
 
 _Validation:_
-- Enum: [TargetHigherThanRequests TargetLowerThanRequests]
+- Enum: [TargetHigherThanRequests TargetLowerThanRequests TargetHigherThanRequestsAndOOM]
 
 _Appears in:_
 - [EvictionRequirement](#evictionrequirement)
@@ -90,6 +90,7 @@ _Appears in:_
 | --- | --- |
 | `TargetHigherThanRequests` | TargetHigherThanRequests means the new target recommendation for a Pod is higher than its current requests, i.e. the Pod is scaled up<br /> |
 | `TargetLowerThanRequests` | TargetLowerThanRequests means the new target recommendation for a Pod is lower than its current requests, i.e. the Pod is scaled down<br /> |
+| `TargetHigherThanRequestsAndOOM` | TargetHigherThanRequestsAndOOM means the new target recommendation for at least one container in a Pod is higher than its current requests and that container has OOMed, i.e. the container was most likely OOM killed with a request lower than the recommendation that will be applied after eviction. The OOM event needs to be recent: within the VPA's evictAfterOOMSeconds if set and the PerVPAConfig feature gate is enabled, otherwise within the --evict-after-oom-threshold flag value (default 10 minutes).<br /> |
 
 
 #### EvictionRequirement
@@ -107,7 +108,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `resources` _[ResourceName](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#resourcename-v1-core) array_ | Resources is a list of one or more resources that the condition applies<br />to. If more than one resource is given, the EvictionRequirement is fulfilled<br />if at least one resource meets `changeRequirement`. |  |  |
-| `changeRequirement` _[EvictionChangeRequirement](#evictionchangerequirement)_ |  |  | Enum: [TargetHigherThanRequests TargetLowerThanRequests] <br /> |
+| `changeRequirement` _[EvictionChangeRequirement](#evictionchangerequirement)_ |  |  | Enum: [TargetHigherThanRequests TargetLowerThanRequests TargetHigherThanRequestsAndOOM] <br /> |
 
 
 
