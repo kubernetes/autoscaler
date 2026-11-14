@@ -136,7 +136,7 @@ something a reviewer could point at later to decide whether the AEP succeeded.
 * The pod-level request-to-limit ratio is determined from the pod spec in the same way as in the latest VPA release at the container-level.
 * Support all existing VPA modes
 * Include `initContainers` with `restartPolicy: Always` (i.e. native sidecar containers) in pod-level recommendation calculations. Omitting them would result in incorrect recommendations and could cause some containers to experience resource starvation.
-* Container-level resource stanzas should remain unchanged if present. For example, they should not be lost when a pod is evicted.
+* Container-level resource stanzas should remain unchanged if present. For example, they should not be lost when a pod is evicted. How OOM kills caused by such unchanged container-level limits are handled is described in [Handling OOM events](#handling-oom-events).
 
 ### Non-Goals
 
@@ -373,6 +373,10 @@ oomPeak    := Max(memoryUsed + oomMinBumpUp,
 
 Then the artificial sample is recorded in the corresponding pod-level memory histogram. oomBumpUpRatio and oomMinBumpUp come from `spec.resourcePolicy.podPolicy`, falling back to the new --pod-level-oom-bump-up-ratio / --pod-level-oom-min-bump-up-bytes flags.
 
+The pod-level `memoryPeak` and `oomPeak` fields are updated and the artificial sample is recorded in the pod-level memory histogram only when the OOM kill is caused by the pod-level limit and not by the static container-level limit. Bumping the pod-level recommendation when the container is repeatedly OOMKilled because of its own static container-level limit would put the recommender in a loop of increasing the pod-level recommendation.This document proposes the following when an OOM event happens:
+  * If the container has a limit and the limit is close to the container's `memoryPeak`, emit a Kubernetes Event and log a message to notify the user about it. The message can be, for example: "container X was OOMKilled against its own container-level memory limit, which is not managed by VPA, remove or raise the container-level limit". Reacting to such OOM kills by automatically adjusting container-level stanzas is left to the Phase 2 implementation (see [Non-Goals](#non-goals)).
+   * Every other OOM kill counts toward the pod-level bump.
+
 ### Admission Controller
 
 The admission controller is extended to be capable of calculating pod-level resource patches (requests and limits) based on the pod-level Targets from the VPA object's status stanza, and applying them at admission when a targeted pod is recreated.
@@ -386,7 +390,7 @@ The admission controller would reject VPA objects that define both `containerPol
 With the introduction of pod-level recommendations and pod-level resources, the updater must make eviction and in-place update decisions for these pods. The decision making logic remains consistent with the latest VPA behavior. In other words:
 * Evict a pod or apply a pod-level in-place update when the pod's actual pod-level resource request (resolved the same way as container-level requests today) is lower than the LowerBound or higher than the UpperBound.
 * Evict a pod or apply a pod-level in-place update when the [resourceDiff](https://github.com/kubernetes/autoscaler/blob/14ed794bee002422d0256a4fdd853681399c78cb/vertical-pod-autoscaler/pkg/updater/priority/priority_processor.go#L97) is greater than 0.1 and the pod is not categorized as a "short-lived pod".
-* Evict a pod or apply a pod-level in-place update if any container in the pod has experienced an OOM kill.
+* Evict a pod or apply a pod-level in-place update if any container in the pod has experienced an OOM kill that counts toward the pod-level bump (see [Handling OOM events](#handling-oom-events)).
 
 ### capping.go
 
@@ -449,6 +453,7 @@ This AEP proposes comprehensive unit test coverage for all new code paths and ad
 #### Recommender
 
 * Create tests to verify that the recommender can calculate Pod-level recommendations and store them in the VPA object's status stanza.
+* Create tests to verify that an OOM kill counts toward the pod-level memory bump unless the OOMKilled container has its own memory limit and its observed memory peak reached it (see [Handling OOM events](#handling-oom-events)).
 
 #### Admission Controller
 
@@ -459,6 +464,7 @@ This AEP proposes comprehensive unit test coverage for all new code paths and ad
 
 * Create tests to verify that the updater can evict Pods based on Pod-level recommendations and Pod-level resource stanzas.
 * Create tests to verify that the updater can apply Pod-level recommendations through in-place updates.
+* Create tests to verify that an OOM kill of a container with its own memory limit, whose observed memory peak has reached that limit, does not trigger the OOM-based eviction or in-place update paths.
 
 ### Feature Enablement and Rollback
 
