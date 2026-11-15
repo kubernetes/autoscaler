@@ -20,6 +20,7 @@ package common
 
 import (
 	"flag"
+	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
@@ -57,6 +58,14 @@ func InitCommonFlags() *CommonFlags {
 	flag.StringVar(&cf.VpaObjectNamespace, "vpa-object-namespace", cf.VpaObjectNamespace, "Specifies the namespace to search for VPA objects. Leave empty to include all namespaces. If provided, the garbage collector will only clean this namespace.")
 	flag.StringVar(&cf.IgnoredVpaObjectNamespaces, "ignored-vpa-object-namespaces", cf.IgnoredVpaObjectNamespaces, "A comma-separated list of namespaces to ignore when searching for VPA objects. Leave empty to avoid ignoring any namespaces. These namespaces will not be cleaned by the garbage collector.")
 	return cf
+}
+
+// IgnoredNamespaces returns the list of namespaces to ignore when searching for
+// VPA objects. Returns an empty list if no namespaces are to be ignored.
+func (cf *CommonFlags) IgnoredNamespaces() []string {
+	return strings.FieldsFunc(cf.IgnoredVpaObjectNamespaces, func(r rune) bool {
+		return r == ','
+	})
 }
 
 // ValidateCommonConfig performs validation of the common flags

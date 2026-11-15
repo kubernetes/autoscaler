@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"k8s.io/client-go/informers"
@@ -135,7 +134,7 @@ func main() {
 		TLSConfig: configTLS(*config.CertsConfiguration, config.MinTlsVersion, config.Ciphers, stopCh, mutatingWebhookClient),
 	}
 	url := fmt.Sprintf("%v:%v", config.WebhookAddress, config.WebhookPort)
-	ignoredNamespaces := strings.Split(config.CommonFlags.IgnoredVpaObjectNamespaces, ",")
+	ignoredNamespaces := config.CommonFlags.IgnoredNamespaces()
 	go func() {
 		if config.RegisterWebhook {
 			selfRegistration(

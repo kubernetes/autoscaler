@@ -22,7 +22,6 @@ import (
 	"os"
 	"os/signal"
 	"reflect"
-	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -188,7 +187,7 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 		admissionControllerStatusNamespace = config.AdmissionControllerStatusLeaseNamespace
 	}
 
-	ignoredNamespaces := strings.Split(commonFlag.IgnoredVpaObjectNamespaces, ",")
+	ignoredNamespaces := commonFlag.IgnoredNamespaces()
 
 	recommendationProvider := recommendation.NewProvider(limitRangeCalculator, vpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator))
 
