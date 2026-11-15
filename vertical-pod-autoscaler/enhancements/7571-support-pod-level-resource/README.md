@@ -505,14 +505,13 @@ Use a VPA release that includes this feature, and enable it by setting `--featur
 
 Downgrading VPA from a version that includes this feature does not impact running workloads where pod-level scaling is NOT enabled.
 
-After the downgrade, workloads with pod-level scaling enabled are not disrupted immediately. Pod-level resource specifications remain in Pod specs, but VPA reverts to managing container-level resources only.
+The downgrade order matters. While a pod still carries pod-level resource stanzas, VPA must not manage that pod's container-level resources: a container-level patch that raises the aggregate container requests above the frozen pod-level request causes the API server to reject the pod at creation, which can stall a rollout. Following the same cleanup-before-downgrade order as [KEP-2837](https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/2837-pod-level-resource-spec#downgrade), pod-level resource stanzas must be removed from workloads BEFORE downgrading VPA.
 
-However, once VPA stops managing pod-level resources and updates only container-level resources, newly applied container-level requests or limits may violate the unmanaged pod-level resource stanzas.
-
-To avoid such violations, follow these steps for downgrade:
-* Recreate the VPA object using only the containerPolicies stanza, fully removing the new podPolicy stanza.
-* Downgrade the VPA version and disable the feature flag at the same time. Wait until container-level recommendations are present in the VPA object's status stanza.
-* Remove the pod-level resources stanza from the higher level controller, if present. If the pod-level resource stanza is not present, trigger a restart using the `kubectl rollout restart` command to remove the stale pod-level resource stanza from the Pod specifications.
+Downgrade steps:
+1. Turn off the pod-level autoscaling in the VPA object and explicitly turn off the container-level autoscaling as well for all the containers.
+2. Remove the pod-level resources stanza from the higher level controller if present, and let the workload roll out. If the stanza was applied directly to existing Pod specifications (e.g. by the admission controller), trigger a restart using the `kubectl rollout restart` command to remove the stale stanza from the Pods.
+3. Recreate the VPA object using only the containerPolicies stanza, fully removing the new podPolicy stanza. Container-level autoscaling can be turned on. Wait until container-level recommendations are present in the VPA object's status stanza.
+4. Only then downgrade the VPA version and disable the feature flag.
 
 ### Graduation Criteria
 
