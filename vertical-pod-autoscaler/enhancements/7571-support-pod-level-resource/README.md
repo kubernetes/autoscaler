@@ -41,7 +41,7 @@ and PR titles.
     - [Calculating Pod-Level Recommendations](#calculating-pod-level-recommendations)
       - [Leveraging Container-Level Histograms](#leveraging-container-level-histograms)
       - [Using New Pod-Level Histograms](#using-new-pod-level-histograms)
-    - [Validation](#validation)
+    - [Pod-spec validation](#pod-spec-validation)
     - [Maintaining checkpoints](#maintaining-checkpoints)
     - [New Global Pod maximums](#new-global-pod-maximums)
     - [New Flags for Configuring Pod Level Percentiles](#new-flags-for-configuring-pod-level-percentiles)
@@ -328,7 +328,7 @@ All other mechanisms remain unchanged, including:
 * Determining the histogram bucket index
 * Applying the confidence multiplier
 
-#### Validation
+#### Pod-spec validation
 
 Although this proposal does not include container-level resource autoscaling, the code should validate that pod-level recommendations do not conflict with aggregated container-level resource specifications.
 
@@ -409,7 +409,7 @@ The capping.go logic must be updated so that both the admission controller and t
 
 ### Container LimitRange Objects
 
-VPA does not cap pod-level recommendations to the minimum, maximum, or ratio constraints of container-type `LimitRange` objects; only Pod-type `LimitRange` constraints apply to pod-level recommendations. Default container-level requests and limits injected by the built-in LimitRanger admission controller are handled by the behaviour described in the [Validation](#validation) section.
+VPA does not cap pod-level recommendations to the minimum, maximum, or ratio constraints of container-type `LimitRange` objects; only Pod-type `LimitRange` constraints apply to pod-level recommendations. Default container-level requests and limits injected by the built-in LimitRanger admission controller are handled by the behaviour described in the [Pod-spec validation](#pod-spec-validation) section.
 
 ### Pod Annotations
 
