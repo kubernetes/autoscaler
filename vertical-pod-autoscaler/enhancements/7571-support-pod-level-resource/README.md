@@ -382,7 +382,9 @@ The admission controller is extended to be capable of calculating pod-level reso
 
 #### Dynamic Validation
 
-The admission controller would reject VPA objects that define both `containerPolicies` and the new `podPolicy` stanza, because in Phase 1 the VPA cannot manage both container-level and pod-level resource stanzas simultaneously.
+The admission controller rejects VPA objects that explicitly set `containerPolicies[*].mode` to `Auto` while also setting `podPolicy.mode` to `Auto`, because in Phase 1 the VPA cannot manage both container-level and pod-level resources simultaneously. An unset `containerPolicies` is accepted; its behavior is unchanged when `podPolicy.mode` is `Off` or omitted, and it is treated as inactive when `podPolicy.mode` is `Auto`. 
+
+Rejecting setting both `containerPolicies[*].mode` and `podPolicy.mode` to `Auto` applies only when the alpha `podPolicy` field is set and may be revised while the feature is alpha. Once `podPolicy` graduates, supporting pod-level and container-level autoscaling simultaneously will require an additive API change, subject to API review.
 
 ### Updater
 
