@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"slices"
 	"strings"
 	"time"
 
@@ -31,7 +32,9 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/annotations"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/test/e2e/utils"
+	"k8s.io/client-go/util/retry"
 	"k8s.io/kubernetes/test/e2e/framework"
+	framework_deployment "k8s.io/kubernetes/test/e2e/framework/deployment"
 	podsecurity "k8s.io/pod-security-admission/api"
 
 	ginkgo "github.com/onsi/ginkgo/v2"
@@ -1221,6 +1224,33 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		gomega.Expect(err).To(gomega.HaveOccurred(), "Invalid VPA object accepted")
 		gomega.Expect(err.Error()).To(gomega.MatchRegexp(`.*admission webhook .*vpa.* denied the request: .*`), "Admission controller did not inspect the object")
 	})
+
+	// Regression test for https://github.com/kubernetes/autoscaler/issues/10682
+	// This test needs to run in serial because it modifies the webhook configuration and admission controller deployment.
+	framework.It("scopes the webhook to --vpa-object-namespace", framework.WithSerial(), func(ctx context.Context) {
+		deployment, err := f.ClientSet.AppsV1().Deployments(utils.VpaNamespace).Get(ctx, "vpa-admission-controller", metav1.GetOptions{})
+		framework.ExpectNoError(err)
+		oldArgs := deployment.Spec.Template.Spec.Containers[0].Args
+
+		webhookConfig, err := f.ClientSet.AdmissionregistrationV1().MutatingWebhookConfigurations().Get(ctx, webhookConfigName, metav1.GetOptions{})
+		framework.ExpectNoError(err)
+		oldSelector := webhookConfig.Webhooks[0].NamespaceSelector
+
+		ginkgo.DeferCleanup(func(ctx context.Context) {
+			setAdmissionControllerArgs(ctx, f, oldArgs)
+			waitForWebhookNamespaceSelector(ctx, f, oldSelector)
+		})
+
+		setAdmissionControllerArgs(ctx, f, append(slices.Clone(oldArgs), "--vpa-object-namespace="+f.Namespace.Name))
+
+		waitForWebhookNamespaceSelector(ctx, f, &metav1.LabelSelector{
+			MatchExpressions: []metav1.LabelSelectorRequirement{{
+				Key:      "kubernetes.io/metadata.name",
+				Operator: metav1.LabelSelectorOpIn,
+				Values:   []string{f.Namespace.Name},
+			}},
+		})
+	})
 })
 
 var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
@@ -1377,4 +1407,31 @@ func waitForVpaWebhookRegistration(f *framework.Framework) {
 		}
 		return false
 	}, 3*time.Minute, 5*time.Second).Should(gomega.BeTrue(), "Webhook was not registered in the cluster")
+}
+
+func setAdmissionControllerArgs(ctx context.Context, f *framework.Framework, args []string) {
+	deployments := f.ClientSet.AppsV1().Deployments(utils.VpaNamespace)
+	err := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+		deployment, err := deployments.Get(ctx, "vpa-admission-controller", metav1.GetOptions{})
+		if err != nil {
+			return err
+		}
+		deployment.Spec.Template.Spec.Containers[0].Args = args
+		_, err = deployments.Update(ctx, deployment, metav1.UpdateOptions{})
+		return err
+	})
+	framework.ExpectNoError(err, "updating admission controller args")
+
+	deployment, err := deployments.Get(ctx, "vpa-admission-controller", metav1.GetOptions{})
+	framework.ExpectNoError(err)
+	framework.ExpectNoError(framework_deployment.WaitForDeploymentComplete(f.ClientSet, deployment), "waiting for admission controller rollout")
+}
+
+func waitForWebhookNamespaceSelector(ctx context.Context, f *framework.Framework, expected *metav1.LabelSelector) {
+	gomega.Eventually(ctx, func(g gomega.Gomega) {
+		webhookConfig, err := f.ClientSet.AdmissionregistrationV1().MutatingWebhookConfigurations().Get(ctx, webhookConfigName, metav1.GetOptions{})
+		g.Expect(err).NotTo(gomega.HaveOccurred())
+		g.Expect(webhookConfig.Webhooks).To(gomega.HaveLen(1))
+		g.Expect(webhookConfig.Webhooks[0].NamespaceSelector).To(gomega.Equal(expected))
+	}).WithTimeout(3 * time.Minute).WithPolling(5 * time.Second).Should(gomega.Succeed())
 }
