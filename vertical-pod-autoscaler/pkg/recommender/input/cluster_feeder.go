@@ -58,7 +58,7 @@ const (
 // ClusterStateFeeder can update state of clusterState object.
 type ClusterStateFeeder interface {
 	// InitFromHistoryProvider loads historical pod spec into clusterState.
-	InitFromHistoryProvider(historyProvider history.HistoryProvider)
+	InitFromHistoryProvider(ctx context.Context, historyProvider history.HistoryProvider)
 
 	// InitFromCheckpoints loads historical checkpoints into clusterState.
 	InitFromCheckpoints(ctx context.Context)
@@ -228,15 +228,19 @@ type clusterStateFeeder struct {
 	podsToDelete        []model.PodID
 }
 
-func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider history.HistoryProvider) {
+func (feeder *clusterStateFeeder) InitFromHistoryProvider(ctx context.Context, historyProvider history.HistoryProvider) {
 	klog.V(3).InfoS("Initializing VPA from history provider")
+	feeder.LoadVPAs(ctx)
+	selectorKeys := selectorLabelKeysByNamespace(feeder.clusterState.VPAs())
+
 	clusterHistory, err := historyProvider.GetClusterHistory()
 	if err != nil {
 		klog.ErrorS(err, "Cannot get cluster history")
 	}
 	for podID, podHistory := range clusterHistory {
-		klog.V(4).InfoS("Adding pod with labels", "pod", podID, "labels", podHistory.LastLabels)
-		feeder.clusterState.AddOrUpdatePod(podID, podHistory.LastLabels, corev1.PodUnknown) //nolint:staticcheck
+		podLabels := restoreLabelKeys(podHistory.LastLabels, selectorKeys[podID.Namespace])
+		klog.V(4).InfoS("Adding pod with labels", "pod", podID, "labels", podLabels)
+		feeder.clusterState.AddOrUpdatePod(podID, podLabels, corev1.PodUnknown) //nolint:staticcheck
 		for containerName, sampleList := range podHistory.Samples {
 			containerID := model.ContainerID{
 				PodID:         podID,

@@ -873,11 +873,15 @@ func TestClusterStateFeeder_InitFromHistoryProvider(t *testing.T) {
 		},
 	}
 
+	vpaLister := &test.VerticalPodAutoscalerListerMock{}
+	vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{}, nil)
+
 	clusterState := model.NewClusterState(testGcPeriod)
 	feeder := clusterStateFeeder{
+		vpaLister:    vpaLister,
 		clusterState: clusterState,
 	}
-	feeder.InitFromHistoryProvider(&provider)
+	feeder.InitFromHistoryProvider(t.Context(), &provider)
 	if !assert.Contains(t, feeder.clusterState.Pods(), pod1) {
 		return
 	}
@@ -898,6 +902,94 @@ func TestClusterStateFeeder_InitFromHistoryProvider(t *testing.T) {
 		return
 	}
 	assert.Equal(t, memAmount, containerState.GetMaxMemoryPeak())
+}
+
+func TestClusterStateFeeder_InitFromHistoryProvider_RestoresSelectorLabelKeys(t *testing.T) {
+	const containerName = "container"
+	t0 := time.Date(2026, time.January, 1, 0, 0, 0, 0, time.UTC)
+
+	testCases := []struct {
+		name           string
+		podNamespace   string
+		expectedLabels labels.Set
+		expectMatched  bool
+	}{
+		{
+			name:           "pod in the VPA's namespace matches the VPA",
+			podNamespace:   "ns1",
+			expectedLabels: labels.Set{"app.kubernetes.io/name": "foo"},
+			expectMatched:  true,
+		},
+		{
+			name:           "pod in another namespace keeps its labels",
+			podNamespace:   "ns2",
+			expectedLabels: labels.Set{"app_kubernetes_io_name": "foo"},
+			expectMatched:  false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			vpa := test.VerticalPodAutoscaler().WithName("vpa").WithNamespace("ns1").WithContainer(containerName).WithTargetRef(&autoscalingv1.CrossVersionObjectReference{
+				Kind:       kind,
+				Name:       name1,
+				APIVersion: apiVersion,
+			}).Get()
+			vpaLister := &test.VerticalPodAutoscalerListerMock{}
+			vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpa}, nil)
+			targetSelectorFetcher := target_mock.NewMockVpaTargetSelectorFetcher(ctrl)
+			targetSelectorFetcher.EXPECT().Fetch(gomock.Any()).Return(parseLabelSelector("app.kubernetes.io/name = foo"), nil).AnyTimes()
+
+			podID := model.PodID{Namespace: tc.podNamespace, PodName: "pod"}
+			provider := fakeHistoryProvider{
+				history: map[model.PodID]*history.PodHistory{
+					podID: {
+						LastLabels: map[string]string{"app_kubernetes_io_name": "foo"},
+						LastSeen:   t0,
+						Samples: map[string][]model.ContainerUsageSample{
+							containerName: {{MeasureStart: t0, Usage: 10, Resource: model.ResourceCPU}},
+						},
+					},
+				},
+			}
+
+			clusterState := model.NewClusterState(testGcPeriod)
+			feeder := clusterStateFeeder{
+				vpaLister:       vpaLister,
+				clusterState:    clusterState,
+				selectorFetcher: targetSelectorFetcher,
+				controllerFetcher: &fakeControllerFetcher{key: &controllerfetcher.ControllerKeyWithAPIVersion{
+					ControllerKey: controllerfetcher.ControllerKey{Namespace: "ns1", Kind: kind, Name: name1},
+					ApiVersion:    apiVersion,
+				}},
+				recommenderName: DefaultRecommenderName,
+			}
+			feeder.InitFromHistoryProvider(t.Context(), &provider)
+
+			podState, found := clusterState.Pods()[podID]
+			if !assert.True(t, found, "history pod not in cluster state") {
+				return
+			}
+			assert.Equal(t, tc.expectedLabels, clusterState.MakeAggregateStateKey(podState, containerName).Labels())
+
+			vpaState, found := clusterState.VPAs()[model.VpaID{Namespace: "ns1", VpaName: "vpa"}]
+			if !assert.True(t, found, "VPA not in cluster state") {
+				return
+			}
+			if tc.expectMatched {
+				assert.Contains(t, clusterState.GetMatchingPods(vpaState), podID)
+				if assert.Contains(t, vpaState.AggregateStateByContainerName(), containerName) {
+					assert.Equal(t, 1, vpaState.AggregateStateByContainerName()[containerName].TotalSamplesCount)
+				}
+			} else {
+				assert.NotContains(t, clusterState.GetMatchingPods(vpaState), podID)
+				assert.Empty(t, vpaState.AggregateStateByContainerName())
+			}
+		})
+	}
 }
 
 func TestFilterVPAs(t *testing.T) {
