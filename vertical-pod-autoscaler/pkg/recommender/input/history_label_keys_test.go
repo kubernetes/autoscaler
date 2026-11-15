@@ -75,6 +75,13 @@ func TestRestoreLabelKeys(t *testing.T) {
 			expected:  map[string]string{"app.kubernetes.io/name": "foo", "pod_template_hash": "abc"},
 		},
 		{
+			name:      "keeps both keys when the pod already has the selector key",
+			vpas:      []*model.Vpa{newVpa("ns1", "vpa", matchLabels("app.kubernetes.io/name"))},
+			namespace: "ns1",
+			labels:    map[string]string{"app.kubernetes.io/name": "foo", "app_kubernetes_io_name": "bar"},
+			expected:  map[string]string{"app.kubernetes.io/name": "foo", "app_kubernetes_io_name": "bar"},
+		},
+		{
 			name:      "restores key with dash",
 			vpas:      []*model.Vpa{newVpa("ns1", "vpa", matchLabels("my-app"))},
 			namespace: "ns1",

@@ -88,7 +88,8 @@ func selectorLabelKeysByNamespace(vpas map[model.VpaID]*model.Vpa) map[string]ma
 // restoreLabelKeys returns the labels of a pod read from history with each key
 // that is the sanitized form of a selector label key renamed to that selector
 // key, so the pod matches the same VPA selectors as the live pod would.
-// Other keys are kept unchanged.
+// Other keys, and keys whose selector key the pod already has, are kept
+// unchanged.
 func restoreLabelKeys(podLabels map[string]string, selectorKeys map[string]string) map[string]string {
 	if len(selectorKeys) == 0 {
 		return podLabels
@@ -96,7 +97,9 @@ func restoreLabelKeys(podLabels map[string]string, selectorKeys map[string]strin
 	restored := make(map[string]string, len(podLabels))
 	for key, value := range podLabels {
 		if original, found := selectorKeys[key]; found {
-			key = original
+			if _, exact := podLabels[original]; !exact {
+				key = original
+			}
 		}
 		restored[key] = value
 	}
