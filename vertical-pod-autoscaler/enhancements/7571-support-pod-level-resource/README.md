@@ -334,7 +334,7 @@ The new pod-level histograms are then periodically stored in VerticalPodAutoscal
 
 Since the current container-level checkpoints are garbage collected, the new pod-level checkpoint objects would follow the same garbage collection behavior. Additionally, the existing checkpoint flags (e.g. checkpoints-gc-interval) would work the same way for pod-level checkpoint objects.
 
-A container-level checkpoint object name consists of the [VPA object name and the container name](https://github.com/kubernetes/autoscaler/blob/6d05073583657186351fd5df942980041ee8e71b/vertical-pod-autoscaler/pkg/recommender/checkpoint/checkpoint_writer.go#L84). The pod-level checkpoint object name should be based only on the VPA object name.
+A container-level checkpoint object name consists of the [VPA object name and the container name](https://github.com/kubernetes/autoscaler/blob/6d05073583657186351fd5df942980041ee8e71b/vertical-pod-autoscaler/pkg/recommender/checkpoint/checkpoint_writer.go#L84). The pod-level checkpoint object name is `<vpaName>--pod`. The double dash is deliberate: a single-dash `-pod` suffix could collide with a container named `pod`.
 
 Since the ContainerName field in the [VerticalPodAutoscalerCheckpointSpec](https://github.com/kubernetes/autoscaler/blob/6d05073583657186351fd5df942980041ee8e71b/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1/types.go#L500) struct is optional, we can reuse the struct for pod-level checkpoint objects by not setting the ContainerName field. In this regard, there is no need for an API change for pod-level checkpoints within types.go.
 
