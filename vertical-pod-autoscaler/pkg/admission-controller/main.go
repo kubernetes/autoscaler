@@ -133,24 +133,9 @@ func main() {
 		Addr:      fmt.Sprintf(":%d", config.Port),
 		TLSConfig: configTLS(*config.CertsConfiguration, config.MinTlsVersion, config.Ciphers, stopCh, mutatingWebhookClient),
 	}
-	url := fmt.Sprintf("%v:%v", config.WebhookAddress, config.WebhookPort)
-	ignoredNamespaces := config.CommonFlags.IgnoredNamespaces()
 	go func() {
 		if config.RegisterWebhook {
-			selfRegistration(
-				kubeClient,
-				readFile(config.CertsConfiguration.ClientCaFile),
-				webHookDelay,
-				config.Namespace,
-				config.ServiceName,
-				url,
-				config.RegisterByURL,
-				int32(config.WebhookTimeout),
-				config.CommonFlags.VpaObjectNamespace,
-				ignoredNamespaces,
-				config.WebhookFailurePolicy,
-				config.WebhookLabels,
-			)
+			selfRegistration(kubeClient, readFile(config.CertsConfiguration.ClientCaFile), webHookDelay, config)
 		}
 		// Start status updates after the webhook is initialized.
 		statusUpdater.Run(stopCh)

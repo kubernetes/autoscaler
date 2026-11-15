@@ -95,7 +95,7 @@ func configTLS(cfg config.CertsConfig, minTlsVersion, ciphers string, stop <-cha
 
 // register this webhook admission controller with the kube-apiserver
 // by creating MutatingWebhookConfiguration.
-func selfRegistration(clientset kubernetes.Interface, caCert []byte, webHookDelay time.Duration, namespace, serviceName, url string, registerByURL bool, timeoutSeconds int32, selectedNamespace string, ignoredNamespaces []string, webHookFailurePolicy bool, webHookLabels string) {
+func selfRegistration(clientset kubernetes.Interface, caCert []byte, webHookDelay time.Duration, cfg *config.AdmissionControllerConfig) {
 	time.Sleep(webHookDelay)
 	client := clientset.AdmissionregistrationV1().MutatingWebhookConfigurations()
 	_, err := client.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
@@ -105,18 +105,19 @@ func selfRegistration(clientset kubernetes.Interface, caCert []byte, webHookDela
 		}
 	}
 	registerClientConfig := admissionregistration.WebhookClientConfig{}
-	if !registerByURL {
+	if !cfg.RegisterByURL {
 		registerClientConfig.Service = &admissionregistration.ServiceReference{
-			Namespace: namespace,
-			Name:      serviceName,
+			Namespace: cfg.Namespace,
+			Name:      cfg.ServiceName,
 		}
 	} else {
+		url := fmt.Sprintf("%v:%v", cfg.WebhookAddress, cfg.WebhookPort)
 		registerClientConfig.URL = &url
 	}
 	sideEffects := admissionregistration.SideEffectClassNone
 
 	var failurePolicy admissionregistration.FailurePolicyType
-	if webHookFailurePolicy {
+	if cfg.WebhookFailurePolicy {
 		failurePolicy = admissionregistration.Fail
 	} else {
 		failurePolicy = admissionregistration.Ignore
@@ -124,6 +125,8 @@ func selfRegistration(clientset kubernetes.Interface, caCert []byte, webHookDela
 
 	registerClientConfig.CABundle = caCert
 
+	ignoredNamespaces := cfg.CommonFlags.IgnoredNamespaces()
+	selectedNamespace := cfg.CommonFlags.VpaObjectNamespace
 	var namespaceSelector metav1.LabelSelector
 	if len(ignoredNamespaces) > 0 {
 		namespaceSelector = metav1.LabelSelector{
@@ -146,11 +149,12 @@ func selfRegistration(clientset kubernetes.Interface, caCert []byte, webHookDela
 			},
 		}
 	}
-	webhookLabelsMap, err := convertLabelsToMap(webHookLabels)
+	webhookLabelsMap, err := convertLabelsToMap(cfg.WebhookLabels)
 	if err != nil {
 		klog.ErrorS(err, "Unable to parse webhook labels")
 		webhookLabelsMap = map[string]string{}
 	}
+	timeoutSeconds := int32(cfg.WebhookTimeout)
 	webhookConfig := &admissionregistration.MutatingWebhookConfiguration{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   webhookConfigName,
