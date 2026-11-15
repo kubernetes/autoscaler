@@ -41,7 +41,6 @@ and PR titles.
     - [Calculating Pod-Level Recommendations](#calculating-pod-level-recommendations)
       - [Leveraging Container-Level Histograms](#leveraging-container-level-histograms)
       - [Using New Pod-Level Histograms](#using-new-pod-level-histograms)
-    - [Pod-spec validation](#pod-spec-validation)
     - [Maintaining checkpoints](#maintaining-checkpoints)
     - [New Global Pod maximums](#new-global-pod-maximums)
     - [New Flags for Configuring Pod Level Percentiles](#new-flags-for-configuring-pod-level-percentiles)
@@ -49,7 +48,8 @@ and PR titles.
   - [Admission Controller](#admission-controller)
     - [Dynamic Validation](#dynamic-validation)
   - [Updater](#updater)
-  - [capping.go](#cappinggo)
+  - [capping.go](#capping.go)
+    - [Pod-level recommendation adjustment due to container-level stanzas](#pod-level-recommendation-adjustment-due-to-container-level-stanzas)
   - [Container LimitRange Objects](#container-limitrange-objects)
   - [Pod Annotations](#pod-annotations)
   - [Handling Container Addition and Removal](#handling-container-addition-and-removal)
@@ -328,18 +328,6 @@ All other mechanisms remain unchanged, including:
 * Determining the histogram bucket index
 * Applying the confidence multiplier
 
-#### Pod-spec validation
-
-Although this proposal does not include container-level resource autoscaling, the code should validate that pod-level recommendations do not conflict with aggregated container-level resource specifications.
-
-If a violation is detected, the pod-level recommendations should be raised to satisfy the rules below, so the Pod degrades rather than becoming unschedulable.
-
-The rules to verify are:
-* pod.spec.resources.requests >= sum(containers.requests)
-* pod.spec.resources.limits >= max(containers.limits)
-
-These checks are implemented in k/k [here](https://github.com/kubernetes/kubernetes/blob/v1.37.0/pkg/apis/core/validation/validation.go#L4926).
-
 #### Maintaining checkpoints
 
 The new pod-level histograms are then periodically stored in VerticalPodAutoscalerCheckpoint objects (i.e. pod-level checkpoint objects) based on the --recommender-interval flag. As a result, the pod-level CPU and memory histograms for a targeted controller are stored together within a single pod-level checkpoint object.
@@ -405,11 +393,25 @@ With the introduction of pod-level recommendations and pod-level resources, the 
 
 ### capping.go
 
-The capping.go logic must be updated so that both the admission controller and the updater can adjust pod-level recommendations based on LimitRange objects with Pod type in the cluster. Additionally, both components must enforce constraints defined by the new pod-level minAllowed and maxAllowed fields.
+The capping.go logic must be updated so that both the admission controller and the updater can adjust pod-level recommendations based on LimitRange objects with Pod type or on the container-level resource requests and limits, whether set by the user or injected by the LimitRanger admission controller due to a LimitRange object with container type.
+
+Additionally, both components must enforce constraints defined by the new pod-level minAllowed and maxAllowed fields.
+
+#### Pod-level recommendation adjustment due to container-level stanzas
+
+Although this proposal does not include container-level resource autoscaling, pod-level recommendations must not conflict with each pod's aggregated container-level resource specifications. The required validation and adjustment are therefore applied per pod by the admission controller and the updater as part of the `Apply` method in capping.go.
+
+If a violation is detected, the pod-level values to be applied are raised to satisfy the rules below, accepting possible over-provisioning relative to the actual recommendation rather than emitting a pod object the API server would reject as invalid. The adjustment applies to LowerBound and UpperBound as well as Target, as capping does today. The pod-level recommendation in `status.recommendation.podRecommendation` is not adjusted by these rules; it always remains based on the observed usage and the configured policies only.
+
+The rules to verify are:
+* pod.spec.resources.requests >= sum(containers.requests)
+* pod.spec.resources.limits >= max(containers.limits)
+
+These checks are implemented in k/k [here](https://github.com/kubernetes/kubernetes/blob/v1.37.0/pkg/apis/core/validation/validation.go#L4926).
 
 ### Container LimitRange Objects
 
-VPA does not cap pod-level recommendations to the minimum, maximum, or ratio constraints of container-type `LimitRange` objects; only Pod-type `LimitRange` constraints apply to pod-level recommendations. Default container-level requests and limits injected by the built-in LimitRanger admission controller are handled by the behaviour described in the [Pod-spec validation](#pod-spec-validation) section.
+VPA does not cap pod-level recommendations to the minimum, maximum, or ratio constraints of container-type `LimitRange` objects; only Pod-type `LimitRange` constraints apply to pod-level recommendations. Default container-level requests and limits injected by the built-in LimitRanger admission controller are handled by the behaviour described in the [Pod-level recommendation adjustment due to container-level stanzas](#pod-level-recommendation-adjustment-due-to-container-level-stanzas) section.
 
 ### Pod Annotations
 
