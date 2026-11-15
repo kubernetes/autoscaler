@@ -279,6 +279,17 @@ type PodLevelResourcePolicy struct {
   // +optional
   OOMMinBumpUp *resource.Quantity `json:"oomMinBumpUp,omitempty"`
 }
+
+// (!NEW) PodScalingMode controls whether autoscaler is enabled at the pod level.
+// +kubebuilder:validation:Enum=Auto;Off
+type PodScalingMode string
+
+const (
+  // PodScalingModeAuto means autoscaling is enabled at the pod level.
+  PodScalingModeAuto PodScalingMode = "Auto"
+  // PodScalingModeOff means autoscaling is disabled at the pod level. This is the default.
+  PodScalingModeOff PodScalingMode = "Off"
+)
 ```
 
 ### Recommender
