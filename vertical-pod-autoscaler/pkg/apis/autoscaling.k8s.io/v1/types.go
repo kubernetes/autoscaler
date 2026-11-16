@@ -206,11 +206,10 @@ type PodUpdatePolicy struct {
 	EvictionRequirements []*EvictionRequirement `json:"evictionRequirements,omitempty"`
 
 	// evictAfterOOMSeconds specifies a threshold, in seconds, for Pod eviction
-	// after an OOM event. A Pod becomes eligible for eviction if one of its
-	// autoscaled containers OOMed less than this long after the container started,
-	// the OOM event happened less than this long ago and the recommendation
-	// would change the Pod's resources.
-	// Requires VPA level feature gate "PerVPAConfig" to be enabled.
+	// or in-place resize after an OOM event. A Pod becomes eligible for eviction
+	// or in-place resize if one of its autoscaled containers OOMed less than
+	// this long after the container started, the OOM event happened less than
+	// this long ago and the recommendation would change the Pod's resources.
 	// +optional
 	// +kubebuilder:validation:Minimum=1
 	EvictAfterOOMSeconds *int32 `json:"evictAfterOOMSeconds,omitempty"`
