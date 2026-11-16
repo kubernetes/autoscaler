@@ -4,7 +4,7 @@ WARNING: This chart is currently under development and is not ready for producti
 
 Automatically adjust resources for your workloads
 
-![Version: 0.16.0](https://img.shields.io/badge/Version-0.16.0-informational?style=flat-square)
+![Version: 0.17.0](https://img.shields.io/badge/Version-0.17.0-informational?style=flat-square)
 ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 ![AppVersion: 1.8.1](https://img.shields.io/badge/AppVersion-1.8.1-informational?style=flat-square)
 
@@ -173,6 +173,30 @@ recommender:
     - --feature-gates=InPlace=true,CPUStartupBoost=true
 ```
 
+## Probes
+
+Each component (`admissionController`, `recommender`, `updater`) has `livenessProbe`, `readinessProbe` and `startupProbe` values. The liveness and readiness defaults call `/health-check` on the `prometheus` port. You can override single fields, for example:
+
+```yaml
+recommender:
+  livenessProbe:
+    initialDelaySeconds: 30
+```
+
+The startup probe is off by default. Enable it for a component that needs more time to start, for example a Recommender with a large cluster to load:
+
+```yaml
+recommender:
+  startupProbe:
+    httpGet:
+      path: /health-check
+      port: prometheus
+    periodSeconds: 10
+    failureThreshold: 30
+```
+
+Set a probe to `null` to remove it. Helm merges your values into the defaults, so to switch a probe to a different handler (for example `tcpSocket`), also set `httpGet: null`.
+
 ## Migration Guides
 
 ### Migrating from vpa-up.sh script
@@ -241,6 +265,7 @@ This chart includes [helm-unittest](https://github.com/helm-unittest/helm-unitte
 | admissionController.image.pullPolicy | string | `"IfNotPresent"` |  |
 | admissionController.image.repository | string | `"registry.k8s.io/autoscaling/vpa-admission-controller"` |  |
 | admissionController.image.tag | string | `nil` |  |
+| admissionController.livenessProbe | object | `{"failureThreshold":3,"httpGet":{"path":"/health-check","port":"prometheus","scheme":"HTTP"},"initialDelaySeconds":5,"periodSeconds":10}` | Liveness probe for the Admission Controller container. Set to `null` to remove it. |
 | admissionController.logLevel | int | `4` | Log verbosity for the Admission Controller (klog -v). |
 | admissionController.mutatingWebhookConfiguration.annotations | object | `{}` | Additional annotations for the MutatingWebhookConfiguration |
 | admissionController.mutatingWebhookConfiguration.failurePolicy | string | `"Ignore"` | The failurePolicy for the mutating webhook. Allowed values are: Ignore, Fail |
@@ -255,6 +280,7 @@ This chart includes [helm-unittest](https://github.com/helm-unittest/helm-unitte
 | admissionController.podDisruptionBudget.unhealthyPodEvictionPolicy | string | `"AlwaysAllow"` | Policy used to evict unhealthy pods, either 'IfHealthyBudget' or 'AlwaysAllow'. |
 | admissionController.podLabels | object | `{}` |  |
 | admissionController.priorityClassName | string | `nil` |  |
+| admissionController.readinessProbe | object | `{"failureThreshold":3,"httpGet":{"path":"/health-check","port":"prometheus","scheme":"HTTP"},"periodSeconds":10}` | Readiness probe for the Admission Controller container. Set to `null` to remove it. |
 | admissionController.registerWebhook | bool | `false` | Whether to register webhook via the application itself or via Helm. Set to false when using Helm-managed webhook. Security issue: granting delete on mutatingwebhookconfigurations is a potential security risk as it allows the admission controller to remove any webhook configurations. |
 | admissionController.replicas | int | `2` |  |
 | admissionController.resources | object | `{}` |  |
@@ -267,6 +293,7 @@ This chart includes [helm-unittest](https://github.com/helm-unittest/helm-unitte
 | admissionController.serviceAccount.annotations | object | `{}` |  |
 | admissionController.serviceAccount.create | bool | `true` |  |
 | admissionController.serviceAccount.labels | object | `{}` |  |
+| admissionController.startupProbe | object | `{}` | Startup probe for the Admission Controller container. Disabled by default. Liveness and readiness probes do not run until the startup probe succeeds. |
 | admissionController.strategy | object | `{}` |  |
 | admissionController.tls.caCert | string | `""` |  |
 | admissionController.tls.cert | string | `""` |  |
@@ -318,6 +345,7 @@ This chart includes [helm-unittest](https://github.com/helm-unittest/helm-unitte
 | recommender.leaderElection.resourceName | string | `"vpa-recommender-lease"` |  |
 | recommender.leaderElection.resourceNamespace | string | `""` |  |
 | recommender.leaderElection.retryPeriod | string | `"2s"` |  |
+| recommender.livenessProbe | object | `{"failureThreshold":3,"httpGet":{"path":"/health-check","port":"prometheus","scheme":"HTTP"},"initialDelaySeconds":5,"periodSeconds":10}` | Liveness probe for the Recommender container. Set to `null` to remove it. |
 | recommender.logLevel | int | `4` | Log verbosity for the Recommender (klog -v). |
 | recommender.nodeSelector | object | `{}` |  |
 | recommender.podAnnotations | object | `{}` |  |
@@ -327,12 +355,14 @@ This chart includes [helm-unittest](https://github.com/helm-unittest/helm-unitte
 | recommender.podDisruptionBudget.unhealthyPodEvictionPolicy | string | `"AlwaysAllow"` | Policy used to evict unhealthy pods, either 'IfHealthyBudget' or 'AlwaysAllow'. |
 | recommender.podLabels | object | `{}` |  |
 | recommender.priorityClassName | string | `nil` |  |
+| recommender.readinessProbe | object | `{"failureThreshold":3,"httpGet":{"path":"/health-check","port":"prometheus","scheme":"HTTP"},"periodSeconds":10}` | Readiness probe for the Recommender container. Set to `null` to remove it. |
 | recommender.replicas | int | `2` |  |
 | recommender.resources | object | `{}` |  |
 | recommender.revisionHistoryLimit | int | `10` |  |
 | recommender.serviceAccount.annotations | object | `{}` |  |
 | recommender.serviceAccount.create | bool | `true` |  |
 | recommender.serviceAccount.labels | object | `{}` |  |
+| recommender.startupProbe | object | `{}` | Startup probe for the Recommender container. Disabled by default. Liveness and readiness probes do not run until the startup probe succeeds. |
 | recommender.strategy | object | `{}` |  |
 | recommender.tolerations | list | `[]` |  |
 | recommender.topologySpreadConstraints | list | `[]` | Topology spread constraints for scheduling the Recommender, used to spread replicas across failure domains such as zones. |
@@ -354,6 +384,7 @@ This chart includes [helm-unittest](https://github.com/helm-unittest/helm-unitte
 | updater.leaderElection.resourceName | string | `"vpa-updater-lease"` |  |
 | updater.leaderElection.resourceNamespace | string | `""` |  |
 | updater.leaderElection.retryPeriod | string | `"2s"` |  |
+| updater.livenessProbe | object | `{"failureThreshold":3,"httpGet":{"path":"/health-check","port":"prometheus","scheme":"HTTP"},"initialDelaySeconds":5,"periodSeconds":10}` | Liveness probe for the Updater container. Set to `null` to remove it. |
 | updater.logLevel | int | `4` | Log verbosity for the Updater (klog -v). |
 | updater.nodeSelector | object | `{}` |  |
 | updater.podAnnotations | object | `{}` |  |
@@ -363,12 +394,14 @@ This chart includes [helm-unittest](https://github.com/helm-unittest/helm-unitte
 | updater.podDisruptionBudget.unhealthyPodEvictionPolicy | string | `"AlwaysAllow"` | Policy used to evict unhealthy pods, either 'IfHealthyBudget' or 'AlwaysAllow'. |
 | updater.podLabels | object | `{}` |  |
 | updater.priorityClassName | string | `nil` |  |
+| updater.readinessProbe | object | `{"failureThreshold":3,"httpGet":{"path":"/health-check","port":"prometheus","scheme":"HTTP"},"periodSeconds":10}` | Readiness probe for the Updater container. Set to `null` to remove it. |
 | updater.replicas | int | `2` |  |
 | updater.resources | object | `{}` |  |
 | updater.revisionHistoryLimit | int | `10` |  |
 | updater.serviceAccount.annotations | object | `{}` |  |
 | updater.serviceAccount.create | bool | `true` |  |
 | updater.serviceAccount.labels | object | `{}` |  |
+| updater.startupProbe | object | `{}` | Startup probe for the Updater container. Disabled by default. Liveness and readiness probes do not run until the startup probe succeeds. |
 | updater.strategy | object | `{}` |  |
 | updater.tolerations | list | `[]` |  |
 | updater.topologySpreadConstraints | list | `[]` | Topology spread constraints for scheduling the Updater, used to spread replicas across failure domains such as zones. |

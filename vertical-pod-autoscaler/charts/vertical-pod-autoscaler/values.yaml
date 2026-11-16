@@ -91,6 +91,35 @@ admissionController:
     #   cpu: 50m
     #   memory: 200Mi
 
+  # admissionController.livenessProbe -- Liveness probe for the Admission Controller container. Set to `null` to remove it.
+  livenessProbe:
+    httpGet:
+      path: /health-check
+      port: prometheus
+      scheme: HTTP
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    failureThreshold: 3
+
+  # admissionController.readinessProbe -- Readiness probe for the Admission Controller container. Set to `null` to remove it.
+  readinessProbe:
+    httpGet:
+      path: /health-check
+      port: prometheus
+      scheme: HTTP
+    periodSeconds: 10
+    failureThreshold: 3
+
+  # admissionController.startupProbe -- Startup probe for the Admission Controller container. Disabled by default.
+  # Liveness and readiness probes do not run until the startup probe succeeds.
+  startupProbe: {}
+    # httpGet:
+    #   path: /health-check
+    #   port: prometheus
+    #   scheme: HTTP
+    # periodSeconds: 10
+    # failureThreshold: 30
+
   # Node selector labels for scheduling the Admission Controller.
   nodeSelector: {}
 
@@ -300,6 +329,35 @@ recommender:
     #   cpu: 50m
     #   memory: 500Mi
 
+  # recommender.livenessProbe -- Liveness probe for the Recommender container. Set to `null` to remove it.
+  livenessProbe:
+    httpGet:
+      path: /health-check
+      port: prometheus
+      scheme: HTTP
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    failureThreshold: 3
+
+  # recommender.readinessProbe -- Readiness probe for the Recommender container. Set to `null` to remove it.
+  readinessProbe:
+    httpGet:
+      path: /health-check
+      port: prometheus
+      scheme: HTTP
+    periodSeconds: 10
+    failureThreshold: 3
+
+  # recommender.startupProbe -- Startup probe for the Recommender container. Disabled by default.
+  # Liveness and readiness probes do not run until the startup probe succeeds.
+  startupProbe: {}
+    # httpGet:
+    #   path: /health-check
+    #   port: prometheus
+    #   scheme: HTTP
+    # periodSeconds: 10
+    # failureThreshold: 30
+
   # Node selector labels for scheduling the Recommender.
   nodeSelector: {}
 
@@ -461,6 +519,35 @@ updater:
     # requests:
     #   cpu: 50m
     #   memory: 200Mi
+
+  # updater.livenessProbe -- Liveness probe for the Updater container. Set to `null` to remove it.
+  livenessProbe:
+    httpGet:
+      path: /health-check
+      port: prometheus
+      scheme: HTTP
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    failureThreshold: 3
+
+  # updater.readinessProbe -- Readiness probe for the Updater container. Set to `null` to remove it.
+  readinessProbe:
+    httpGet:
+      path: /health-check
+      port: prometheus
+      scheme: HTTP
+    periodSeconds: 10
+    failureThreshold: 3
+
+  # updater.startupProbe -- Startup probe for the Updater container. Disabled by default.
+  # Liveness and readiness probes do not run until the startup probe succeeds.
+  startupProbe: {}
+    # httpGet:
+    #   path: /health-check
+    #   port: prometheus
+    #   scheme: HTTP
+    # periodSeconds: 10
+    # failureThreshold: 30
 
   # name of priorityclass for scheduling
   priorityClassName:
