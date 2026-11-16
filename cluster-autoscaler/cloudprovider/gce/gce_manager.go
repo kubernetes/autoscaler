@@ -96,7 +96,7 @@ type GceManager interface {
 	// GetMigOptions returns MIG's NodeGroupAutoscalingOptions
 	GetMigOptions(ctx context.Context, mig Mig, defaults config.NodeGroupAutoscalingOptions) *config.NodeGroupAutoscalingOptions
 	// IsMigStable returns whether the MIG is stable. A stable state means that: none of the instances in the managed instance group is currently undergoing any type of change (for example, creation, restart, or deletion); no future changes are scheduled for instances in the managed instance group; and the managed instance group itself is not being modified.
-	IsMigStable(mig Mig) (bool, error)
+	IsMigStable(ctx context.Context, mig Mig) (bool, error)
 
 	// SetMigSize sets MIG size.
 	SetMigSize(ctx context.Context, mig Mig, size int64) error
@@ -251,8 +251,8 @@ func (m *gceManagerImpl) GetMigSize(ctx context.Context, mig Mig) (int64, error)
 }
 
 // IsMigStable returns whether the MIG is stable.
-func (m *gceManagerImpl) IsMigStable(mig Mig) (bool, error) {
-	return m.migInfoProvider.GetMigIsStable(mig.GceRef())
+func (m *gceManagerImpl) IsMigStable(ctx context.Context, mig Mig) (bool, error) {
+	return m.migInfoProvider.GetMigIsStable(ctx, mig.GceRef())
 }
 
 // SetMigSize sets MIG size.
