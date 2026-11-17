@@ -61,13 +61,13 @@ type PodsInPlaceRestriction interface {
 
 	// CanInPlaceUpdate checks if a pod can be safely updated in-place.
 	// Returns:
-	//   - InPlaceApproved: The pod can be updated in-place immediately.
-	//   - InPlaceDeferred: The update should be deferred (e.g., pod is pending, already updating, group is not disruptable, or kubelet reported a resize error; on failure VPA defers and retries next loop without caching permanent infeasibility).
+	//   - InPlaceApproved: The pod can be updated in-place, including retrying an ongoing resize with a changed recommendation.
+	//   - InPlaceDeferred: The update should be deferred (e.g., pod is pending or group is not disruptable).
 	//   - InPlaceEvict: The pod should be evicted instead of updated in-place.
 	//   - InPlaceInfeasible: The in-place update is infeasible (node can't accommodate it). Will only retry when recommendation changes.
 	//
 	// The updateMode parameter affects the decision:
-	//   - UpdateModeInPlace: Waits indefinitely for in-progress updates.
+	//   - UpdateModeInPlace: Allows changed recommendations during an ongoing resize without falling back to eviction.
 	//   - UpdateModeInPlaceOrRecreate: May return InPlaceEvict if the pod update exceeds the timeout threshold.
 	CanInPlaceUpdate(pod *corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler, infeasibleAttempts map[k8stypes.UID]*vpa_types.RecommendedPodResources) utils.InPlaceDecision
 	// CanUnboost checks if a pod can be safely unboosted.
@@ -137,7 +137,8 @@ func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *corev1.Pod, vpa *vpa
 	// pod is in place updaing
 	// utils.ResizeStatusNone means that  there is no container that is inPodResizePending or PodResizeInProgress state
 	if resizeStatus != utils.ResizeStatusNone {
-		// For InPlace mode: wait for all non-terminal statuses, never evict.
+		// For InPlace mode, allow a new recommendation while a resize is ongoing,
+		// but never evict. The priority calculator checks whether an update is needed.
 		// Infeasible attempts are tracked and only retried when recommendation changes.
 		if updateMode == vpa_types.UpdateModeInPlace {
 			switch resizeStatus {
@@ -147,21 +148,20 @@ func (ip *PodsInPlaceRestrictionImpl) CanInPlaceUpdate(pod *corev1.Pod, vpa *vpa
 				klog.V(4).InfoS("Not retrying in-place resize because the kubelet reported that the node cannot accommodate the requested resources; VPA will retry after the recommendation changes", "pod", klog.KObj(pod))
 				return utils.InPlaceInfeasible
 			case utils.ResizeStatusDeferred:
-				// Deferred means kubelet is waiting to apply the resize.
-				// Do nothing, wait for kubelet to proceed.
-				klog.V(4).InfoS("Deferring in-place update because the kubelet postponed the resize; VPA will wait instead of sending another resize request", "pod", klog.KObj(pod))
-				return utils.InPlaceDeferred
+				// Kubelet is waiting to apply the resize; allow a changed recommendation.
+				klog.V(4).InfoS("Allowing a changed recommendation while the kubelet has deferred the resize", "pod", klog.KObj(pod))
+				return utils.InPlaceApproved
 			case utils.ResizeStatusInProgress:
-				// Resize is actively being applied, wait for completion.
-				klog.V(4).InfoS("In-place update in progress, waiting for completion", "pod", klog.KObj(pod))
-				return utils.InPlaceDeferred
+				// Resize is actively being applied; allow a changed recommendation.
+				klog.V(4).InfoS("Allowing a changed recommendation while the resize is in progress", "pod", klog.KObj(pod))
+				return utils.InPlaceApproved
 			case utils.ResizeStatusError:
-				// Transient kubelet error; retry next loop without caching as permanent infeasibility.
-				klog.V(4).InfoS("Deferring in-place resize because the kubelet reported an error", "pod", klog.KObj(pod))
-				return utils.InPlaceDeferred
+				// Allow a changed recommendation without caching a transient kubelet error as infeasible.
+				klog.V(4).InfoS("Allowing a changed recommendation after the kubelet reported a resize error", "pod", klog.KObj(pod))
+				return utils.InPlaceApproved
 			default:
-				klog.V(4).InfoS("Deferring in-place update because the Pod reports an unrecognized resize status", "pod", klog.KObj(pod), "resizeStatus", resizeStatus)
-				return utils.InPlaceDeferred
+				klog.V(4).InfoS("Allowing a changed recommendation despite an unrecognized resize status", "pod", klog.KObj(pod), "resizeStatus", resizeStatus)
+				return utils.InPlaceApproved
 			}
 		}
 

@@ -321,7 +321,7 @@ func TestCanInPlaceUpdate(t *testing.T) {
 			vpa:                     getIPVpa(),
 		},
 		{
-			name: "InPlace - CanInPlaceUpdate=InPlaceDeferred - resize InProgress, waits indefinitely (no timeout)",
+			name: "InPlace - CanInPlaceUpdate=InPlaceApproved - resize InProgress has no eviction timeout",
 			pods: []*corev1.Pod{
 				generatePod().WithPodConditions([]corev1.PodCondition{
 					{
@@ -335,7 +335,7 @@ func TestCanInPlaceUpdate(t *testing.T) {
 			replicas:                3,
 			evictionTolerance:       0.5,
 			lastInPlaceAttempt:      time.UnixMilli(0), // epoch (too long ago...)
-			expectedInPlaceDecision: utils.InPlaceDeferred,
+			expectedInPlaceDecision: utils.InPlaceApproved,
 			vpa:                     getIPVpa(),
 		},
 		{
@@ -357,7 +357,7 @@ func TestCanInPlaceUpdate(t *testing.T) {
 			vpa:                     getBasicVpa(),
 		},
 		{
-			name: "InPlace mode - waits indefinitely for in-progress updates",
+			name: "InPlace mode - allows new recommendations for in-progress updates without an eviction timeout",
 			pods: []*corev1.Pod{
 				test.Pod().WithName("wait-1").WithCreator(&rc.ObjectMeta, &rc.TypeMeta).
 					WithPodConditions([]corev1.PodCondition{
@@ -369,7 +369,7 @@ func TestCanInPlaceUpdate(t *testing.T) {
 			replicas:                3,
 			evictionTolerance:       0.5,
 			lastInPlaceAttempt:      time.UnixMilli(0),
-			expectedInPlaceDecision: utils.InPlaceDeferred,
+			expectedInPlaceDecision: utils.InPlaceApproved,
 			vpa:                     getIPVpa(),
 			clockTime:               ptr.To(time.UnixMilli(7200000)),
 			vpaForCreatorMaps:       getIPVpa(),
@@ -405,7 +405,7 @@ func TestCanInPlaceUpdate(t *testing.T) {
 			replicas:                3,
 			evictionTolerance:       0.5,
 			lastInPlaceAttempt:      time.Time{},
-			expectedInPlaceDecision: utils.InPlaceDeferred,
+			expectedInPlaceDecision: utils.InPlaceApproved,
 			vpa:                     getIPVpa(),
 			clockTime:               ptr.To(time.Time{}),
 			vpaForCreatorMaps:       getIPVpa(),
@@ -1091,7 +1091,7 @@ func TestInPlaceModeResizeStatuses(t *testing.T) {
 	}{
 		// InPlace mode tests
 		{
-			name: "InPlace mode - ResizeStatusDeferred returns InPlaceDeferred",
+			name: "InPlace mode - ResizeStatusDeferred returns InPlaceApproved",
 			podConditions: []corev1.PodCondition{
 				{
 					Type:   corev1.PodResizePending,
@@ -1100,7 +1100,7 @@ func TestInPlaceModeResizeStatuses(t *testing.T) {
 				},
 			},
 			updateMode:         vpa_types.UpdateModeInPlace,
-			expectedDecision:   utils.InPlaceDeferred,
+			expectedDecision:   utils.InPlaceApproved,
 			lastInPlaceAttempt: time.UnixMilli(0),
 			clockTime:          time.UnixMilli(3600000),
 		},
@@ -1119,7 +1119,7 @@ func TestInPlaceModeResizeStatuses(t *testing.T) {
 			clockTime:          time.UnixMilli(3600000),
 		},
 		{
-			name: "InPlace mode - ResizeStatusInProgress returns InPlaceDeferred",
+			name: "InPlace mode - ResizeStatusInProgress returns InPlaceApproved",
 			podConditions: []corev1.PodCondition{
 				{
 					Type:   corev1.PodResizeInProgress,
@@ -1127,12 +1127,12 @@ func TestInPlaceModeResizeStatuses(t *testing.T) {
 				},
 			},
 			updateMode:         vpa_types.UpdateModeInPlace,
-			expectedDecision:   utils.InPlaceDeferred,
+			expectedDecision:   utils.InPlaceApproved,
 			lastInPlaceAttempt: time.UnixMilli(0),
 			clockTime:          time.UnixMilli(3600000),
 		},
 		{
-			name: "InPlace mode - ResizeStatusError returns InPlaceDeferred",
+			name: "InPlace mode - ResizeStatusError returns InPlaceApproved",
 			podConditions: []corev1.PodCondition{
 				{
 					Type:    corev1.PodResizeInProgress,
@@ -1142,9 +1142,17 @@ func TestInPlaceModeResizeStatuses(t *testing.T) {
 				},
 			},
 			updateMode:         vpa_types.UpdateModeInPlace,
-			expectedDecision:   utils.InPlaceDeferred,
+			expectedDecision:   utils.InPlaceApproved,
 			lastInPlaceAttempt: time.UnixMilli(0),
 			clockTime:          time.UnixMilli(3600000),
+		},
+		{
+			name: "InPlace mode - unknown resize status returns InPlaceApproved",
+			podConditions: []corev1.PodCondition{
+				{Type: corev1.PodResizePending, Status: corev1.ConditionTrue, Reason: "Unknown"},
+			},
+			updateMode:       vpa_types.UpdateModeInPlace,
+			expectedDecision: utils.InPlaceApproved,
 		},
 		// InPlaceOrRecreate mode tests - same conditions, different behavior
 		{

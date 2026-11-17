@@ -223,6 +223,153 @@ func TestRunOnce_Mode(t *testing.T) {
 	}
 }
 
+// TestRunOnce_InPlaceRestrictions uses the real restriction factory so budget
+// decisions made after the first resize are checked by the updater loop.
+func TestRunOnce_InPlaceRestrictions(t *testing.T) {
+	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.InPlace, true)
+
+	testCases := []struct {
+		name                      string
+		skipDisruptionBudget      bool
+		resizePolicy              []corev1.ContainerResizePolicy
+		conditions                []corev1.PodCondition
+		recommendationMatchesSpec bool
+		expectedResizes           int
+	}{
+		{
+			name:            "disruption budget allows one of two replicas",
+			expectedResizes: 1,
+		},
+		{
+			name:                 "non-disruptive resizes can skip the budget",
+			skipDisruptionBudget: true,
+			expectedResizes:      2,
+		},
+		{
+			name:                 "restart-required resizes respect the budget even with skipping enabled",
+			skipDisruptionBudget: true,
+			resizePolicy: []corev1.ContainerResizePolicy{
+				{ResourceName: corev1.ResourceMemory, RestartPolicy: corev1.RestartContainer},
+			},
+			expectedResizes: 1,
+		},
+		{
+			name: "deferred resize accepts a changed recommendation",
+			conditions: []corev1.PodCondition{
+				{Type: corev1.PodResizePending, Status: corev1.ConditionTrue, Reason: corev1.PodReasonDeferred},
+			},
+			expectedResizes: 2,
+		},
+		{
+			name: "in-progress resize accepts a changed recommendation",
+			conditions: []corev1.PodCondition{
+				{Type: corev1.PodResizeInProgress, Status: corev1.ConditionTrue},
+			},
+			expectedResizes: 2,
+		},
+		{
+			name: "resize with an error accepts a changed recommendation",
+			conditions: []corev1.PodCondition{
+				{Type: corev1.PodResizeInProgress, Status: corev1.ConditionTrue, Reason: corev1.PodReasonError},
+			},
+			expectedResizes: 2,
+		},
+		{
+			name: "unknown resize status accepts a changed recommendation",
+			conditions: []corev1.PodCondition{
+				{Type: corev1.PodResizePending, Status: corev1.ConditionTrue, Reason: "Unknown"},
+			},
+			expectedResizes: 2,
+		},
+		{
+			name: "deferred resize with unchanged recommendation is left to the kubelet",
+			conditions: []corev1.PodCondition{
+				{Type: corev1.PodResizePending, Status: corev1.ConditionTrue, Reason: corev1.PodReasonDeferred},
+			},
+			recommendationMatchesSpec: true,
+			expectedResizes:           0,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			replicas := int32(2)
+			rs := appsv1.ReplicaSet{
+				TypeMeta:   metav1.TypeMeta{Kind: "ReplicaSet", APIVersion: "apps/v1"},
+				ObjectMeta: metav1.ObjectMeta{Name: "rs", Namespace: "default"},
+				Spec:       appsv1.ReplicaSetSpec{Replicas: &replicas},
+			}
+			podLabels := map[string]string{"app": "test"}
+			containerName := "test"
+			var pods []*corev1.Pod
+			var objects []runtime.Object
+			for _, name := range []string{"test-pod-0", "test-pod-1"} {
+				pod := test.Pod().WithName(name).
+					AddContainer(test.Container().WithName(containerName).
+						WithCPURequest(resource.MustParse("1")).WithCPULimit(resource.MustParse("1")).
+						WithMemRequest(resource.MustParse("100M")).WithMemLimit(resource.MustParse("100M")).Get()).
+					WithLabels(podLabels).WithCreator(&rs.ObjectMeta, &rs.TypeMeta).
+					WithPodConditions(tc.conditions).Get()
+				pod.Spec.Containers[0].ResizePolicy = tc.resizePolicy
+				pods = append(pods, pod)
+				objects = append(objects, pod)
+			}
+
+			targetCPU, targetMemory := "3", "300M"
+			if tc.recommendationMatchesSpec {
+				targetCPU, targetMemory = "1", "100M"
+			}
+			vpaObj := test.VerticalPodAutoscaler().WithName("vpa-in-place").WithNamespace("default").
+				WithContainer(containerName).WithUpdateMode(vpa_types.UpdateModeInPlace).
+				WithTarget(targetCPU, targetMemory).
+				WithTargetRef(&autoscalingv1.CrossVersionObjectReference{Kind: rs.Kind, Name: rs.Name, APIVersion: rs.APIVersion}).Get()
+
+			kubeClient := fake.NewSimpleClientset(objects...)
+			informerFactory := informers.NewSharedInformerFactory(kubeClient, 0)
+			require.NoError(t, informerFactory.Apps().V1().ReplicaSets().Informer().GetStore().Add(&rs))
+			limitRangeCalculator := limitrange.NewNoopLimitsCalculator()
+			recommendationProvider := recommendation.NewProvider(limitRangeCalculator, vpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator))
+			calculators := []patch.Calculator{inplace.NewResourceInPlaceUpdatesCalculator(recommendationProvider)}
+			// Use the updater defaults for minReplicas and evictionTolerance.
+			restrictionFactory := restriction.NewPodsRestrictionFactory(kubeClient, informerFactory, 2, 0.5, calculators, tc.skipDisruptionBudget)
+			podLister := &test.PodListerMock{}
+			podLister.On("List").Return(pods, nil)
+			selectorFetcher := target_mock.NewMockVpaTargetSelectorFetcher(ctrl)
+			selectorFetcher.EXPECT().Fetch(gomock.Eq(vpaObj)).Return(parseLabelSelector("app = test"), nil)
+
+			u := &updater{
+				vpaIndexer:                   newVPAIndexer(t, vpaObj),
+				podLister:                    podLister,
+				restrictionFactory:           restrictionFactory,
+				evictionRateLimiter:          rate.NewLimiter(rate.Inf, 0),
+				inPlaceRateLimiter:           rate.NewLimiter(rate.Inf, 0),
+				evictionAdmission:            priority.NewDefaultPodEvictionAdmission(),
+				recommendationProcessor:      &test.FakeRecommendationProcessor{},
+				selectorFetcher:              selectorFetcher,
+				controllerFetcher:            controllerfetcher.FakeControllerFetcher{},
+				useAdmissionControllerStatus: true,
+				statusValidator:              newFakeValidator(true),
+				priorityProcessor:            priority.NewProcessor(),
+				defaultUpdateThreshold:       0.1,
+				eventRecorder:                record.NewFakeRecorder(10),
+			}
+			u.RunOnce(context.Background())
+
+			resized := 0
+			for _, action := range kubeClient.Actions() {
+				if action.GetVerb() == "patch" && action.GetResource().Resource == "pods" && action.GetSubresource() == "resize" {
+					resized++
+				}
+				assert.NotEqual(t, "eviction", action.GetSubresource(), "InPlace mode must never evict")
+			}
+			assert.Equal(t, tc.expectedResizes, resized)
+		})
+	}
+}
+
 func TestRunOnce_Status(t *testing.T) {
 	tests := []struct {
 		name                  string
