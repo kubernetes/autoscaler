@@ -19,8 +19,8 @@ admissionController:
     enabled: false
   # Use application-managed webhook for e2e testing (cert rotation test requires this)
   registerWebhook: true
-  certGen:
-    enabled: false
+  tls:
+    create: false
   logLevel: 6
   # Mount certificates with legacy key names (matching gencerts.sh format)
   volumes:

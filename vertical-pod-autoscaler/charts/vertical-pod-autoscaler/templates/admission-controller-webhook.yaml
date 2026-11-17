@@ -1,4 +1,7 @@
-{{- if and .Values.admissionController.enabled (or .Values.admissionController.certGen.enabled .Values.admissionController.certManager.enabled) }}
+{{- if and .Values.admissionController.enabled (or .Values.admissionController.tls.create .Values.admissionController.certManager.enabled) }}
+{{- if .Values.admissionController.tls.create }}
+{{- $_ := include "vertical-pod-autoscaler.admissionController.tls.data" . }}
+{{- end }}
 apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
@@ -20,7 +23,10 @@ webhooks:
 - admissionReviewVersions:
   - v1
   clientConfig:
-    # caBundle is injected by the certgen patch job (certGen mode) or by cert-manager cainjector (certManager mode)
+    # caBundle comes from the same generated CA as the TLS Secret (tls.create mode) or is injected by cert-manager cainjector (certManager mode)
+    {{- if .Values.admissionController.tls.create }}
+    caBundle: {{ .Values.admissionController.tls._data.ca | quote }}
+    {{- end }}
     service:
       name: {{ .Values.admissionController.service.name }}
       namespace: {{ .Release.Namespace }}

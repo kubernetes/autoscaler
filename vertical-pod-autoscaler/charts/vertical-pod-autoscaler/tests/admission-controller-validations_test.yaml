@@ -7,17 +7,17 @@ tests:
     template: admission-controller-validations.yaml
     set:
       admissionController.registerWebhook: false
-      admissionController.certGen.enabled: false
+      admissionController.tls.create: false
       admissionController.certManager.enabled: false
     asserts:
       - failedTemplate:
-          errorMessage: "admissionController requires a TLS certificate source. Enable certGen, certManager, or registerWebhook."
+          errorPattern: "No TLS certificate source configured"
 
-  - it: accepts certGen as the only TLS certificate source
+  - it: accepts tls.create as the only TLS certificate source
     template: admission-controller-deployment.yaml
     set:
       admissionController.registerWebhook: false
-      admissionController.certGen.enabled: true
+      admissionController.tls.create: true
       admissionController.certManager.enabled: false
     asserts:
       - isKind:
@@ -27,7 +27,7 @@ tests:
     template: admission-controller-deployment.yaml
     set:
       admissionController.registerWebhook: true
-      admissionController.certGen.enabled: false
+      admissionController.tls.create: false
       admissionController.certManager.enabled: false
     asserts:
       - isKind:
@@ -37,7 +37,7 @@ tests:
     template: admission-controller-deployment.yaml
     set:
       admissionController.registerWebhook: false
-      admissionController.certGen.enabled: false
+      admissionController.tls.create: false
       admissionController.certManager.enabled: true
       admissionController.certManager.createSelfSignedIssuer.enabled: true
     asserts:
@@ -48,9 +48,9 @@ tests:
     template: admission-controller-validations.yaml
     set:
       admissionController.registerWebhook: true
-      admissionController.certGen.enabled: false
+      admissionController.tls.create: false
       admissionController.certManager.enabled: true
       admissionController.certManager.createSelfSignedIssuer.enabled: true
     asserts:
       - failedTemplate:
-          errorMessage: "admissionController.certManager.enabled and admissionController.registerWebhook cannot both be true. Set admissionController.registerWebhook: false when using cert-manager."
+          errorPattern: "cannot both be true"
