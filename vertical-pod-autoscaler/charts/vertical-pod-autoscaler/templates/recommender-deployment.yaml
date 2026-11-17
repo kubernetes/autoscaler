@@ -86,21 +86,18 @@ spec:
             - name: prometheus
               containerPort: 8942
               protocol: TCP
+          {{- with .Values.recommender.livenessProbe }}
           livenessProbe:
-            httpGet:
-              path: /health-check
-              port: prometheus
-              scheme: HTTP
-            initialDelaySeconds: 5
-            periodSeconds: 10
-            failureThreshold: 3
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.recommender.readinessProbe }}
           readinessProbe:
-            httpGet:
-              path: /health-check
-              port: prometheus
-              scheme: HTTP
-            periodSeconds: 10
-            failureThreshold: 3
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.recommender.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- with .Values.recommender.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
