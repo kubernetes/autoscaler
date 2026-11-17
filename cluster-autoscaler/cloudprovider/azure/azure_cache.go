@@ -567,7 +567,7 @@ func (m *azureCache) FindForInstance(instance *azureRef, vmType string) (cloudpr
 	}
 
 	// Look up caches for the instance.
-	klog.V(6).Infof("FindForInstance: attempting to retrieve instance %v from cache", m.instanceToNodeGroup)
+	klog.V(6).Infof("FindForInstance: attempting to retrieve instance %s from cache", inst.Name)
 	if nodeGroup := m.getInstanceFromCache(inst.Name); nodeGroup != nil {
 		klog.V(4).Infof("FindForInstance: found node group %q in cache", nodeGroup.Id())
 		return nodeGroup, nil
