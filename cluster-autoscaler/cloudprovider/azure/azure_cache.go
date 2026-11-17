@@ -28,6 +28,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v7"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v8"
 	skewer "github.com/Azure/skewer/v2"
+	"github.com/samber/lo"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure/cache"
 	providerazureconsts "sigs.k8s.io/cloud-provider-azure/pkg/consts"
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
@@ -352,9 +353,15 @@ func (m *azureCache) fetchVirtualMachines() (map[string][]*armcompute.VirtualMac
 		if vmPoolName == nil {
 			vmPoolName = tags[legacyAgentpoolNameTag]
 		}
-		if vmPoolName != nil {
-			instances[*vmPoolName] = append(instances[*vmPoolName], instance)
+
+		// Skip instances that do not have a pool name tag
+		if vmPoolName == nil {
+			continue
 		}
+
+		// Normalize the pool name to lowercase
+		name := strings.ToLower(lo.FromPtr(vmPoolName))
+		instances[name] = append(instances[name], instance)
 	}
 
 	return instances, nil
