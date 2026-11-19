@@ -17,7 +17,7 @@ github.com/emicklei/go-restful/v3/log
 # github.com/fxamacker/cbor/v2 v2.9.1
 ## explicit; go 1.20
 github.com/fxamacker/cbor/v2
-# github.com/go-logr/logr v1.4.3
+# github.com/go-logr/logr v1.4.4
 ## explicit; go 1.18
 github.com/go-logr/logr
 # github.com/go-openapi/jsonpointer v1.0.0
@@ -132,22 +132,22 @@ github.com/spf13/pflag
 # github.com/x448/float16 v0.8.4
 ## explicit; go 1.11
 github.com/x448/float16
-# go.opentelemetry.io/otel v1.44.0
-## explicit; go 1.25.0
+# go.opentelemetry.io/otel v1.47.0
+## explicit; go 1.26.0
 go.opentelemetry.io/otel/attribute
 go.opentelemetry.io/otel/attribute/internal
 go.opentelemetry.io/otel/attribute/internal/xxhash
 go.opentelemetry.io/otel/codes
-go.opentelemetry.io/otel/semconv/v1.41.0
-# go.opentelemetry.io/otel/trace v1.44.0
-## explicit; go 1.25.0
+go.opentelemetry.io/otel/semconv/v1.43.0
+# go.opentelemetry.io/otel/trace v1.47.0
+## explicit; go 1.26.0
 go.opentelemetry.io/otel/trace
 go.opentelemetry.io/otel/trace/embedded
 go.opentelemetry.io/otel/trace/internal/telemetry
 # go.yaml.in/yaml/v2 v2.4.4
 ## explicit; go 1.15
 go.yaml.in/yaml/v2
-# go.yaml.in/yaml/v3 v3.0.4
+# go.yaml.in/yaml/v3 v3.0.5
 ## explicit; go 1.16
 go.yaml.in/yaml/v3
 # golang.org/x/net v0.57.0
