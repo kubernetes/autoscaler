@@ -109,7 +109,7 @@ func (writer *checkpointWriter) StoreCheckpoints(ctx context.Context, concurrent
 
 	// Build this map once per pass.
 	var containers containersAggregateMap
-	if len(vpas) > 0 && concurrentWorkers > 0 {
+	if len(vpas) > 0 {
 		containers = groupContainersByAggregate(writer.cluster)
 	}
 
