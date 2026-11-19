@@ -23,6 +23,7 @@ import (
 	"strings"
 	"time"
 
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
 	typedadmregv1 "k8s.io/client-go/kubernetes/typed/admissionregistration/v1"
@@ -52,6 +53,7 @@ const (
 	scaleCacheEntryLifetime      time.Duration = time.Hour
 	scaleCacheEntryFreshnessTime time.Duration = 10 * time.Minute
 	scaleCacheEntryJitterFactor  float64       = 1.
+	scaleCacheLoopPeriod         time.Duration = 7 * time.Second
 	webHookDelay                               = 10 * time.Second
 )
 
@@ -78,6 +80,9 @@ func main() {
 	)
 	targetSelectorFetcher := target.NewVpaTargetSelectorFetcher(kubeConfig, kubeClient, factory, stopCh)
 	controllerFetcher := controllerfetcher.NewControllerFetcher(kubeConfig, kubeClient, factory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor, stopCh)
+	// Refresh and expire cached /scale responses (including errors). Without
+	// this, they are kept until the process restarts.
+	controllerFetcher.Start(wait.ContextForChannel(stopCh), scaleCacheLoopPeriod)
 
 	podPreprocessor := pod.NewDefaultPreProcessor()
 	vpaPreprocessor := vpa.NewDefaultPreProcessor()
