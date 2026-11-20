@@ -32,6 +32,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 	scheme "k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/klog/v2"
 )
 
 const (
@@ -198,6 +199,11 @@ func (k *kubernetesClient) countResourcesThroughMetrics(matchLabels map[string]s
 	if err != nil {
 		return 0, err
 	}
+	defer func() {
+		if err := reader.Close(); err != nil {
+			klog.Warningf("Failed to close metrics response reader: %v", err)
+		}
+	}()
 	return getResourceCountFromDecoder(matchLabels, expfmt.NewDecoder(reader, fmtText))
 }
 
