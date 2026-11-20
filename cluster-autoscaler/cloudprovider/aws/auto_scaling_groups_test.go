@@ -18,6 +18,7 @@ package aws
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 	"time"
 
@@ -193,4 +194,120 @@ func TestIsTerminatingLifecycleState(t *testing.T) {
 			assert.Equal(t, tc.expected, isTerminatingLifecycleState(tc.lifecycle))
 		})
 	}
+}
+
+func newTestAsgCacheForDelete(a *autoScalingMock, instanceCount int) (*asgCache, *asg, []*AwsInstanceRef) {
+	awsService := awsWrapper{a, nil, nil}
+	testAsg := &asg{AwsRef: AwsRef{Name: "test-asg"}, curSize: instanceCount}
+	cache := &asgCache{
+		instanceToAsg:     make(map[AwsInstanceRef]*asg),
+		instanceLifecycle: make(map[AwsInstanceRef]autoscalingtypes.LifecycleState),
+		awsService:        &awsService,
+	}
+	instances := make([]*AwsInstanceRef, instanceCount)
+	for i := 0; i < instanceCount; i++ {
+		ref := AwsInstanceRef{Name: fmt.Sprintf("i-%04d", i), ProviderID: fmt.Sprintf("aws:///us-east-1a/i-%04d", i)}
+		cache.instanceToAsg[ref] = testAsg
+		cache.instanceLifecycle[ref] = autoscalingtypes.LifecycleStateInService
+		instances[i] = &ref
+	}
+	return cache, testAsg, instances
+}
+
+func instanceIdsRange(from, to int) []string {
+	ids := make([]string, 0, to-from)
+	for i := from; i < to; i++ {
+		ids = append(ids, fmt.Sprintf("i-%04d", i))
+	}
+	return ids
+}
+
+func terminateInput(ids []string) *autoscaling.TerminateInstanceInAutoScalingGroupInput {
+	return &autoscaling.TerminateInstanceInAutoScalingGroupInput{
+		AutoScalingGroupName:           aws.String("test-asg"),
+		InstanceIds:                    ids,
+		ShouldDecrementDesiredCapacity: aws.Bool(true),
+	}
+}
+
+func TestDeleteInstancesBatches(t *testing.T) {
+	a := &autoScalingMock{}
+	cache, testAsg, instances := newTestAsgCacheForDelete(a, 250)
+	out := &autoscaling.TerminateInstanceInAutoScalingGroupOutput{}
+
+	a.On("TerminateInstanceInAutoScalingGroup", mock.Anything, terminateInput(instanceIdsRange(0, 100))).Return(out, nil).Once()
+	a.On("TerminateInstanceInAutoScalingGroup", mock.Anything, terminateInput(instanceIdsRange(100, 200))).Return(out, nil).Once()
+	a.On("TerminateInstanceInAutoScalingGroup", mock.Anything, terminateInput(instanceIdsRange(200, 250))).Return(out, nil).Once()
+
+	err := cache.DeleteInstances(instances)
+	assert.NoError(t, err)
+	a.AssertExpectations(t)
+	assert.Equal(t, 0, testAsg.curSize)
+	for _, instance := range instances {
+		assert.Equal(t, autoscalingtypes.LifecycleStateTerminating, cache.instanceLifecycle[*instance])
+	}
+}
+
+func TestDeleteInstancesBatchFailureFallsBackToSingleInstances(t *testing.T) {
+	a := &autoScalingMock{}
+	cache, testAsg, instances := newTestAsgCacheForDelete(a, 150)
+	out := &autoscaling.TerminateInstanceInAutoScalingGroupOutput{}
+	rejected := errors.New("terminate failed")
+
+	a.On("TerminateInstanceInAutoScalingGroup", mock.Anything, terminateInput(instanceIdsRange(0, 100))).Return(out, nil).Once()
+	// the second batch is rejected as a whole because of i-0120, so each instance is retried on its own
+	a.On("TerminateInstanceInAutoScalingGroup", mock.Anything, terminateInput(instanceIdsRange(100, 150))).Return(nil, rejected).Once()
+	for i := 100; i < 150; i++ {
+		ids := instanceIdsRange(i, i+1)
+		if i == 120 {
+			a.On("TerminateInstanceInAutoScalingGroup", mock.Anything, terminateInput(ids)).Return(nil, rejected).Once()
+			continue
+		}
+		a.On("TerminateInstanceInAutoScalingGroup", mock.Anything, terminateInput(ids)).Return(out, nil).Once()
+	}
+
+	err := cache.DeleteInstances(instances)
+	assert.ErrorIs(t, err, rejected)
+	assert.ErrorContains(t, err, "i-0120")
+	a.AssertExpectations(t)
+	// every instance except i-0120 is terminated
+	assert.Equal(t, 1, testAsg.curSize)
+	for i, instance := range instances {
+		want := autoscalingtypes.LifecycleStateTerminating
+		if i == 120 {
+			want = autoscalingtypes.LifecycleStateInService
+		}
+		assert.Equal(t, want, cache.instanceLifecycle[*instance], instance.Name)
+	}
+}
+
+func TestDeleteInstancesSingleInstanceFailure(t *testing.T) {
+	a := &autoScalingMock{}
+	cache, testAsg, instances := newTestAsgCacheForDelete(a, 1)
+	rejected := errors.New("terminate failed")
+
+	// a single-instance request is not retried
+	a.On("TerminateInstanceInAutoScalingGroup", mock.Anything, terminateInput(instanceIdsRange(0, 1))).Return(nil, rejected).Once()
+
+	err := cache.DeleteInstances(instances)
+	assert.ErrorIs(t, err, rejected)
+	a.AssertExpectations(t)
+	assert.Equal(t, 1, testAsg.curSize)
+	assert.Equal(t, autoscalingtypes.LifecycleStateInService, cache.instanceLifecycle[*instances[0]])
+}
+
+func TestDeleteInstancesDeduplicatesInstances(t *testing.T) {
+	a := &autoScalingMock{}
+	cache, testAsg, instances := newTestAsgCacheForDelete(a, 3)
+	// the same instance passed twice, once via the same pointer and once via an equal copy
+	dup := *instances[1]
+	input := append(instances, instances[0], &dup)
+
+	a.On("TerminateInstanceInAutoScalingGroup", mock.Anything, terminateInput(instanceIdsRange(0, 3))).
+		Return(&autoscaling.TerminateInstanceInAutoScalingGroupOutput{}, nil).Once()
+
+	err := cache.DeleteInstances(input)
+	assert.NoError(t, err)
+	a.AssertExpectations(t)
+	assert.Equal(t, 0, testAsg.curSize)
 }

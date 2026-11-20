@@ -18,8 +18,10 @@ package aws
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"reflect"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -36,6 +38,9 @@ const (
 	scaleToZeroSupported           = true
 	placeholderInstanceNamePrefix  = "i-placeholder"
 	placeholderUnfulfillableStatus = "placeholder-cannot-be-fulfilled"
+	// maxTerminateInstancesBatchSize is the maximum number of InstanceIds accepted by a single
+	// TerminateInstanceInAutoScalingGroup call.
+	maxTerminateInstancesBatchSize = 100
 )
 
 type asgCache struct {
@@ -367,8 +372,13 @@ func (m *asgCache) DeleteInstances(instances []*AwsInstanceRef) error {
 		}
 	}
 
+	toTerminate := make([]*AwsInstanceRef, 0, len(instances))
+	seen := make(map[string]struct{}, len(instances))
 	for _, instance := range instances {
-
+		if _, dup := seen[instance.Name]; dup {
+			continue
+		}
+		seen[instance.Name] = struct{}{}
 		if m.isPlaceholderInstance(instance) {
 			// skipping placeholder as placeholder instances don't exist
 			// and we have already reduced ASG size during placeholder check.
@@ -386,22 +396,52 @@ func (m *asgCache) DeleteInstances(instances []*AwsInstanceRef) error {
 			klog.V(2).Infof("instance %s is already terminating in state %s, will skip instead", instance.Name, lifecycle)
 			continue
 		}
+		toTerminate = append(toTerminate, instance)
+	}
 
-		params := &autoscaling.TerminateInstanceInAutoScalingGroupInput{
-			InstanceId:                     aws.String(instance.Name),
-			ShouldDecrementDesiredCapacity: aws.Bool(true),
+	var errs []error
+	for batch := range slices.Chunk(toTerminate, maxTerminateInstancesBatchSize) {
+		err := m.terminateInstancesNoLock(commonAsg, batch)
+		if err == nil || len(batch) == 1 {
+			errs = append(errs, err)
+			continue
 		}
-		start := time.Now()
-		resp, err := m.awsService.TerminateInstanceInAutoScalingGroup(context.Background(), params)
-		observeAWSRequest("TerminateInstanceInAutoScalingGroup", err, start)
-		if err != nil {
-			return err
+		// A batch is rejected as a whole if any instance in it can't be terminated,
+		// so retry one at a time to terminate the rest.
+		klog.Warningf("Failed to terminate %d instances in autoscaling group %s in a single request, retrying one at a time: %v", len(batch), commonAsg.Name, err)
+		for _, instance := range batch {
+			errs = append(errs, m.terminateInstancesNoLock(commonAsg, []*AwsInstanceRef{instance}))
 		}
-		klog.V(4).Infof("Terminated instance %s in autoscaling group: %s", instance.Name, aws.ToString(resp.Activity.Description))
+	}
+	return errors.Join(errs...)
+}
 
-		// Proactively decrement the size so autoscaler makes better decisions
-		commonAsg.curSize--
+// terminateInstancesNoLock terminates the given instances of asg in a single
+// TerminateInstanceInAutoScalingGroup request and updates the cache on success.
+func (m *asgCache) terminateInstancesNoLock(asg *asg, instances []*AwsInstanceRef) error {
+	instanceIds := make([]string, len(instances))
+	for i, instance := range instances {
+		instanceIds[i] = instance.Name
+	}
+	params := &autoscaling.TerminateInstanceInAutoScalingGroupInput{
+		AutoScalingGroupName:           aws.String(asg.Name),
+		InstanceIds:                    instanceIds,
+		ShouldDecrementDesiredCapacity: aws.Bool(true),
+	}
+	start := time.Now()
+	resp, err := m.awsService.TerminateInstanceInAutoScalingGroup(context.Background(), params)
+	observeAWSRequest("TerminateInstanceInAutoScalingGroup", err, start)
+	if err != nil {
+		return fmt.Errorf("failed to terminate instances %s in autoscaling group %s: %w", strings.Join(instanceIds, ","), asg.Name, err)
+	}
+	for _, activity := range resp.Activities {
+		klog.V(4).Infof("Terminated instance in autoscaling group: %s", aws.ToString(activity.Description))
+	}
 
+	// Proactively decrement the size so autoscaler makes better decisions
+	asg.curSize -= len(instances)
+
+	for _, instance := range instances {
 		// Mark the instance as terminating in the cache, so that HasInstance
 		// reports it as gone immediately, before the cache is regenerated
 		m.instanceLifecycle[*instance] = autoscalingtypes.LifecycleStateTerminating

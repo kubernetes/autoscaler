@@ -63,7 +63,8 @@ func (a *autoScalingMock) SetDesiredCapacity(ctx context.Context, input *autosca
 
 func (a *autoScalingMock) TerminateInstanceInAutoScalingGroup(ctx context.Context, input *autoscaling.TerminateInstanceInAutoScalingGroupInput, opts ...func(options *autoscaling.Options)) (*autoscaling.TerminateInstanceInAutoScalingGroupOutput, error) {
 	args := a.Called(ctx, input)
-	return args.Get(0).(*autoscaling.TerminateInstanceInAutoScalingGroupOutput), nil
+	out, _ := args.Get(0).(*autoscaling.TerminateInstanceInAutoScalingGroupOutput)
+	return out, args.Error(1)
 }
 
 type ec2Mock struct {
