@@ -18,6 +18,8 @@ package restriction
 
 import (
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/utils/set"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 )
@@ -43,4 +45,12 @@ func (f *FakePodsRestrictionFactory) NewPodsInPlaceRestriction(creatorToSingleGr
 // GetCreatorMaps returns nil maps.
 func (*FakePodsRestrictionFactory) GetCreatorMaps(pods []*corev1.Pod, vpa *vpa_types.VerticalPodAutoscaler) (map[podReplicaCreator]singleGroupStats, map[string]podReplicaCreator, error) {
 	return nil, nil, nil
+}
+
+// SetOutstandingEvictionRequests is a no-op fake.
+func (*FakePodsRestrictionFactory) SetOutstandingEvictionRequests(activePodUIDs set.Set[types.UID]) {
+}
+
+// SetEvictionRequestOptions is a no-op fake.
+func (*FakePodsRestrictionFactory) SetEvictionRequestOptions(enabled bool, requester string) {
 }

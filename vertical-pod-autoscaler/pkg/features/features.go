@@ -46,6 +46,12 @@ const (
 	// CPUStartupBoost enables the CPU startup boost feature.
 	CPUStartupBoost featuregate.Feature = "CPUStartupBoost"
 
+	// alpha: v1.8.0
+	// components: updater
+
+	// EvictionRequest enables using the declarative EvictionRequest API (lifecycle.k8s.io/v1alpha1) for updater evictions.
+	EvictionRequest featuregate.Feature = "EvictionRequest"
+
 	// alpha: v1.5.0
 	// components: admission-controller, recommender, updater
 
