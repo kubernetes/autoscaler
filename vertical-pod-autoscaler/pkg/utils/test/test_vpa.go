@@ -17,6 +17,8 @@ limitations under the License.
 package test
 
 import (
+	"maps"
+	"slices"
 	"time"
 
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
@@ -122,6 +124,9 @@ func (b *verticalPodAutoscalerBuilder) WithUpdateMode(updateMode vpa_types.Updat
 	c := *b
 	if c.updatePolicy == nil {
 		c.updatePolicy = &vpa_types.PodUpdatePolicy{}
+	} else {
+		policy := *c.updatePolicy
+		c.updatePolicy = &policy
 	}
 	c.updatePolicy.UpdateMode = &updateMode
 	return &c
@@ -131,6 +136,9 @@ func (b *verticalPodAutoscalerBuilder) WithEvictAfterOOMSeconds(threshold *int32
 	c := *b
 	if c.updatePolicy == nil {
 		c.updatePolicy = &vpa_types.PodUpdatePolicy{}
+	} else {
+		policy := *c.updatePolicy
+		c.updatePolicy = &policy
 	}
 	c.updatePolicy.EvictAfterOOMSeconds = threshold
 	return &c
@@ -144,24 +152,28 @@ func (b *verticalPodAutoscalerBuilder) WithCreationTimestamp(timestamp time.Time
 
 func (b *verticalPodAutoscalerBuilder) WithMinAllowed(containerName, cpu, memory string) VerticalPodAutoscalerBuilder {
 	c := *b
+	c.minAllowed = maps.Clone(b.minAllowed)
 	c.minAllowed[containerName] = Resources(cpu, memory)
 	return &c
 }
 
 func (b *verticalPodAutoscalerBuilder) WithMaxAllowed(containerName, cpu, memory string) VerticalPodAutoscalerBuilder {
 	c := *b
+	c.maxAllowed = maps.Clone(b.maxAllowed)
 	c.maxAllowed[containerName] = Resources(cpu, memory)
 	return &c
 }
 
 func (b *verticalPodAutoscalerBuilder) WithControlledValues(containerName string, mode vpa_types.ContainerControlledValues) VerticalPodAutoscalerBuilder {
 	c := *b
+	c.controlledValues = maps.Clone(b.controlledValues)
 	c.controlledValues[containerName] = &mode
 	return &c
 }
 
 func (b *verticalPodAutoscalerBuilder) WithScalingMode(containerName string, scalingMode vpa_types.ContainerScalingMode) VerticalPodAutoscalerBuilder {
 	c := *b
+	c.scalingMode = maps.Clone(b.scalingMode)
 	c.scalingMode[containerName] = &scalingMode
 	return &c
 }
@@ -219,6 +231,9 @@ func (b *verticalPodAutoscalerBuilder) WithEvictionRequirements(evictionRequirem
 	c := *b
 	if c.updatePolicy == nil {
 		c.updatePolicy = &vpa_types.PodUpdatePolicy{UpdateMode: &updateModeAuto}
+	} else {
+		policy := *c.updatePolicy
+		c.updatePolicy = &policy
 	}
 	c.updatePolicy.EvictionRequirements = evictionRequirements
 	return &c
@@ -229,6 +244,9 @@ func (b *verticalPodAutoscalerBuilder) WithMinReplicas(minReplicas *int32) Verti
 	c := *b
 	if c.updatePolicy == nil {
 		c.updatePolicy = &vpa_types.PodUpdatePolicy{UpdateMode: &updateModeAuto}
+	} else {
+		policy := *c.updatePolicy
+		c.updatePolicy = &policy
 	}
 	c.updatePolicy.MinReplicas = minReplicas
 	return &c
@@ -249,7 +267,7 @@ func (b *verticalPodAutoscalerBuilder) WithOOMMinBumpUp(minBumpUp *resource.Quan
 func (b *verticalPodAutoscalerBuilder) AppendCondition(conditionType vpa_types.VerticalPodAutoscalerConditionType,
 	status corev1.ConditionStatus, reason, message string, lastTransitionTime time.Time) VerticalPodAutoscalerBuilder {
 	c := *b
-	c.conditions = append(c.conditions, vpa_types.VerticalPodAutoscalerCondition{
+	c.conditions = append(slices.Clone(b.conditions), vpa_types.VerticalPodAutoscalerCondition{
 		Type:               conditionType,
 		Status:             status,
 		Reason:             reason,
@@ -260,7 +278,7 @@ func (b *verticalPodAutoscalerBuilder) AppendCondition(conditionType vpa_types.V
 
 func (b *verticalPodAutoscalerBuilder) AppendRecommendation(recommendation vpa_types.RecommendedContainerResources) VerticalPodAutoscalerBuilder {
 	c := *b
-	c.appendedRecommendations = append(c.appendedRecommendations, recommendation)
+	c.appendedRecommendations = append(slices.Clone(b.appendedRecommendations), recommendation)
 	return &c
 }
 
@@ -294,6 +312,7 @@ func (b *verticalPodAutoscalerBuilder) WithContainerCPUStartupBoost(containerNam
 	if quantity != nil {
 		cpuStartupBoost.Quantity = quantity
 	}
+	c.containerStartupBoost = maps.Clone(b.containerStartupBoost)
 	c.containerStartupBoost[containerName] = &vpa_types.StartupBoost{
 		CPU: cpuStartupBoost,
 	}
