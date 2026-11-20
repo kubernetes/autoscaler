@@ -44,7 +44,6 @@ import (
 )
 
 const (
-	updateComponent              = "updater"
 	admissionControllerComponent = "admission-controller"
 	fullVpaSuite                 = "full-vpa"
 	actuationSuite               = "actuation"
@@ -56,11 +55,6 @@ const (
 	// pod, if there are no mechanisms blocking it.
 	VpaInPlaceTimeout = 2 * time.Minute
 )
-
-// UpdaterE2eDescribe describes a VPA updater e2e test.
-func UpdaterE2eDescribe(name string, args ...any) bool {
-	return utils.SIGDescribe(updateComponent, name, args...)
-}
 
 // AdmissionControllerE2eDescribe describes a VPA admission controller e2e test.
 func AdmissionControllerE2eDescribe(name string, args ...any) bool {

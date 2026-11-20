@@ -43,9 +43,12 @@ import (
 
 const (
 	recommenderComponent = "recommender"
+	updaterComponent     = "updater"
 
 	// RecommenderDeploymentName is VPA recommender deployment name
 	RecommenderDeploymentName = "vpa-recommender"
+	// UpdaterDeploymentName is VPA updater deployment name
+	UpdaterDeploymentName = "vpa-updater"
 	// PollInterval is interval for polling
 	PollInterval = 10 * time.Second
 	// PollTimeout is timeout for polling
@@ -92,6 +95,11 @@ func SIGDescribe(scenario, name string, args ...any) bool {
 // RecommenderE2eDescribe describes a VPA recommender e2e test.
 func RecommenderE2eDescribe(name string, args ...any) bool {
 	return SIGDescribe(recommenderComponent, name, args...)
+}
+
+// UpdaterE2eDescribe describes a VPA updater e2e test.
+func UpdaterE2eDescribe(name string, args ...any) bool {
+	return SIGDescribe(updaterComponent, name, args...)
 }
 
 // GetHamsterContainerNameByIndex returns name of i-th hamster container.
@@ -186,6 +194,17 @@ func RecommenderComponentConfig(flags ...string) VPAComponentConfig {
 		ComponentName: recommenderComponent,
 		Image:         "localhost:5001/vpa-recommender",
 		MetricsPort:   8942,
+		Flags:         flags,
+	}
+}
+
+// UpdaterComponentConfig returns a VPAComponentConfig for deploying the
+// VPA updater in e2e tests, mirroring deploy/updater-deployment.yaml.
+func UpdaterComponentConfig(flags ...string) VPAComponentConfig {
+	return VPAComponentConfig{
+		ComponentName: updaterComponent,
+		Image:         "localhost:5001/vpa-updater",
+		MetricsPort:   8943,
 		Flags:         flags,
 	}
 }
