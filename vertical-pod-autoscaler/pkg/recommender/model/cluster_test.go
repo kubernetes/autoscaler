@@ -218,6 +218,34 @@ func TestClusterGCAggregateContainerStateLeavesEmptyInactiveWithController(t *te
 	assert.NotEmpty(t, vpa.aggregateContainerStates)
 }
 
+func TestClusterGCKeepsMemoryOnlyInactiveWithoutController(t *testing.T) {
+	ctx := context.Background()
+
+	cluster := NewClusterState(testGcPeriod)
+	vpa := addTestVpa(cluster)
+	pod := addTestPod(cluster)
+	controller := &fakeControllerFetcher{
+		key: nil,
+		err: nil,
+	}
+
+	assert.NoError(t, cluster.AddOrUpdateContainer(testContainerID, testRequest))
+	assert.NoError(t, cluster.AddSample(&ContainerUsageSampleWithKey{
+		ContainerUsageSample: ContainerUsageSample{
+			MeasureStart: testTimestamp,
+			Usage:        MemoryAmountFromBytes(32 * 1024 * 1024),
+			Resource:     ResourceMemory,
+		},
+		Container: testContainerID,
+	}))
+
+	cluster.pods[pod.ID].Phase = corev1.PodSucceeded
+	cluster.garbageCollectAggregateCollectionStates(ctx, testTimestamp, controller)
+
+	assert.NotEmpty(t, cluster.aggregateStateMap)
+	assert.NotEmpty(t, vpa.aggregateContainerStates)
+}
+
 func TestClusterGCAggregateContainerStateLeavesValid(t *testing.T) {
 	ctx := context.Background()
 
