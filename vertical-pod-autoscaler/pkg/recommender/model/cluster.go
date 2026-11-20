@@ -83,6 +83,13 @@ type clusterState struct {
 	// Map with all label sets used by the aggregations. It serves as a cache
 	// that allows to quickly access labels.Set corresponding to a labelSetKey.
 	labelSetMap labelSetMap
+	// labelSetRefCount tracks how many pods currently have a given labelSetKey
+	// as their own label set. It lets us cheaply detect, on every pod add/update/
+	// delete, when a label set has no more live pods using it, without scanning
+	// all pods. Used to garbage collect labelSetMap entries and to eagerly drop
+	// AggregateContainerStates that were orphaned by a label change before they
+	// ever collected any samples.
+	labelSetRefCount map[labelSetKey]int
 
 	lastAggregateContainerStateGC time.Time
 	gcInterval                    time.Duration
@@ -136,6 +143,7 @@ func NewClusterState(gcInterval time.Duration) *clusterState {
 		emptyVPAs:                     make(map[VpaID]time.Time),
 		aggregateStateMap:             make(aggregateContainerStatesMap),
 		labelSetMap:                   make(labelSetMap),
+		labelSetRefCount:              make(map[labelSetKey]int),
 		lastAggregateContainerStateGC: time.Unix(0, 0),
 		gcInterval:                    gcInterval,
 	}
@@ -161,12 +169,15 @@ func (cluster *clusterState) AddOrUpdatePod(podID PodID, newLabels labels.Set, p
 	}
 
 	newlabelSetKey := cluster.getLabelSetKey(newLabels)
-	if podExists && pod.labelSetKey != newlabelSetKey {
+	oldLabelSetKey := pod.labelSetKey
+	labelsChanged := podExists && oldLabelSetKey != newlabelSetKey
+	if labelsChanged {
 		// This Pod is already counted in the old VPA, remove the link.
 		cluster.removePodFromItsVpa(pod)
 	}
-	if !podExists || pod.labelSetKey != newlabelSetKey {
+	if !podExists || labelsChanged {
 		pod.labelSetKey = newlabelSetKey
+		cluster.labelSetRefCount[newlabelSetKey]++
 		// Set the links between the containers and aggregations based on the current pod labels.
 		for containerName, container := range pod.Containers {
 			containerID := ContainerID{PodID: podID, ContainerName: containerName}
@@ -174,8 +185,44 @@ func (cluster *clusterState) AddOrUpdatePod(podID PodID, newLabels labels.Set, p
 		}
 
 		cluster.addPodToItsVpa(pod)
+
+		if labelsChanged {
+			cluster.releaseLabelSetKey(podID.Namespace, pod.Containers, oldLabelSetKey)
+		}
 	}
 	pod.Phase = phase
+}
+
+// releaseLabelSetKey decrements the reference count of a labelSetKey that a pod
+// no longer uses, because it was relabeled or removed from the cluster.
+// If no other pod uses that label set anymore, any AggregateContainerState that
+// was orphaned by the change and never collected any samples is deleted right
+// away, instead of waiting for the next periodic garbage collection pass.
+// AggregateContainerStates that did collect samples are intentionally left in
+// place - they still hold valid historical usage data and are reclaimed by
+// RateLimitedGarbageCollectAggregateCollectionStates once that data expires.
+func (cluster *clusterState) releaseLabelSetKey(namespace string, containers map[string]*ContainerState, oldLabelSetKey labelSetKey) {
+	cluster.labelSetRefCount[oldLabelSetKey]--
+	if cluster.labelSetRefCount[oldLabelSetKey] > 0 {
+		return
+	}
+	delete(cluster.labelSetRefCount, oldLabelSetKey)
+	for containerName := range containers {
+		oldKey := aggregateStateKey{
+			namespace:     namespace,
+			containerName: containerName,
+			labelSetKey:   oldLabelSetKey,
+			labelSetMap:   &cluster.labelSetMap,
+		}
+		state, exists := cluster.aggregateStateMap[oldKey]
+		if !exists || !state.isEmpty() {
+			continue
+		}
+		delete(cluster.aggregateStateMap, oldKey)
+		for _, vpa := range cluster.vpas {
+			vpa.DeleteAggregation(oldKey)
+		}
+	}
 }
 
 // SetInitContainers sets the names of init containers that belong to the pod.
@@ -227,6 +274,7 @@ func (cluster *clusterState) DeletePod(podID PodID) {
 	pod, found := cluster.pods[podID]
 	if found {
 		cluster.removePodFromItsVpa(pod)
+		cluster.releaseLabelSetKey(podID.Namespace, pod.Containers, pod.labelSetKey)
 	}
 	delete(cluster.pods, podID)
 }
@@ -443,6 +491,32 @@ func (cluster *clusterState) garbageCollectAggregateCollectionStates(ctx context
 		delete(cluster.aggregateStateMap, key)
 		for _, vpa := range cluster.vpas {
 			vpa.DeleteAggregation(key)
+		}
+	}
+	cluster.garbageCollectLabelSetMap()
+}
+
+// garbageCollectLabelSetMap removes labelSetMap entries that are no longer
+// referenced by any pod's current label set nor by any remaining entry in
+// aggregateStateMap. Without this, labelSetMap grows without bound over the
+// lifetime of the recommender process, since every distinct label set ever
+// observed (e.g. via --metric-for-pod-labels or rolling deployments changing
+// pod-template-hash) is cached there and previously never removed.
+func (cluster *clusterState) garbageCollectLabelSetMap() {
+	usedKeys := make(map[labelSetKey]bool, len(cluster.labelSetRefCount))
+	for key, count := range cluster.labelSetRefCount {
+		if count > 0 {
+			usedKeys[key] = true
+		}
+	}
+	for key := range cluster.aggregateStateMap {
+		if aggKey, ok := key.(aggregateStateKey); ok {
+			usedKeys[aggKey.labelSetKey] = true
+		}
+	}
+	for key := range cluster.labelSetMap {
+		if !usedKeys[key] {
+			delete(cluster.labelSetMap, key)
 		}
 	}
 }

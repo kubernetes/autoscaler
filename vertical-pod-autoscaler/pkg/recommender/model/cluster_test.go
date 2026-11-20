@@ -431,6 +431,122 @@ func TestChangePodLabels(t *testing.T) {
 	assert.NotContains(t, vpa.aggregateContainerStates, aggregateStateKey)
 }
 
+// Verifies that when a pod's labels change and the old AggregateContainerState
+// never collected any samples and no other pod shares the old label set, the
+// orphaned state is garbage collected immediately - instead of lingering in
+// cluster.aggregateStateMap and vpa.aggregateContainerStates until the next
+// periodic (up to 8-day) sweep. See kubernetes/autoscaler#5687.
+func TestChangePodLabelsGarbageCollectsEmptyOrphanedAggregation(t *testing.T) {
+	cluster := NewClusterState(testGcPeriod)
+	vpa := addTestVpa(cluster)
+	addTestPod(cluster)
+	addTestContainer(t, cluster) // No usage samples recorded.
+
+	oldKey := cluster.aggregateStateKeyForContainerID(testContainerID)
+	assert.Contains(t, cluster.aggregateStateMap, oldKey)
+	assert.Contains(t, vpa.aggregateContainerStates, oldKey)
+
+	// Relabel the pod. It was the only pod using the old label set.
+	cluster.AddOrUpdatePod(testPodID, emptyLabels, corev1.PodRunning)
+
+	assert.NotContains(t, cluster.aggregateStateMap, oldKey)
+	assert.NotContains(t, vpa.aggregateContainerStates, oldKey)
+}
+
+// Verifies that relabeling a pod does not discard real historical usage data:
+// an orphaned AggregateContainerState that already collected samples is kept
+// alive (to be reclaimed later by the normal expiry-based GC), rather than
+// being dropped immediately like the empty case above.
+func TestChangePodLabelsKeepsNonEmptyOrphanedAggregation(t *testing.T) {
+	cluster := NewClusterState(testGcPeriod)
+	vpa := addTestVpa(cluster)
+	addTestPod(cluster)
+	assert.NoError(t, cluster.AddOrUpdateContainer(testContainerID, testRequest))
+	assert.NoError(t, cluster.AddSample(makeTestUsageSample()))
+
+	oldKey := cluster.aggregateStateKeyForContainerID(testContainerID)
+	assert.Contains(t, cluster.aggregateStateMap, oldKey)
+
+	// Relabel the pod. It was the only pod using the old label set.
+	cluster.AddOrUpdatePod(testPodID, emptyLabels, corev1.PodRunning)
+
+	// Historical data is preserved, still linked to the VPA, until the
+	// periodic GC reclaims it once it expires.
+	assert.Contains(t, cluster.aggregateStateMap, oldKey)
+	assert.Contains(t, vpa.aggregateContainerStates, oldKey)
+}
+
+// Verifies that labelSetMap entries no longer referenced by any live pod or
+// AggregateContainerState are garbage collected, instead of growing without
+// bound for the lifetime of the recommender process. See
+// kubernetes/autoscaler#5687.
+func TestGarbageCollectLabelSetMap(t *testing.T) {
+	ctx := context.Background()
+	cluster := NewClusterState(testGcPeriod)
+
+	podID1 := PodID{"namespace-1", "pod-1"}
+	podID2 := PodID{"namespace-1", "pod-2"}
+	containerID1 := ContainerID{podID1, "container-1"}
+	containerID2 := ContainerID{podID2, "container-1"}
+
+	cluster.AddOrUpdatePod(podID1, testLabels, corev1.PodRunning)
+	cluster.AddOrUpdatePod(podID2, emptyLabels, corev1.PodRunning)
+	assert.NoError(t, cluster.AddOrUpdateContainer(containerID1, testRequest))
+	assert.NoError(t, cluster.AddOrUpdateContainer(containerID2, testRequest))
+	assert.NoError(t, cluster.AddSample(&ContainerUsageSampleWithKey{
+		ContainerUsageSample: ContainerUsageSample{MeasureStart: testTimestamp, Usage: 1.0, Resource: ResourceCPU},
+		Container:            containerID1,
+	}))
+
+	assert.Len(t, cluster.labelSetMap, 2)
+
+	// Remove pod-2; its (empty) label set becomes unreferenced.
+	cluster.DeletePod(podID2)
+
+	// A GC pass should purge the now-unreferenced label set for pod-2, while
+	// keeping pod-1's label set since its aggregation still holds live data.
+	cluster.garbageCollectAggregateCollectionStates(ctx, testTimestamp.Add(time.Minute), testControllerFetcher)
+
+	assert.Len(t, cluster.labelSetMap, 1)
+	for key := range cluster.labelSetMap {
+		assert.Equal(t, labelSetKey(labels.Set(testLabels).String()), key)
+	}
+}
+
+// TestNoUnboundedGrowthOnRepeatedRelabeling reproduces the scenario reported in
+// kubernetes/autoscaler#5687: a pod whose labels keep changing (e.g. because
+// --metric-for-pod-labels re-derives labels on every history reload, or a
+// pod-template-hash-style label churns on every rolling deploy). Without the
+// fix, cluster.aggregateStateMap and cluster.labelSetMap would grow by one
+// entry per relabel, for as long as the recommender process runs. With the
+// fix, orphaned empty aggregations are dropped immediately (no GC needed) and
+// stale label sets are reclaimed on the next GC pass.
+func TestNoUnboundedGrowthOnRepeatedRelabeling(t *testing.T) {
+	ctx := context.Background()
+	cluster := NewClusterState(testGcPeriod)
+	addTestPod(cluster)
+	addTestContainer(t, cluster)
+
+	const relabelCount = 5000
+	for i := range relabelCount {
+		churningLabels := labels.Set{"pod-template-hash": fmt.Sprintf("rev-%d", i)}
+		cluster.AddOrUpdatePod(testPodID, churningLabels, corev1.PodRunning)
+	}
+
+	// Even without ever running GC, orphaned empty aggregations must not pile
+	// up: only the current label set's aggregation should remain.
+	assert.Len(t, cluster.aggregateStateMap, 1,
+		"aggregateStateMap grew unbounded across %d relabels instead of being cleaned up eagerly", relabelCount)
+
+	// labelSetMap cleanup is deferred to the periodic GC pass (it's cheap to
+	// batch), so before GC it may still hold stale entries...
+	cluster.garbageCollectAggregateCollectionStates(ctx, testTimestamp, testControllerFetcher)
+
+	// ...but after one GC pass only the currently-used label set must remain.
+	assert.Len(t, cluster.labelSetMap, 1,
+		"labelSetMap grew unbounded across %d relabels instead of being garbage collected", relabelCount)
+}
+
 // Creates a VPA and verifies that annotation updates work properly.
 func TestUpdateAnnotations(t *testing.T) {
 	cluster := NewClusterState(testGcPeriod)
