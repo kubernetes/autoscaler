@@ -65,6 +65,7 @@ const (
 	scaleCacheEntryLifetime      time.Duration = time.Hour
 	scaleCacheEntryFreshnessTime time.Duration = 10 * time.Minute
 	scaleCacheEntryJitterFactor  float64       = 1.
+	scaleCacheLoopPeriod         time.Duration = 7 * time.Second
 )
 
 var config *updater_config.UpdaterConfig
@@ -173,6 +174,9 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 	)
 	targetSelectorFetcher := target.NewVpaTargetSelectorFetcher(kubeConfig, kubeClient, kubeFactory, stopCh)
 	controllerFetcher := controllerfetcher.NewControllerFetcher(kubeConfig, kubeClient, kubeFactory, scaleCacheEntryFreshnessTime, scaleCacheEntryLifetime, scaleCacheEntryJitterFactor, stopCh)
+	// Refresh and expire cached /scale responses (including errors). Without
+	// this, they are kept until the process restarts.
+	controllerFetcher.Start(sigCtx, scaleCacheLoopPeriod)
 	var limitRangeCalculator limitrange.LimitRangeCalculator
 	limitRangeCalculator, err := limitrange.NewLimitsRangeCalculator(kubeFactory)
 	if err != nil {
