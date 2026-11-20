@@ -204,25 +204,27 @@ func Stronger(a, b *vpa_types.VerticalPodAutoscaler) bool {
 }
 
 // FindParentControllerForPod returns the parent controller (topmost well-known or scalable controller) for the given Pod.
+// It preserves the controlling owner's UID for validation and ignores invalid Node owners.
 func FindParentControllerForPod(ctx context.Context, pod *corev1.Pod, ctrlFetcher controllerfetcher.ControllerFetcher) (*controllerfetcher.ControllerKeyWithAPIVersion, error) {
-	var ownerRefrence *metav1.OwnerReference
+	var ownerReference *metav1.OwnerReference
 	for i := range pod.OwnerReferences {
-		r := pod.OwnerReferences[i]
+		r := &pod.OwnerReferences[i]
 		if r.Controller != nil && *r.Controller {
-			ownerRefrence = &r
+			ownerReference = r
 		}
 	}
-	if ownerRefrence == nil {
+	if ownerReference == nil {
 		// If the pod has no ownerReference, it cannot be under a VPA.
 		return nil, nil
 	}
 	k := &controllerfetcher.ControllerKeyWithAPIVersion{
 		ControllerKey: controllerfetcher.ControllerKey{
 			Namespace: pod.Namespace,
-			Kind:      ownerRefrence.Kind,
-			Name:      ownerRefrence.Name,
+			Kind:      ownerReference.Kind,
+			Name:      ownerReference.Name,
 		},
-		ApiVersion: ownerRefrence.APIVersion,
+		ApiVersion: ownerReference.APIVersion,
+		UID:        ownerReference.UID,
 	}
 	controller, err := ctrlFetcher.FindTopMostWellKnownOrScalable(ctx, k)
 
