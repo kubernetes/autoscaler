@@ -22,6 +22,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/hetzner/hcloud-go/hcloud"
+	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 )
 
 func TestBuildServerCreateFirewalls(t *testing.T) {
@@ -204,5 +205,38 @@ func TestImageSelectionLogic(t *testing.T) {
 
 		assert.Equal(t, "global-arm64-image", imagesForArch.Arm64)
 		assert.Equal(t, "global-amd64-image", imagesForArch.Amd64)
+	})
+}
+
+func TestToInstanceStatus(t *testing.T) {
+	tests := []struct {
+		status hcloud.ServerStatus
+		want   cloudprovider.InstanceState
+	}{
+		{hcloud.ServerStatusInitializing, cloudprovider.InstanceCreating},
+		{hcloud.ServerStatusStarting, cloudprovider.InstanceCreating},
+		{hcloud.ServerStatusRunning, cloudprovider.InstanceRunning},
+		{hcloud.ServerStatusOff, cloudprovider.InstanceDeleting},
+		{hcloud.ServerStatusDeleting, cloudprovider.InstanceDeleting},
+		{hcloud.ServerStatusStopping, cloudprovider.InstanceDeleting},
+	}
+	for _, tt := range tests {
+		t.Run(string(tt.status), func(t *testing.T) {
+			got := toInstanceStatus(tt.status)
+			require.NotNil(t, got)
+			assert.Equal(t, tt.want, got.State)
+			assert.Nil(t, got.ErrorInfo)
+		})
+	}
+
+	t.Run("empty", func(t *testing.T) {
+		assert.Nil(t, toInstanceStatus(""))
+	})
+
+	t.Run("unknown", func(t *testing.T) {
+		got := toInstanceStatus(hcloud.ServerStatusUnknown)
+		require.NotNil(t, got)
+		require.NotNil(t, got.ErrorInfo)
+		assert.Equal(t, cloudprovider.OtherErrorClass, got.ErrorInfo.ErrorClass)
 	})
 }
