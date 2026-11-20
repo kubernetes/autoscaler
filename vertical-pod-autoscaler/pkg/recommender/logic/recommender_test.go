@@ -18,10 +18,12 @@ package logic
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/util"
 )
 
 func TestMinResourcesApplied(t *testing.T) {
@@ -48,6 +50,85 @@ func TestMinResourcesApplied(t *testing.T) {
 	recommendedResources := recommender.GetRecommendedPodResources(containerNameToAggregateStateMap)
 	assert.Equal(t, model.CPUAmountFromCores(minCPUMillicores/1000), recommendedResources["container-1"].Target[model.ResourceCPU])
 	assert.Equal(t, model.MemoryAmountFromBytes(minMemoryMb*1024*1024), recommendedResources["container-1"].Target[model.ResourceMemory])
+}
+
+// Verifies that CreatePodResourceRecommender wires the per-container target
+// percentile overrides to the target estimators only: overriding the cpu or
+// memory target moves that target and leaves every other value untouched.
+func TestCreatePodResourceRecommenderPerContainerPercentiles(t *testing.T) {
+	aggregations := model.GetAggregationsConfig()
+	cpuHistogram := util.NewHistogram(aggregations.CPUHistogramOptions)
+	memHistogram := util.NewHistogram(aggregations.MemoryHistogramOptions)
+	for i := 1; i <= 100; i++ {
+		cpuHistogram.AddSample(float64(i), 1.0, anyTime)
+		memHistogram.AddSample(float64(i)*1e9, 1.0, anyTime)
+	}
+	// A week of history keeps the lower/upper bound confidence multipliers
+	// finite, and identical across the states compared below.
+	newState := func() *model.AggregateContainerState {
+		return &model.AggregateContainerState{
+			AggregateCPUUsage:    cpuHistogram,
+			AggregateMemoryPeaks: memHistogram,
+			FirstSampleStart:     anyTime,
+			LastSampleStart:      anyTime.Add(7 * 24 * time.Hour),
+			TotalSamplesCount:    7 * 24 * 60,
+		}
+	}
+
+	recommender := CreatePodResourceRecommender(RecommendationConfig{
+		SafetyMarginFraction:       0.15,
+		TargetCPUPercentile:        0.2,
+		LowerBoundCPUPercentile:    0.2,
+		UpperBoundCPUPercentile:    0.2,
+		TargetMemoryPercentile:     0.2,
+		LowerBoundMemoryPercentile: 0.2,
+		UpperBoundMemoryPercentile: 0.2,
+		ConfidenceIntervalCPU:      24 * time.Hour,
+		ConfidenceIntervalMemory:   24 * time.Hour,
+	})
+	const container = "container"
+	recommend := func(s *model.AggregateContainerState) RecommendedContainerResources {
+		return recommender.GetRecommendedPodResources(model.ContainerNameToAggregateStateMap{container: s})[container]
+	}
+	baseline := recommend(newState())
+
+	type pickFn func(RecommendedContainerResources) model.ResourceAmount
+	pick := func(bound func(RecommendedContainerResources) model.Resources, resource model.ResourceName) pickFn {
+		return func(r RecommendedContainerResources) model.ResourceAmount { return bound(r)[resource] }
+	}
+	lower := func(r RecommendedContainerResources) model.Resources { return r.LowerBound }
+	target := func(r RecommendedContainerResources) model.Resources { return r.Target }
+	upper := func(r RecommendedContainerResources) model.Resources { return r.UpperBound }
+	values := map[string]pickFn{
+		"cpu lower bound":    pick(lower, model.ResourceCPU),
+		"cpu target":         pick(target, model.ResourceCPU),
+		"cpu upper bound":    pick(upper, model.ResourceCPU),
+		"memory lower bound": pick(lower, model.ResourceMemory),
+		"memory target":      pick(target, model.ResourceMemory),
+		"memory upper bound": pick(upper, model.ResourceMemory),
+	}
+
+	testCases := []struct {
+		name     string
+		override func(*model.AggregateContainerState)
+	}{
+		{"cpu target", func(s *model.AggregateContainerState) { s.TargetCPUPercentile = 0.9 }},
+		{"memory target", func(s *model.AggregateContainerState) { s.TargetMemoryPercentile = 0.9 }},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			s := newState()
+			tc.override(s)
+			got := recommend(s)
+			for name, value := range values {
+				if name == tc.name {
+					assert.Greater(t, value(got), value(baseline), "%s should follow its override", name)
+				} else {
+					assert.Equal(t, value(baseline), value(got), "%s should be unchanged", name)
+				}
+			}
+		})
+	}
 }
 
 func TestMinResourcesSplitAcrossContainers(t *testing.T) {

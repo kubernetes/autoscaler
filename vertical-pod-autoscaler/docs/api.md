@@ -52,6 +52,7 @@ _Appears in:_
 | `oomMinBumpUp` _[Quantity](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#quantity-resource-api)_ | oomMinBumpUp is the minimum increase in memory when OOM is detected. |  | Optional: \{\} <br /> |
 | `memoryAggregationIntervalSeconds` _integer_ | memoryAggregationIntervalSeconds is the length of a single interval<br />(in seconds) for which the peak memory usage is computed.<br />Memory usage peaks are aggregated in multiples of this interval.<br />In other words, there is one memory usage sample per interval<br />(the maximum usage over that interval). |  | Minimum: 1 <br />Optional: \{\} <br /> |
 | `memoryAggregationIntervalCount` _integer_ | memoryAggregationIntervalCount is the number of consecutive<br />memoryAggregationIntervals which make up the memory aggregation window.<br />The total window length is:<br />MemoryAggregationIntervalSeconds * MemoryAggregationIntervalCount. |  | Minimum: 1 <br />Optional: \{\} <br /> |
+| `recommendationPercentiles` _[RecommendationPercentiles](#recommendationpercentiles)_ | recommendationPercentiles overrides the recommender's target percentile for<br />this container, per resource (cpu, memory), replacing the corresponding<br />global Recommender flag. The lower and upper bounds keep using the global<br />percentiles; if a target falls outside them, the Recommender sets the<br />ConfigInvalid condition and the Updater does not update the VPA's pods.<br />Only honored when the PerVPAConfig feature gate is enabled. |  | Optional: \{\} <br /> |
 | `startupBoost` _[StartupBoost](#startupboost)_ | startupBoost specifies the startup boost policy for the container.<br />This overrides any pod-level startup boost policy.<br />The startup boost policy takes precedence over the rest of the fields in<br />this struct, except for ContainerName and ControlledValues. |  | Optional: \{\} <br /> |
 
 
@@ -168,6 +169,25 @@ _Appears in:_
 | `evictAfterOOMSeconds` _integer_ | evictAfterOOMSeconds specifies the time in seconds to wait after an OOM event before<br />considering the pod for eviction. Pods that have OOMed in less than this time<br />since start will be evicted. |  | Minimum: 1 <br />Optional: \{\} <br /> |
 
 
+#### RecommendationPercentiles
+
+
+
+RecommendationPercentiles overrides the recommender's target percentile for a
+container, per resource. A resource is only overridden when its entry is set;
+resources left unset fall back to the global Recommender flags.
+
+
+
+_Appears in:_
+- [ContainerResourcePolicy](#containerresourcepolicy)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `cpu` _[ResourcePercentiles](#resourcepercentiles)_ | cpu holds the percentile overrides for CPU. |  | Optional: \{\} <br /> |
+| `memory` _[ResourcePercentiles](#resourcepercentiles)_ | memory holds the percentile overrides for memory. |  | Optional: \{\} <br /> |
+
+
 #### RecommendedContainerResources
 
 
@@ -207,6 +227,8 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `containerRecommendations` _[RecommendedContainerResources](#recommendedcontainerresources) array_ | Resources recommended by the autoscaler for each container. |  | Optional: \{\} <br /> |
+
+
 
 
 #### StartupBoost
