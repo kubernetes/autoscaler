@@ -23,12 +23,6 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/client-go/discovery"
-	"k8s.io/client-go/discovery/cached/memory"
-	"k8s.io/client-go/dynamic"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/restmapper"
-	"k8s.io/client-go/scale"
 	"k8s.io/client-go/tools/clientcmd"
 	klog "k8s.io/klog/v2"
 
@@ -36,7 +30,6 @@ import (
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider/builder"
 	coreoptions "sigs.k8s.io/cluster-autoscaler/pkg/core/options"
-	"sigs.k8s.io/cluster-autoscaler/pkg/processors/scaledowncandidates"
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/errors"
 	"sigs.k8s.io/cluster-autoscaler/pkg/utils/gpu"
 )
@@ -62,6 +55,8 @@ type provider struct {
 	controller      *machineController
 	providerName    string
 	resourceLimiter *cloudprovider.ResourceLimiter
+	// stop cancels the context the controller informers run with, it is nil for providers built by newProvider.
+	stop context.CancelFunc
 }
 
 func (p *provider) Name() string {
@@ -124,7 +119,12 @@ func (*provider) NewNodeGroup(
 	return nil, cloudprovider.ErrNotImplemented
 }
 
-func (*provider) Cleanup(ctx context.Context) error {
+func (p *provider) Cleanup(ctx context.Context) error {
+	if p.stop == nil {
+		return nil
+	}
+	p.stop()
+	p.controller.shutdown()
 	return nil
 }
 
@@ -189,49 +189,19 @@ func BuildClusterAPI(opts *coreoptions.AutoscalerOptions, do cloudprovider.NodeG
 	workloadConfig.QPS = opts.KubeClientOpts.KubeClientQPS
 	workloadConfig.Burst = opts.KubeClientOpts.KubeClientBurst
 
-	// Grab a dynamic interface that we can create informers from
-	managementClient, err := dynamic.NewForConfig(managementConfig)
-	if err != nil {
-		klog.Fatalf("could not generate dynamic client for config: %v", err)
-	}
-
-	workloadClient, err := kubernetes.NewForConfig(workloadConfig)
-	if err != nil {
-		klog.Fatalf("create kube clientset failed: %v", err)
-	}
-
-	managementDiscoveryClient, err := discovery.NewDiscoveryClientForConfig(managementConfig)
-	if err != nil {
-		klog.Fatalf("create discovery client failed: %v", err)
-	}
-
-	cachedDiscovery := memory.NewMemCacheClient(managementDiscoveryClient)
-	managementScaleClient, err := scale.NewForConfig(
-		managementConfig,
-		restmapper.NewDeferredDiscoveryRESTMapper(cachedDiscovery),
-		dynamic.LegacyAPIPathResolverFunc,
-		scale.NewDiscoveryScaleKindResolver(managementDiscoveryClient))
-	if err != nil {
-		klog.Fatalf("create scale client failed: %v", err)
-	}
-
-	// Ideally this would be passed in but the builder is not
-	// currently organised to do so.
-	stopCh := make(chan struct{})
-
-	controller, err := newMachineController(managementClient, workloadClient, managementDiscoveryClient, managementScaleClient, do, stopCh)
+	p, err := NewProvider(context.Background(), ProviderOptions{
+		ManagementConfig: managementConfig,
+		WorkloadConfig:   workloadConfig,
+		DiscoveryOptions: do,
+		ResourceLimiter:  rl,
+	})
 	if err != nil {
 		klog.Fatal(err)
 	}
 
-	scaleDownUpgradeProcessor := NewScaleDownNodeUpgradeProcessor(controller)
-	if err := scaledowncandidates.RegisterCombinedScaleDownCandidateProcessor(opts.Processors.ScaleDownNodeProcessor, scaleDownUpgradeProcessor); err != nil {
+	if err := RegisterProcessors(p, opts.Processors); err != nil {
 		klog.Fatalf("unable to register scale down upgrade processor: %v", err)
 	}
 
-	if err := controller.run(); err != nil {
-		klog.Fatal(err)
-	}
-
-	return newProvider(ProviderName, rl, controller)
+	return p
 }
