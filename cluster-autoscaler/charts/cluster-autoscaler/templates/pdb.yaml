@@ -19,6 +19,7 @@ spec:
 {{ toYaml .Values.podDisruptionBudget.selector | indent 6 }}
 {{- else }}
 {{ include "cluster-autoscaler.instance-name" . | indent 6 }}
+{{- end }}
   {{- if and .Values.podDisruptionBudget.minAvailable (not .Values.podDisruptionBudget.maxUnavailable) }}
   minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
   {{- end }}
@@ -26,4 +27,3 @@ spec:
   maxUnavailable: {{ .Values.podDisruptionBudget.maxUnavailable }}
   {{- end }}
 {{- end -}}
-{{- end }}
