@@ -3217,11 +3217,13 @@ func TestScaleSetMissingVMSSDoesNotBlockHealthyScaleUp(t *testing.T) {
 				require.True(t, fixture.core.registry.BackoffStatusForNodeGroup(ctx, missing, time.Now()).IsBackedOff)
 			}
 
-			fixture.core.autoscalingCtx.ExpanderStrategy = coretest.NewMockReportingStrategy(t,
+			expander := coretest.NewMockReportingStrategy(t,
 				&coretest.GroupSizeChange{GroupName: healthy.Id(), SizeChange: 1}, nil)
+			fixture.core.autoscalingCtx.ExpanderStrategy = expander
 			result, scaleUpErr := fixture.core.scaleUp.ScaleUp(ctx, pods, nil, nil, nodeInfos, false)
 			require.NoError(t, scaleUpErr)
 			require.True(t, result.WasSuccessful())
+			assert.Equal(t, []coretest.GroupSizeChange{{GroupName: healthy.Id(), SizeChange: 1}}, expander.LastInputOptions())
 			size, err := healthy.TargetSize(ctx)
 			require.NoError(t, err)
 			assert.Equal(t, 1, size)
