@@ -41,6 +41,9 @@ type nodeGroupClient interface {
 	// ListNodePools lists all the node pools found in a Kubernetes cluster.
 	ListNodePools(ctx context.Context, clusterID string, opts *godo.ListOptions) ([]*godo.KubernetesNodePool, *godo.Response, error)
 
+	// GetNodePool returns a node pool of a Kubernetes cluster.
+	GetNodePool(ctx context.Context, clusterID, poolID string) (*godo.KubernetesNodePool, *godo.Response, error)
+
 	// UpdateNodePool updates the details of an existing node pool.
 	UpdateNodePool(ctx context.Context, clusterID, poolID string, req *godo.KubernetesNodePoolUpdateRequest) (*godo.KubernetesNodePool, *godo.Response, error)
 
