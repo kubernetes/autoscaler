@@ -1,6 +1,11 @@
 # Release instructions
 
-The following lists the steps needed to release the *addon-resizer*.
+The following lists the steps needed to release the *addon-resizer* from the
+`master` branch.
+
+> [!NOTE]
+> Legacy release branches (`addon-resizer-release-1.8` and earlier) are frozen
+> and no longer receive changes or patch releases.
 
 1. Verify that you have the
    [permissions needed to push new images to the repository](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/RELEASE.md#permissions).
@@ -8,9 +13,9 @@ The following lists the steps needed to release the *addon-resizer*.
 1. Create a GitHub issue to track the release
    ([example](https://github.com/kubernetes/autoscaler/issues/7766)).
 
-1. Bump the patch version in the
+1. Open a PR against `master` bumping the version in the
    [Makefile](https://github.com/kubernetes/autoscaler/blob/fa98f9b4c12a0cb25d6d7fd79497272137aa3458/addon-resizer/Makefile#L30)
-   `TAG` ([example PR](https://github.com/kubernetes/autoscaler/pull/4079)).
+   `TAG` ([example PR](https://github.com/kubernetes/autoscaler/pull/4079); note that releases now target `master`, not `addon-resizer-release-1.8`).
 
 1. Push images for all architectures to the
    [staging repository](https://gcr.io/k8s-staging-autoscaling).
