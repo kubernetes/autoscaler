@@ -134,8 +134,11 @@ func (h *histogram) SubtractSample(value float64, weight float64, time time.Time
 	bucket := h.options.FindBucket(value)
 	epsilon := h.options.Epsilon()
 
-	h.totalWeight = safeSubtract(h.totalWeight, weight, epsilon)
-	h.bucketWeight[bucket] = safeSubtract(h.bucketWeight[bucket], weight, epsilon)
+	// Only remove from totalWeight what was actually removed from the bucket,
+	// so that totalWeight stays equal to the sum of bucket weights.
+	oldBucketWeight := h.bucketWeight[bucket]
+	h.bucketWeight[bucket] = safeSubtract(oldBucketWeight, weight, epsilon)
+	h.totalWeight = safeSubtract(h.totalWeight, oldBucketWeight-h.bucketWeight[bucket], epsilon)
 
 	h.updateMinAndMaxBucket()
 }
