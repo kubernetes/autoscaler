@@ -102,7 +102,7 @@ func InitUpdaterFlags() *UpdaterConfig {
 
 	flag.Float64Var(&config.DefaultUpdateThreshold, "pod-update-threshold", config.DefaultUpdateThreshold, "Ignore updates that have priority lower than the value of this flag")
 	flag.DurationVar(&config.PodLifetimeUpdateThreshold, "in-recommendation-bounds-eviction-lifetime-threshold", config.PodLifetimeUpdateThreshold, "Pods that live for at least that long can be evicted even if their request is within the [MinRecommended...MaxRecommended] range")
-	flag.DurationVar(&config.EvictAfterOOMThreshold, "evict-after-oom-threshold", config.EvictAfterOOMThreshold, `The default duration to evict pods that have OOMed in less than evict-after-oom-threshold since start.`)
+	flag.DurationVar(&config.EvictAfterOOMThreshold, "evict-after-oom-threshold", config.EvictAfterOOMThreshold, `The default threshold for evicting or in-place resizing Pods that have OOMed less than evict-after-oom-threshold since start and less than evict-after-oom-threshold ago, if the recommendation would change the Pod's resources.`)
 	flag.IntVar(&config.ConcurrentCPUStartupBoostSyncs, "concurrent-cpu-startup-boost-syncs", config.ConcurrentCPUStartupBoostSyncs, "The number of workers processing CPU startup boost unboosting concurrently.")
 
 	// These need to happen last. kube_flag.InitFlags() synchronizes and parses

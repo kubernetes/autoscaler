@@ -162,7 +162,7 @@ This document is auto-generated from the flag definitions in the VPA updater cod
 | `alsologtostderr` | bool | false | log to standard error as well as files (no effect when -logtostderr=true) |
 | `alsologtostderrthreshold` | severity |  | logs at or above this threshold go to stderr when -alsologtostderr=true (no effect when -logtostderr=true) |
 | `concurrent-cpu-startup-boost-syncs` | int | 1 | The number of workers processing CPU startup boost unboosting concurrently. |
-| `evict-after-oom-threshold` | duration | 10m0s | The default duration to evict pods that have OOMed in less than evict-after-oom-threshold since start. |
+| `evict-after-oom-threshold` | duration | 10m0s | The default threshold for evicting or in-place resizing Pods that have OOMed less than evict-after-oom-threshold since start and less than evict-after-oom-threshold ago, if the recommendation would change the Pod's resources. |
 | `eviction-rate-burst` | int | 1 | Burst of pods that can be evicted. |
 | `eviction-rate-limit` | float | -1 | Number of pods that can be evicted per second. A rate limit set to 0 or -1 will disable the rate limiter. |
 | `eviction-tolerance` | float | 0.5 | Fraction of replica count that can be evicted for update, if more than one pod can be evicted. |
