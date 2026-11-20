@@ -32,3 +32,13 @@ $ pre-commit install
 The pre-commit hooks themselves call binaries under the hood; they can be installed via the [instructions found here](https://github.com/norwoodj/helm-docs#installation).
 
 Note: You should ensure that whichever installation method you are using you either install the same version of helm-docs as used in the PR workflow to ensure your PR passes CI checks or update the version used by the workflow to match.
+
+## OCI Helm Chart Publishing & Promotion
+
+When `vertical-pod-autoscaler/charts/vertical-pod-autoscaler/Chart.yaml` is updated on `master`, the Prow postsubmit job [`post-autoscaler-push-vpa-chart`](https://testgrid.k8s.io/sig-autoscaling-vpa-images#post-autoscaler-push-vpa-chart) automatically packages and pushes the chart to the Kubernetes staging Artifact Registry (`oci://us-central1-docker.pkg.dev/k8s-staging-images/autoscaling/charts/vertical-pod-autoscaler`).
+
+To promote a staged chart version to `oci://registry.k8s.io/autoscaling/charts/vertical-pod-autoscaler`:
+
+1. Obtain the chart's `sha256` digest from the `post-autoscaler-push-vpa-chart` build log (or run `gcloud artifacts docker images describe us-central1-docker.pkg.dev/k8s-staging-images/autoscaling/charts/vertical-pod-autoscaler:<chart-version> --format='value(image_summary.digest)'`).
+2. Open a PR in [`kubernetes/k8s.io`](https://github.com/kubernetes/k8s.io) adding the digest and chart version under `charts/vertical-pod-autoscaler` in [`registry.k8s.io/images/k8s-staging-autoscaling/images.yaml`](https://github.com/kubernetes/k8s.io/blob/main/registry.k8s.io/images/k8s-staging-autoscaling/images.yaml).
+3. Once merged and promoted by `post-k8sio-image-promo`, the chart is available at `oci://registry.k8s.io/autoscaling/charts/vertical-pod-autoscaler`.
