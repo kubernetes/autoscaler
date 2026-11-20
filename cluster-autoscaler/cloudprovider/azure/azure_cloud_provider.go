@@ -49,6 +49,10 @@ const (
 	// GPULabel is the label added to nodes with GPU resource.
 	GPULabel       = AKSLabelKeyPrefixValue + "accelerator"
 	legacyGPULabel = "accelerator"
+	// DraGPULabel identifies NVIDIA GPU nodes configured to expose devices via DRA.
+	DraGPULabel = AKSLabelKeyPrefixValue + "gpu-dra-driver"
+	// NvidiaDraGPUDriver is the NVIDIA GPU DRA driver name.
+	NvidiaDraGPUDriver = "gpu.nvidia.com"
 )
 
 var (
@@ -98,10 +102,18 @@ func (azure *AzureCloudProvider) GetAvailableGPUTypes(ctx context.Context) map[s
 }
 
 // GetNodeGpuConfig returns the label, type and resource name for the GPU added to node. If node doesn't have
-// any GPUs, it returns nil.
+// any GPUs, it returns nil. For GPUs exposed via DRA, it returns the driver name instead of an extended resource name.
 func (azure *AzureCloudProvider) GetNodeGpuConfig(ctx context.Context, node *apiv1.Node) *cloudprovider.GpuConfig {
-	return gpu.GetNodeGPUFromCloudProvider(context.TODO(), azure, node)
+	gpuConfig := gpu.GetNodeGPUFromCloudProvider(ctx, azure, node)
+	if gpuConfig != nil && gpuDraDriverEnabled(node) {
+		gpuConfig.DraDriverName = NvidiaDraGPUDriver
+		gpuConfig.ExtendedResourceName = ""
+	}
+	return gpuConfig
+}
 
+func gpuDraDriverEnabled(node *apiv1.Node) bool {
+	return node.Labels[DraGPULabel] == "true"
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
