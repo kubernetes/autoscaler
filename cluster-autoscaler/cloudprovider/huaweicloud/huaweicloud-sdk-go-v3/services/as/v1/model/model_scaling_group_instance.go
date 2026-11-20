@@ -26,7 +26,7 @@ type ScalingGroupInstance struct {
 	// 实例在伸缩组中的实力状态周期：INSERVICE： 正在使用。PENDING：正在加入伸缩组。REMOVING：正在移出伸缩组。PENDING_WAIT：正在加入伸缩组：等待。REMOVING_WAIT：正在移出伸缩组：等待。
 
 	LifeCycleState *ScalingGroupInstanceLifeCycleState `json:"life_cycle_state,omitempty"`
-	// 实例健康状态:INITAILIZING:初始化；NORMAL：正常；ERROR：错误。
+	// 实例健康状态:INITIALIZING:初始化；NORMAL：正常；ERROR：错误。
 
 	HealthStatus *ScalingGroupInstanceHealthStatus `json:"health_status,omitempty"`
 	// 伸缩配置名称。如果返回为空，表示伸缩配置已经被删除。如果返回MANNUAL_ADD，表示实例为手动加入。
@@ -109,7 +109,7 @@ type ScalingGroupInstanceHealthStatus struct {
 type ScalingGroupInstanceHealthStatusEnum struct {
 	NORMAL       ScalingGroupInstanceHealthStatus
 	ERROR        ScalingGroupInstanceHealthStatus
-	INITAILIZING ScalingGroupInstanceHealthStatus
+	INITIALIZING ScalingGroupInstanceHealthStatus
 }
 
 func GetScalingGroupInstanceHealthStatusEnum() ScalingGroupInstanceHealthStatusEnum {
@@ -120,8 +120,8 @@ func GetScalingGroupInstanceHealthStatusEnum() ScalingGroupInstanceHealthStatusE
 		ERROR: ScalingGroupInstanceHealthStatus{
 			value: "ERROR",
 		},
-		INITAILIZING: ScalingGroupInstanceHealthStatus{
-			value: "INITAILIZING",
+		INITIALIZING: ScalingGroupInstanceHealthStatus{
+			value: "INITIALIZING",
 		},
 	}
 }
