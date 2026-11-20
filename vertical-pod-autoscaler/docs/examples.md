@@ -127,6 +127,19 @@ Here is an example configuration which allows evictions only when CPU or memory 
 
 Note that this doesn't prevent scaling down entirely, as Pods may get recreated for different reasons, resulting in a new recommendation being applied. See [the original AEP](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler/enhancements/4831-control-eviction-behavior) for more context and usage information.
 
+Here is an example configuration which allows evictions only when memory gets scaled up for a container that was recently OOMKilled
+
+_Available from VPA 1.9.0 as an alpha feature behind the `EvictionRequirementOOMScaleUp` feature gate (disabled by default). Enable it on both the admission-controller and the updater with `--feature-gates=EvictionRequirementOOMScaleUp=true`._
+
+```yaml
+ updatePolicy:
+   evictionRequirements:
+     - resources: ["memory"]
+       changeRequirement: TargetHigherThanRequestsAndOOM
+```
+
+A container counts as recently OOMKilled if its last or current termination was an OOM kill within `--evict-after-oom-threshold` (default 10 minutes), or within `evictAfterOOMSeconds` if it is set on the VPA. The Pod still needs to pass the Updater's other update conditions to be evicted.
+
 ## Limiting which namespaces are used
 
  By default the VPA will run against all namespaces. You can limit that behaviour by setting the following options:

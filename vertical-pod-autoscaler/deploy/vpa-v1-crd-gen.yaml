@@ -583,6 +583,7 @@ spec:
                           enum:
                           - TargetHigherThanRequests
                           - TargetLowerThanRequests
+                          - TargetHigherThanRequestsAndOOM
                           type: string
                         resources:
                           description: |-
