@@ -51,6 +51,7 @@ type ClusterState interface {
 	AddOrUpdateContainer(containerID ContainerID, request Resources) error
 	AddSample(sample *ContainerUsageSampleWithKey) error
 	RecordOOM(containerID ContainerID, timestamp time.Time, requestedMemory ResourceAmount) error
+	RecordPressure(containerID ContainerID, timestamp time.Time, workingSet ResourceAmount) error
 	AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAutoscaler, selector labels.Selector) error
 	DeleteVpa(vpaID VpaID) error
 	MakeAggregateStateKey(pod *PodState, containerName string) AggregateStateKey
@@ -270,19 +271,40 @@ func (cluster *clusterState) AddSample(sample *ContainerUsageSampleWithKey) erro
 
 // RecordOOM adds info regarding OOM event in the model as an artificial memory sample.
 func (cluster *clusterState) RecordOOM(containerID ContainerID, timestamp time.Time, requestedMemory ResourceAmount) error {
-	pod, podExists := cluster.pods[containerID.PodID]
-	if !podExists {
-		return NewKeyError(containerID.PodID)
+	containerState, err := cluster.findContainer(containerID)
+	if err != nil {
+		return err
 	}
-	containerState, containerExists := pod.Containers[containerID.ContainerName]
-	if !containerExists {
-		return NewKeyError(containerID.ContainerName)
-	}
-	err := containerState.RecordOOM(timestamp, requestedMemory)
+	err = containerState.RecordOOM(timestamp, requestedMemory)
 	if err != nil {
 		return fmt.Errorf("error while recording OOM for %v, Reason: %v", containerID, err)
 	}
 	return nil
+}
+
+// RecordPressure adds a pressure-derived memory peak for the container.
+func (cluster *clusterState) RecordPressure(containerID ContainerID, timestamp time.Time, workingSet ResourceAmount) error {
+	containerState, err := cluster.findContainer(containerID)
+	if err != nil {
+		return err
+	}
+	if err := containerState.RecordPressure(timestamp, workingSet); err != nil {
+		return fmt.Errorf("error while recording pressure for %v, Reason: %v", containerID, err)
+	}
+	return nil
+}
+
+// findContainer returns the state of a tracked container, or a KeyError.
+func (cluster *clusterState) findContainer(containerID ContainerID) (*ContainerState, error) {
+	pod, podExists := cluster.pods[containerID.PodID]
+	if !podExists {
+		return nil, NewKeyError(containerID.PodID)
+	}
+	containerState, containerExists := pod.Containers[containerID.ContainerName]
+	if !containerExists {
+		return nil, NewKeyError(containerID.ContainerName)
+	}
+	return containerState, nil
 }
 
 // AddOrUpdateVpa adds a new VPA with a given ID to the clusterState if it

@@ -347,6 +347,8 @@ This chart includes [helm-unittest](https://github.com/helm-unittest/helm-unitte
 | recommender.leaderElection.retryPeriod | string | `"2s"` |  |
 | recommender.livenessProbe | object | `{"failureThreshold":3,"httpGet":{"path":"/health-check","port":"prometheus","scheme":"HTTP"},"initialDelaySeconds":5,"periodSeconds":10}` | Liveness probe for the Recommender container. Set to `null` to remove it. |
 | recommender.logLevel | int | `4` | Log verbosity for the Recommender (klog -v). |
+| recommender.memoryPressure.nodeProxyAccess | bool | `false` |  |
+| recommender.memoryPressure.nodeStatsAccess | bool | `false` |  |
 | recommender.nodeSelector | object | `{}` |  |
 | recommender.podAnnotations | object | `{}` |  |
 | recommender.podDisruptionBudget.enabled | bool | `true` |  |

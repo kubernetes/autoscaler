@@ -169,8 +169,12 @@ func Register() {
 		failedInPlaceUpdateAttempts,
 		functionLatency,
 		admissionControllerStatusInvalidCount,
+		pressureQuickUpdates,
 	}
 	prometheus.MustRegister(collectors...)
+	for _, r := range quickPressureResults {
+		pressureQuickUpdates.WithLabelValues(r).Add(0)
+	}
 }
 
 // NewExecutionTimer provides a timer for Updater's RunOnce execution

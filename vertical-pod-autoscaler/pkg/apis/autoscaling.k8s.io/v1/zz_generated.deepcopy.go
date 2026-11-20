@@ -73,6 +73,11 @@ func (in *ContainerResourcePolicy) DeepCopyInto(out *ContainerResourcePolicy) {
 		x := (*in).DeepCopy()
 		*out = &x
 	}
+	if in.PressureDetection != nil {
+		in, out := &in.PressureDetection, &out.PressureDetection
+		*out = new(PressureDetectionMode)
+		**out = **in
+	}
 	if in.MemoryAggregationIntervalSeconds != nil {
 		in, out := &in.MemoryAggregationIntervalSeconds, &out.MemoryAggregationIntervalSeconds
 		*out = new(int32)
@@ -272,6 +277,10 @@ func (in *RecommendedContainerResources) DeepCopyInto(out *RecommendedContainerR
 		for key, val := range *in {
 			(*out)[key] = val.DeepCopy()
 		}
+	}
+	if in.LastPressureTime != nil {
+		in, out := &in.LastPressureTime, &out.LastPressureTime
+		*out = (*in).DeepCopy()
 	}
 	return
 }
