@@ -2801,7 +2801,8 @@ func TestScaleSetETagRetryTracksRefreshedObject(t *testing.T) {
 
 	// The tracked object must be the freshly-fetched VMSS now in the cache, not the
 	// stale pre-retry copy.
-	cached := manager.azureCache.getScaleSets()[vmssName]
+	cached, found := manager.azureCache.readScaleSet(vmssName)
+	assert.True(t, found)
 	assert.Same(t, cached, effectiveVMSS, "caller should track the refreshed cached object")
 	assert.NotSame(t, staleObj, effectiveVMSS, "caller must not keep tracking the stale object")
 	if assert.NotNil(t, effectiveVMSS.Etag) {
@@ -2812,7 +2813,8 @@ func TestScaleSetETagRetryTracksRefreshedObject(t *testing.T) {
 	// cached object.
 	scaleSet.waitForCreateOrUpdateInstances(poller, effectiveVMSS)
 
-	cached = manager.azureCache.getScaleSets()[vmssName]
+	cached, found = manager.azureCache.readScaleSet(vmssName)
+	assert.True(t, found)
 	if assert.NotNil(t, cached.Etag) {
 		assert.Equal(t, finalEtag, *cached.Etag, "final LRO ETag should land on the cached object")
 	}
@@ -3005,7 +3007,8 @@ func TestAtomicIncreaseSizeWithETag(t *testing.T) {
 
 			assert.Equal(t, tc.expectFinalSize, scaleSet.curSize)
 
-			cached := manager.azureCache.getScaleSets()[vmssName]
+			cached, found := manager.azureCache.readScaleSet(vmssName)
+			assert.True(t, found)
 			if assert.NotNil(t, cached) && assert.NotNil(t, cached.Etag) {
 				assert.Equal(t, *tc.expectEtag, *cached.Etag)
 			}

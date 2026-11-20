@@ -138,11 +138,12 @@ func (as *AgentPool) Id() string {
 }
 
 func (as *AgentPool) getVMsFromCache() ([]*armcompute.VirtualMachine, error) {
-	allVMs := as.manager.azureCache.getVirtualMachines()
-	if _, exists := allVMs[as.Name]; !exists {
+	vms, ok := as.manager.azureCache.readVirtualMachines(as.Name)
+	if !ok {
 		return nil, fmt.Errorf("could not find VMs with poolName: %s", as.Name)
 	}
-	return allVMs[as.Name], nil
+
+	return vms, nil
 }
 
 // GetVMIndexes gets indexes of all virtual machines belonging to the agent pool.
