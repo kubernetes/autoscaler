@@ -18,7 +18,6 @@ package routines
 
 import (
 	"context"
-	"strings"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
@@ -116,7 +115,7 @@ func NewRecommenderController(
 		source = input_metrics.NewPodMetricsesSource(resourceclient.NewForConfigOrDie(kubeConfig))
 	}
 
-	ignoredNamespaces := strings.Split(commonFlags.IgnoredVpaObjectNamespaces, ",")
+	ignoredNamespaces := commonFlags.IgnoredNamespaces()
 
 	clusterStateFeeder := input.ClusterStateFeederFactory{
 		PodLister:           podLister,
