@@ -22,6 +22,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"maps"
 	"net/http"
 	"os"
 	"regexp"
@@ -317,6 +318,13 @@ func runBenchmarkIteration(ctx context.Context, kubeClient kubernetes.Interface,
 		return withRec == count, nil
 	})
 
+	// Step 8b: Poll for recommender metrics (until 'total' step appears)
+	fmt.Println("Polling for recommender metrics...")
+	latencies, err := waitForAndScrapeMetrics(ctx, kubeClient, "recommender", 8942)
+	if err != nil {
+		return nil, err
+	}
+
 	// Step 9: Scale up updater (now that recommendations exist)
 	fmt.Println("Scaling up updater...")
 	if err := scaleUpUpdater(ctx, kubeClient); err != nil {
@@ -332,7 +340,12 @@ func runBenchmarkIteration(ctx context.Context, kubeClient kubernetes.Interface,
 	// Step 11: Poll for updater metrics (until 'total' step appears)
 	// this step appears because of the "defer timer.ObserveTotal()" in updater.RunOnce()
 	fmt.Println("Polling for updater metrics...")
-	return waitForAndScrapeMetrics(ctx, kubeClient)
+	updaterLatencies, err := waitForAndScrapeMetrics(ctx, kubeClient, "updater", 8943)
+	if err != nil {
+		return nil, err
+	}
+	maps.Copy(latencies, updaterLatencies)
+	return latencies, nil
 }
 
 func scaleDeployment(ctx context.Context, kubeClient kubernetes.Interface, namespace, name string, replicas int32) error {
@@ -499,14 +512,14 @@ func cleanupBenchmarkResources(ctx context.Context, kubeClient kubernetes.Interf
 	})
 }
 
-func waitForAndScrapeMetrics(ctx context.Context, kubeClient kubernetes.Interface) (map[string]float64, error) {
-	pods, err := kubeClient.CoreV1().Pods(vpaNamespace).List(ctx, metav1.ListOptions{LabelSelector: "app.kubernetes.io/component=updater"})
+func waitForAndScrapeMetrics(ctx context.Context, kubeClient kubernetes.Interface, name string, podPort int) (map[string]float64, error) {
+	pods, err := kubeClient.CoreV1().Pods(vpaNamespace).List(ctx, metav1.ListOptions{LabelSelector: "app.kubernetes.io/component=" + name})
 	if err != nil || len(pods.Items) == 0 {
-		return nil, fmt.Errorf("no vpa-updater pod found")
+		return nil, fmt.Errorf("no vpa-%s pod found", name)
 	}
 
 	// The port-forward is configured to listen on this arbitrary port
-	port := 18943
+	port := 10000 + podPort
 
 	podName := pods.Items[0].Name
 	stopChan := make(chan struct{})
@@ -519,7 +532,7 @@ func waitForAndScrapeMetrics(ctx context.Context, kubeClient kubernetes.Interfac
 
 		transport, upgrader, _ := spdy.RoundTripperFor(restConfig)
 		dialer := spdy.NewDialer(upgrader, &http.Client{Transport: transport}, "POST", url)
-		pf, _ := portforward.New(dialer, []string{fmt.Sprintf("%d:8943", port)}, stopChan, readyChan, io.Discard, io.Discard)
+		pf, _ := portforward.New(dialer, []string{fmt.Sprintf("%d:%d", port, podPort)}, stopChan, readyChan, io.Discard, io.Discard)
 		pf.ForwardPorts()
 	}()
 
@@ -534,6 +547,7 @@ func waitForAndScrapeMetrics(ctx context.Context, kubeClient kubernetes.Interfac
 	// Poll metrics endpoint until 'total' step appears (indicates loop completion)
 	// 3 minute timeout since we've already waited interval time for the loop to start
 	var latencies map[string]float64
+	var loops int
 	startTime := time.Now()
 	err = wait.PollUntilContextTimeout(ctx, 10*time.Second, 3*time.Minute, true, func(ctx context.Context) (bool, error) {
 		resp, err := http.Get(fmt.Sprintf("http://localhost:%d/metrics", port))
@@ -542,37 +556,49 @@ func waitForAndScrapeMetrics(ctx context.Context, kubeClient kubernetes.Interfac
 		}
 		defer resp.Body.Close()
 
-		latencies, err = parseMetrics(resp.Body)
+		latencies, loops, err = parseMetrics(resp.Body, name)
 		if err != nil {
 			return false, nil
 		}
 
 		// Check if 'total' step is present - indicates loop completed
-		if _, ok := latencies["total"]; ok {
+		if _, ok := latencies[name+"/total"]; ok {
 			return true, nil
 		}
-		fmt.Printf("  Waiting for updater loop to complete. Elapsed: %.2fs\n", time.Since(startTime).Seconds())
+		fmt.Printf("  Waiting for %s loop to complete. Elapsed: %.2fs\n", name, time.Since(startTime).Seconds())
 		return false, nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("timed out waiting for updater metrics: %v", err)
+		return nil, fmt.Errorf("timed out waiting for %s metrics: %v", name, err)
 	}
+	fmt.Printf("  %s metrics scraped after %d loop(s)\n", name, loops)
 
 	return latencies, nil
 }
 
-func parseMetrics(body io.Reader) (map[string]float64, error) {
-	latencies := make(map[string]float64)
-	re := regexp.MustCompile(`vpa_updater_execution_latency_seconds_sum\{step="([^"]+)"\}\s+([\d.e+-]+)`)
+func parseMetrics(body io.Reader, name string) (latencies map[string]float64, loops int, err error) {
+	sums := make(map[string]float64)
+	counts := make(map[string]float64)
+	re := regexp.MustCompile(fmt.Sprintf(`vpa_%s_execution_latency_seconds_(sum|count)\{step="([^"]+)"\}\s+([\d.e+-]+)`, name))
 	scanner := bufio.NewScanner(body)
 	for scanner.Scan() {
-		if m := re.FindStringSubmatch(scanner.Text()); len(m) == 3 {
-			if v, err := strconv.ParseFloat(m[2], 64); err == nil {
-				latencies[m[1]] = v
+		if m := re.FindStringSubmatch(scanner.Text()); len(m) == 4 {
+			if v, err := strconv.ParseFloat(m[3], 64); err == nil {
+				if m[1] == "sum" {
+					sums[m[2]] = v
+				} else {
+					counts[m[2]] = v
+				}
 			}
 		}
 	}
-	return latencies, nil
+	latencies = make(map[string]float64)
+	for step, n := range counts {
+		if n > 0 {
+			latencies[name+"/"+step] = sums[step] / n
+		}
+	}
+	return latencies, int(counts["total"]), scanner.Err()
 }
 
 func printLatencies(latencies map[string]float64, title string) {
@@ -583,7 +609,7 @@ func printLatencies(latencies map[string]float64, title string) {
 	}
 	sort.Strings(steps)
 	for _, s := range steps {
-		fmt.Printf("  %-15s: %.4fs\n", s, latencies[s])
+		fmt.Printf("  %-32s: %.4fs\n", s, latencies[s])
 	}
 }
 

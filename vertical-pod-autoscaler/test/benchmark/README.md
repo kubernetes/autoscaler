@@ -2,7 +2,7 @@
 
 Measures VPA component latencies using KWOK (Kubernetes WithOut Kubelet) to simulate pods without real resource consumption.
 
-> **Note:** Currently only updater metrics are collected. Recommender metrics are planned for the future.
+> **Note:** Admission-controller metrics are not collected yet ([#9443](https://github.com/kubernetes/autoscaler/issues/9443)).
 
 <!-- toc -->
 - [Prerequisites](#prerequisites)
@@ -12,6 +12,7 @@ Measures VPA component latencies using KWOK (Kubernetes WithOut Kubelet) to simu
 - [Profiles](#profiles)
 - [Flags](#flags)
 - [Metrics Collected](#metrics-collected)
+  - [Recommender Metrics](#recommender-metrics)
   - [Updater Metrics](#updater-metrics)
 - [Scripts](#scripts)
 - [Cleanup](#cleanup)
@@ -73,25 +74,33 @@ The benchmark program (`main.go`) assumes the cluster is already set up with VPA
    - Creates ReplicaSets with fake pods assigned directly to KWOK node (bypasses scheduler)
    - Creates noise ReplicaSets (if `--noise-ratio` > 0) — these are not managed by any VPA
    - Creates VPAs targeting managed ReplicaSets only
-   - Scales up recommender, waits for recommendations
+   - Scales up recommender, waits for recommendations, scrapes `vpa_recommender_execution_latency_seconds` after its first loop completes
    - Scales up updater, waits for its loop to complete
-   - Scrapes `vpa_updater_execution_latency_seconds_sum` metrics
+   - Scrapes `vpa_updater_execution_latency_seconds` metrics
 2. Outputs results to stdout and/or a CSV file if specified
 
 e.g., of output using this command: `bin/vpa-benchmark --profile=small,large,xxlarge`
 
 ```bash
 ========== Results ==========
-┌───────────────┬───────────────┬────────────────┬───────────────────┐
-│     STEP      │ SMALL  ( 25 ) │ LARGE  ( 250 ) │ XXLARGE  ( 1000 ) │
-├───────────────┼───────────────┼────────────────┼───────────────────┤
-│ AdmissionInit │ 0.0000s       │ 0.0001s        │ 0.0004s           │
-│ EvictPods     │ 2.4239s       │ 24.5535s       │ 98.6963s          │
-│ FilterPods    │ 0.0002s       │ 0.0020s        │ 0.0925s           │
-│ ListPods      │ 0.0001s       │ 0.0006s        │ 0.0025s           │
-│ ListVPAs      │ 0.0024s       │ 0.0030s        │ 0.0027s           │
-│ total         │ 2.4267s       │ 24.5592s       │ 98.7945s          │
-└───────────────┴───────────────┴────────────────┴───────────────────┘
+┌─────────────────────────────────┬───────────────┬────────────────┬───────────────────┐
+│               STEP              │ SMALL  ( 25 ) │ LARGE  ( 250 ) │ XXLARGE  ( 1000 ) │
+├─────────────────────────────────┼───────────────┼────────────────┼───────────────────┤
+│ recommender/DeleteRemovedPods   │ 0.0000s       │ 0.0000s        │ 0.0000s           │
+│ recommender/GarbageCollect      │ 0.0004s       │ 0.0037s        │ 0.0527s           │
+│ recommender/LoadMetrics         │ 0.0261s       │ 0.0221s        │ 0.0221s           │
+│ recommender/LoadPods            │ 0.0078s       │ 0.0341s        │ 0.3586s           │
+│ recommender/LoadVPAs            │ 0.0039s       │ 0.0455s        │ 0.0284s           │
+│ recommender/MaintainCheckpoints │ 0.0332s       │ 5.0036s        │ 20.0012s          │
+│ recommender/UpdateVPAs          │ 0.0567s       │ 0.5061s        │ 8.0056s           │
+│ recommender/total               │ 0.1281s       │ 5.6152s        │ 28.4687s          │
+│ updater/AdmissionInit           │ 0.0002s       │ 0.0004s        │ 0.0026s           │
+│ updater/EvictPods               │ 2.3391s       │ 24.9690s       │ 102.0663s         │
+│ updater/FilterPods              │ 0.0038s       │ 0.0023s        │ 0.0163s           │
+│ updater/ListPods                │ 0.0041s       │ 0.0037s        │ 0.0398s           │
+│ updater/ListVPAs                │ 0.0163s       │ 0.0353s        │ 0.0172s           │
+│ updater/total                   │ 2.3636s       │ 25.0122s       │ 102.1432s         │
+└─────────────────────────────────┴───────────────┴────────────────┴───────────────────┘
 ```
 
 We can then compare the results of a code change with the results of the main branch.
@@ -120,6 +129,21 @@ When `--noise-percentage=P` is set, each profile also creates `P%` additional no
 | `--noise-percentage` | 0% | Percentage of additional noise (unmanaged) ReplicaSets relative to managed ReplicaSets. Set to 0% for no noise. Noise pods increase `FilterPods` and `ListPods` costs without adding VPAs. |
 
 ## Metrics Collected
+
+Each value is the average time per run of that step (`_sum / _count` of the histogram).
+
+### Recommender Metrics
+
+| Metric | Description |
+| ------ | ----------- |
+| `LoadVPAs` | List VPA objects |
+| `LoadPods` | List pods |
+| `LoadMetrics` | Fetch metrics-server samples |
+| `DeleteRemovedPods` | Drop state for pods that are gone |
+| `UpdateVPAs` | Compute and write recommendations |
+| `MaintainCheckpoints` | Write VerticalPodAutoscalerCheckpoint objects |
+| `GarbageCollect` | Expire old aggregate state |
+| `total` | Total loop time |
 
 ### Updater Metrics
 
