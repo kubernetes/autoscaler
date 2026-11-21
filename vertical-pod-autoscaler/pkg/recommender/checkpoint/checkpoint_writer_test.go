@@ -77,31 +77,96 @@ func addVpa(t *testing.T, cluster model.ClusterState, vpaID model.VpaID, selecto
 }
 
 func TestMergeContainerStateForCheckpointDropsRecentMemoryPeak(t *testing.T) {
-	cluster := model.NewClusterState(testGcPeriod)
-	cluster.AddOrUpdatePod(testPodID1, testLabels, corev1.PodRunning)
-	assert.NoError(t, cluster.AddOrUpdateContainer(testContainerID1, testRequest))
-	container := cluster.GetContainer(testContainerID1)
+	for _, tc := range []struct {
+		name      string
+		replicas  int
+		unusedKey bool
+	}{
+		{name: "single container", replicas: 1},
+		{name: "replicas sharing an aggregate key", replicas: 2},
+		{name: "unused key with the same container name", replicas: 2, unusedKey: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			cluster := model.NewClusterState(testGcPeriod)
+			interval := model.GetAggregationsConfig().MemoryAggregationIntervalDuration
+			firstSampleTime := time.Unix(1700000000, 0)
+			recentSampleTime := firstSampleTime.Add(interval)
+			oldPeak := model.MemoryAmountFromBytes(1024 * 1024 * 1024)
+			recentPeak := model.MemoryAmountFromBytes(2 * 1024 * 1024 * 1024)
 
-	timeNow := time.Unix(1, 0)
-	container.AddSample(&model.ContainerUsageSample{
-		MeasureStart: timeNow,
-		Usage:        model.MemoryAmountFromBytes(1024 * 1024 * 1024),
-		Resource:     model.ResourceMemory,
-	})
-	vpa := addVpa(t, cluster, testVpaID1, testSelectorStr)
+			addMemorySample := func(id model.ContainerID, timestamp time.Time, usage model.ResourceAmount) {
+				t.Helper()
+				if err := cluster.AddSample(&model.ContainerUsageSampleWithKey{
+					Container: id,
+					ContainerUsageSample: model.ContainerUsageSample{
+						MeasureStart: timestamp,
+						Usage:        usage,
+						Resource:     model.ResourceMemory,
+					},
+				}); err != nil {
+					t.Fatal(err)
+				}
+			}
+			for i := range tc.replicas {
+				podID := model.PodID{Namespace: testPodID1.Namespace, PodName: fmt.Sprintf("replica-%d", i)}
+				cluster.AddOrUpdatePod(podID, testLabels, corev1.PodRunning)
+				id := model.ContainerID{PodID: podID, ContainerName: testContainerID1.ContainerName}
+				if err := cluster.AddOrUpdateContainer(id, testRequest); err != nil {
+					t.Fatal(err)
+				}
+				addMemorySample(id, firstSampleTime, oldPeak)
+				addMemorySample(id, recentSampleTime, recentPeak)
+			}
+			if tc.unusedKey {
+				podID := model.PodID{Namespace: testPodID1.Namespace, PodName: "unmatched"}
+				cluster.AddOrUpdatePod(podID, labels.Set{"label-1": "other-value"}, corev1.PodRunning)
+				id := model.ContainerID{PodID: podID, ContainerName: testContainerID1.ContainerName}
+				if err := cluster.AddOrUpdateContainer(id, testRequest); err != nil {
+					t.Fatal(err)
+				}
+				// Reuse the historical peaks bucket. Subtracting this unrelated
+				// current peak would incorrectly remove the VPAs retained history.
+				addMemorySample(id, recentSampleTime, oldPeak)
+			}
+			vpa := addVpa(t, cluster, testVpaID1, testSelectorStr)
+			groups := groupContainersByAggregate(cluster)
+			if tc.unusedKey {
+				assert.Len(t, groups, 2)
+			} else {
+				assert.Len(t, groups, 1)
+			}
+			for key, group := range groups {
+				if vpa.UsesAggregation(key) {
+					assert.Len(t, group, tc.replicas)
+				}
+			}
 
-	// Verify that the current peak is excluded from the aggregation.
-	aggregateContainerStateMap := buildAggregateContainerStateMap(vpa, cluster, timeNow)
-	if assert.Contains(t, aggregateContainerStateMap, "container-1") {
-		assert.True(t, aggregateContainerStateMap["container-1"].AggregateMemoryPeaks.IsEmpty(),
-			"Current peak was not excluded from the aggregation.")
-	}
-	// Verify that an old peak is not excluded from the aggregation.
-	timeNow = timeNow.Add(model.GetAggregationsConfig().MemoryAggregationIntervalDuration)
-	aggregateContainerStateMap = buildAggregateContainerStateMap(vpa, cluster, timeNow)
-	if assert.Contains(t, aggregateContainerStateMap, "container-1") {
-		assert.False(t, aggregateContainerStateMap["container-1"].AggregateMemoryPeaks.IsEmpty(),
-			"Old peak should not be excluded from the aggregation.")
+			for _, completed := range []bool{false, true} {
+				name := "current peaks excluded"
+				now := recentSampleTime
+				if completed {
+					name = "completed peaks retained"
+					now = now.Add(interval)
+				}
+				t.Run(name, func(t *testing.T) {
+					expected := model.NewAggregateContainerState()
+					for range tc.replicas {
+						// Memory peaks enter the histogram at their windows end.
+						expected.AggregateMemoryPeaks.AddSample(model.BytesFromMemoryAmount(oldPeak), 1, recentSampleTime)
+						if completed {
+							expected.AggregateMemoryPeaks.AddSample(model.BytesFromMemoryAmount(recentPeak), 1, recentSampleTime.Add(interval))
+						}
+					}
+					states := buildAggregateContainerStateMap(vpa, groups, now)
+					state, exists := states[testContainerID1.ContainerName]
+					if !assert.True(t, exists, "missing container history") || !assert.NotNil(t, state) {
+						return
+					}
+					assert.True(t, expected.AggregateMemoryPeaks.Equals(state.AggregateMemoryPeaks),
+						"unexpected checkpoint peaks: got %s, want %s", state.AggregateMemoryPeaks, expected.AggregateMemoryPeaks)
+				})
+			}
+		})
 	}
 }
 

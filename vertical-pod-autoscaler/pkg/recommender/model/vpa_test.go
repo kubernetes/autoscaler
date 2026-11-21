@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"slices"
 	"testing"
 	"time"
 
@@ -430,6 +431,43 @@ func TestDeleteAggregation(t *testing.T) {
 			}
 			vpa.DeleteAggregation(tc.delet)
 			assert.Equal(t, 0, len(vpa.aggregateContainerStates))
+		})
+	}
+}
+
+func TestAggregationKeys(t *testing.T) {
+	key1 := mockAggregateStateKey{namespace: "ns", containerName: "container", labels: "app=one"}
+	key2 := mockAggregateStateKey{namespace: "ns", containerName: "container", labels: "app=two"}
+	cases := []struct {
+		name                     string
+		aggregateContainerStates aggregateContainerStatesMap
+		expectedKeys             []AggregateStateKey
+	}{
+		{name: "nil map"},
+		{
+			name:                     "empty map",
+			aggregateContainerStates: aggregateContainerStatesMap{},
+		},
+		{
+			name: "single aggregation",
+			aggregateContainerStates: aggregateContainerStatesMap{
+				key1: NewAggregateContainerState(),
+			},
+			expectedKeys: []AggregateStateKey{key1},
+		},
+		{
+			name: "distinct keys with the same container name",
+			aggregateContainerStates: aggregateContainerStatesMap{
+				key1: NewAggregateContainerState(),
+				key2: NewAggregateContainerState(),
+			},
+			expectedKeys: []AggregateStateKey{key1, key2},
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			vpa := Vpa{aggregateContainerStates: tc.aggregateContainerStates}
+			assert.ElementsMatch(t, tc.expectedKeys, slices.Collect(vpa.AggregationKeys()))
 		})
 	}
 }

@@ -292,4 +292,9 @@ func ValidateRecommenderConfig(config *RecommenderConfig) {
 		}
 		config.PrometheusBearerToken = strings.TrimSpace(string(fileContent))
 	}
+
+	if config.UpdateWorkerCount <= 0 {
+		klog.ErrorS(nil, "--update-worker-count must be positive.")
+		klog.FlushAndExit(klog.ExitFlushTimeout, 1)
+	}
 }
