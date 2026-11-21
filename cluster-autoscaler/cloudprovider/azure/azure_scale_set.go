@@ -18,6 +18,7 @@ package azure
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math/rand"
 	"net/http"
@@ -278,7 +279,7 @@ func (scaleSet *ScaleSet) getScaleSetSize() (int64, error) {
 	size, getVMSSError := scaleSet.getCurSize()
 	if getVMSSError != nil {
 		klog.V(3).Infof("getScaleSetSize: error exists (actual err:%v)", getVMSSError.error)
-		return size, getVMSSError.error
+		return size, getVMSSError
 	}
 	if size == -1 {
 		err := fmt.Errorf("failed to get scale set size for %s: cached size is -1 without provider error", scaleSet.Name)
@@ -316,6 +317,12 @@ func (scaleSet *ScaleSet) setScaleSetSize(size int64, delta int) error {
 // number is different from the number of nodes registered in Kubernetes.
 func (scaleSet *ScaleSet) TargetSize(ctx context.Context) (int, error) {
 	size, err := scaleSet.getScaleSetSize()
+	// If the VMSS is not found, it has zero target capacity; other lookup errors still propagate.
+	// We do this to avoid blocking planning when a VMSS is missing.
+	var vmssErr *GetVMSSFailedError
+	if errors.As(err, &vmssErr) && vmssErr.notFound {
+		return 0, nil
+	}
 	return int(size), err
 }
 
@@ -1246,4 +1253,8 @@ func newGetVMSSFailedError(error error, notFound bool) *GetVMSSFailedError {
 
 func (v *GetVMSSFailedError) Error() string {
 	return v.error.Error()
+}
+
+func (v *GetVMSSFailedError) Unwrap() error {
+	return v.error
 }
