@@ -832,7 +832,7 @@ func (c *machineController) findScalableResourceProviderIDs(scalableResource *un
 	return providerIDs, nil
 }
 
-func (c *machineController) nodeGroups() ([]cloudprovider.NodeGroup, error) {
+func (c *machineController) nodeGroups(nodeDeletionBatcherInterval time.Duration) ([]cloudprovider.NodeGroup, error) {
 	scalableResources, err := c.listScalableResources()
 	if err != nil {
 		return nil, err
@@ -841,7 +841,7 @@ func (c *machineController) nodeGroups() ([]cloudprovider.NodeGroup, error) {
 	nodegroups := make([]cloudprovider.NodeGroup, 0, len(scalableResources))
 
 	for _, r := range scalableResources {
-		ng, err := newNodeGroupFromScalableResource(c, r)
+		ng, err := newNodeGroupFromScalableResource(c, r, nodeDeletionBatcherInterval)
 		if err != nil {
 			return nil, err
 		}
@@ -861,7 +861,7 @@ func (c *machineController) nodeGroups() ([]cloudprovider.NodeGroup, error) {
 	return nodegroups, nil
 }
 
-func (c *machineController) nodeGroupForNode(node *corev1.Node) (*nodegroup, error) {
+func (c *machineController) nodeGroupForNode(node *corev1.Node, nodeDeletionBatcherInterval time.Duration) (*nodegroup, error) {
 	scalableResource, err := c.findScalableResourceByProviderID(normalizedProviderString(node.Spec.ProviderID))
 	if err != nil {
 		return nil, err
@@ -877,7 +877,7 @@ func (c *machineController) nodeGroupForNode(node *corev1.Node) (*nodegroup, err
 		return nil, nil
 	}
 
-	nodegroup, err := newNodeGroupFromScalableResource(c, scalableResource)
+	nodegroup, err := newNodeGroupFromScalableResource(c, scalableResource, nodeDeletionBatcherInterval)
 	if err != nil {
 		return nil, fmt.Errorf("failed to build nodegroup for node %q: %v", node.Name, err)
 	}
