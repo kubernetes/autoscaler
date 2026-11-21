@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"maps"
 	"sync"
 	"time"
 
@@ -158,6 +159,12 @@ func (cluster *clusterState) AddOrUpdatePod(podID PodID, newLabels labels.Set, p
 	if !podExists {
 		pod = newPod(podID)
 		cluster.pods[podID] = pod
+	}
+
+	// if new labels and old labels are the same we can exit early since updating does not make a difference.
+	if podExists && maps.Equal(newLabels, cluster.labelSetMap[pod.labelSetKey]) {
+		pod.Phase = phase
+		return
 	}
 
 	newlabelSetKey := cluster.getLabelSetKey(newLabels)
