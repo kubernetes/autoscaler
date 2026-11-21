@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v7"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v8"
@@ -27,6 +28,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes/fake"
 	"k8s.io/utils/ptr"
 
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/virtualmachineclient/mock_virtualmachineclient"
@@ -35,15 +37,57 @@ import (
 	providerazureconsts "sigs.k8s.io/cloud-provider-azure/pkg/consts"
 	providerazureconfig "sigs.k8s.io/cloud-provider-azure/pkg/provider/config"
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
+	"sigs.k8s.io/cluster-autoscaler/pkg/clusterstate"
+	"sigs.k8s.io/cluster-autoscaler/pkg/config"
+	ca_context "sigs.k8s.io/cluster-autoscaler/pkg/context"
+	"sigs.k8s.io/cluster-autoscaler/pkg/core/scaleup/orchestrator"
+	coretest "sigs.k8s.io/cluster-autoscaler/pkg/core/test"
+	"sigs.k8s.io/cluster-autoscaler/pkg/estimator"
+	processorstest "sigs.k8s.io/cluster-autoscaler/pkg/processors/test"
+	"sigs.k8s.io/cluster-autoscaler/pkg/resourcequotas"
+	kubeutil "sigs.k8s.io/cluster-autoscaler/pkg/utils/kubernetes"
+	"sigs.k8s.io/cluster-autoscaler/pkg/utils/taints"
 
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
 
+type testAzureClientMocks struct {
+	vmssClient   *mock_virtualmachinescalesetclient.MockInterface
+	vmssVMClient *mock_virtualmachinescalesetvmclient.MockInterface
+	vmClient     *mock_virtualmachineclient.MockInterface
+	deleteClient *MockVMSSDeleteClient
+}
+
+// testAzureProviderFixture is the Azure side of the test graph: provider and
+// manager backed by overridable Azure SDK client mocks, without CAS core.
+// Use this to test Azure-specific discovery, caching, and resizing without
+// running core scaling decisions.
+type testAzureProviderFixture struct {
+	manager  *AzureManager
+	provider *AzureCloudProvider
+	mocks    *testAzureClientMocks
+}
+
 func newTestAzureManager(t *testing.T) *AzureManager {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+	t.Helper()
+	return newTestProviderWithMocks(t).manager
+}
+
+func newTestProvider(t *testing.T) *AzureCloudProvider {
+	t.Helper()
+	return newTestProviderWithMocks(t).provider
+}
+
+// newTestProviderWithMocks builds the Azure provider and manager with default,
+// overridable Azure SDK mocks. Use it for provider-only tests that need to set
+// API expectations or inspect the provider's cache.
+func newTestProviderWithMocks(t *testing.T) *testAzureProviderFixture {
+	t.Helper()
+	// Don't need to return this or register cleanup; gomock.NewController registers cleanup with t automatically.
+	ctrl := gomock.NewController(t, gomock.WithOverridableExpectations())
 
 	expectedScaleSets := newTestVMSSList(3, "test-asg", "eastus", armcompute.OrchestrationModeUniform)
 	expectedVMSSVMs := newTestVMSSVMList(3)
@@ -54,6 +98,9 @@ func newTestAzureManager(t *testing.T) *AzureManager {
 	mockVMClient := mock_virtualmachineclient.NewMockInterface(ctrl)
 	expectedVMs := newTestVMList(3)
 	mockVMClient.EXPECT().List(gomock.Any(), "rg").Return(expectedVMs, nil).AnyTimes()
+	mockDeleteClient := NewMockVMSSDeleteClient(ctrl)
+	mockDeleteClient.EXPECT().BeginDeleteInstances(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+	mockDeleteClient.EXPECT().BeginCreateOrUpdate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
 
 	manager := &AzureManager{
 		env:                  azure.PublicCloud,
@@ -72,13 +119,7 @@ func newTestAzureManager(t *testing.T) *AzureManager {
 			virtualMachineScaleSetsClient:   mockVMSSClient,
 			virtualMachineScaleSetVMsClient: mockVMSSVMClient,
 			virtualMachinesClient:           mockVMClient,
-			// Create a mock for the delete client interface with default expectations
-			vmssClientForDelete: func() VMSSDeleteClient {
-				mock := NewMockVMSSDeleteClient(ctrl)
-				mock.EXPECT().BeginDeleteInstances(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
-				mock.EXPECT().BeginCreateOrUpdate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
-				return mock
-			}(),
+			vmssClientForDelete:             mockDeleteClient,
 			deploymentClient: &DeploymentClientMock{
 				FakeStore: map[string]armresources.DeploymentExtended{
 					"deployment": {
@@ -106,18 +147,91 @@ func newTestAzureManager(t *testing.T) *AzureManager {
 	assert.NoError(t, error)
 
 	manager.azureCache = cache
-	return manager
-}
-
-func newTestProvider(t *testing.T) *AzureCloudProvider {
-	manager := newTestAzureManager(t)
 	resourceLimiter := cloudprovider.NewResourceLimiter(
 		map[string]int64{cloudprovider.ResourceNameCores: 1, cloudprovider.ResourceNameMemory: 10000000},
 		map[string]int64{cloudprovider.ResourceNameCores: 10, cloudprovider.ResourceNameMemory: 100000000})
 
-	return &AzureCloudProvider{
-		azureManager:    manager,
-		resourceLimiter: resourceLimiter,
+	return &testAzureProviderFixture{
+		manager: manager,
+		provider: &AzureCloudProvider{
+			azureManager:    manager,
+			resourceLimiter: resourceLimiter,
+		},
+		mocks: &testAzureClientMocks{
+			vmssClient:   mockVMSSClient,
+			vmssVMClient: mockVMSSVMClient,
+			vmClient:     mockVMClient,
+			deleteClient: mockDeleteClient,
+		},
+	}
+}
+
+// testAutoscalerCoreFixture is the provider-independent planning side of the
+// test graph: real autoscaling context, cluster state, and scale-up orchestration
+// backed by fake Kubernetes clients.
+type testAutoscalerCoreFixture struct {
+	autoscalingCtx *ca_context.AutoscalingContext
+	registry       *clusterstate.ClusterStateRegistry
+	scaleUp        *orchestrator.ScaleUpOrchestrator
+}
+
+func newTestAutoscalerCore(t *testing.T, provider cloudprovider.CloudProvider) *testAutoscalerCoreFixture {
+	t.Helper()
+
+	options := config.AutoscalingOptions{
+		MaxCoresTotal:                  1000,
+		MaxMemoryTotal:                 1 << 40,
+		MaxNodeGroupBinpackingDuration: time.Second,
+		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
+			MaxNodeProvisionTime: 15 * time.Minute,
+		},
+	}
+	processors, templates := processorstest.NewTestProcessors(options)
+	listers := kubeutil.NewListerRegistry(nil, nil, kubeutil.NewTestPodLister(nil), nil, nil, nil, nil, nil, nil)
+	autoscalingCtx, err := coretest.NewScaleTestAutoscalingContext(options, fake.NewClientset(),
+		listers, provider, nil, nil, templates)
+	require.NoError(t, err)
+	require.NoError(t, autoscalingCtx.ClusterSnapshot.SetClusterState(t.Context(), nil, nil, nil, nil))
+
+	registry := clusterstate.NewNotifiedClusterStateRegistry(provider, autoscalingCtx.LogRecorder,
+		coretest.NewBackoff(), processors.NodeGroupConfigProcessor, templates,
+		clusterstate.WithScaleStateNotifier(processors.ScaleStateNotifier))
+	trackerFactory := resourcequotas.NewTrackerFactory(resourcequotas.TrackerOptions{
+		QuotaProvider:            resourcequotas.NewCloudQuotasProvider(provider),
+		CustomResourcesProcessor: processors.CustomResourcesProcessor,
+	})
+	estimatorBuilder, err := estimator.NewEstimatorBuilder(estimator.BinpackingEstimatorName,
+		estimator.NewThresholdBasedEstimationLimiter(nil), estimator.NewDecreasingPodOrderer(), nil, false)
+	require.NoError(t, err)
+	scaleUp := orchestrator.New()
+	scaleUp.Initialize(&autoscalingCtx, processors, registry, estimatorBuilder, taints.TaintConfig{}, trackerFactory)
+
+	return &testAutoscalerCoreFixture{
+		autoscalingCtx: &autoscalingCtx,
+		registry:       registry,
+		scaleUp:        scaleUp,
+	}
+}
+
+// testAzureAutoscalerFixture connects the Azure provider fixture to the core
+// fixture for in-process scaling tests. Use this to test things end to end without a live Azure or Kubernetes API.
+type testAzureAutoscalerFixture struct {
+	azure *testAzureProviderFixture
+	core  *testAutoscalerCoreFixture
+}
+
+// newTestAzureAutoscaler connects the Azure provider to real CAS planning and
+// scale-up components. Use it for end-to-end, in-process tests of scale-up,
+// resize failures, and backoff without live Azure or Kubernetes APIs.
+func newTestAzureAutoscaler(t *testing.T) *testAzureAutoscalerFixture {
+	t.Helper()
+	fixture := newTestProviderWithMocks(t)
+	core := newTestAutoscalerCore(t, fixture.provider)
+	// propagate core limits to the Azure provider.
+	fixture.provider.resourceLimiter = ca_context.NewResourceLimiterFromAutoscalingOptions(core.autoscalingCtx.AutoscalingOptions)
+	return &testAzureAutoscalerFixture{
+		azure: fixture,
+		core:  core,
 	}
 }
 
