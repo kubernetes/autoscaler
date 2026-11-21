@@ -19,6 +19,15 @@ amount of CPU and memory requested by pods running in the Kubernetes Cluster. Cu
 [Addon Resizer](https://github.com/kubernetes/autoscaler/tree/master/addon-resizer) - a simplified version of vertical pod autoscaler that modifies
 resource requests of a deployment based on the number of nodes in the Kubernetes Cluster. Current state - beta.
 
+## Removed components
+
+[Balancer](https://github.com/kubernetes/autoscaler/issues/10499) - an alpha component for balancing
+pod replicas across groups of deployments. It was deprecated on 25 Oct 2026 and has been removed from this repository
+because it has no active maintainers and has had no functional changes in more than a year (see the
+[repository removal policy](https://github.com/kubernetes/community/blob/master/github-management/kubernetes-repositories.md#grounds-for-removal)).
+See [issue #10499](https://github.com/kubernetes/autoscaler/issues/10499) for details. The last
+version of the code remains available in the git history of this repository.
+
 ## Contact Info
 
 Interested in autoscaling? Want to talk? Have questions, concerns or great ideas?
