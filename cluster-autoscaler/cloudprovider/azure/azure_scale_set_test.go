@@ -28,6 +28,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	autorestazure "github.com/Azure/go-autorest/autorest/azure"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -322,7 +323,7 @@ func TestScaleSetIncreaseSize(t *testing.T) {
 		ss := newTestScaleSet(provider.azureManager, "test-asg-doesnt-exist")
 		err = ss.IncreaseSize(100)
 		expectedErr := fmt.Errorf("could not find vmss: test-asg-doesnt-exist")
-		assert.Equal(t, expectedErr, err)
+		assert.EqualError(t, err, expectedErr.Error())
 
 		registered := provider.azureManager.RegisterNodeGroup(
 			newTestScaleSet(provider.azureManager, testASG))
@@ -517,7 +518,7 @@ func TestScaleSetAtomicIncreaseSize(t *testing.T) {
 	ss := newTestScaleSet(provider.azureManager, "test-asg-doesnt-exist")
 	err = ss.AtomicIncreaseSize(1)
 	expectedErr := fmt.Errorf("could not find vmss: test-asg-doesnt-exist")
-	assert.Equal(t, expectedErr, err)
+	assert.EqualError(t, err, expectedErr.Error())
 
 	registered := provider.azureManager.RegisterNodeGroup(
 		newTestScaleSet(provider.azureManager, testASG))
@@ -1961,4 +1962,107 @@ func TestWaitForDeleteInstancesRetryFailure(t *testing.T) {
 	// non-strict failure path.
 	assert.False(t, scaleSet.lastInstanceRefresh.IsZero(),
 		"expected instance cache to be invalidated after retry failure")
+}
+
+func TestScaleSetTargetSizeMissingVMSS(t *testing.T) {
+	provider := newTestProvider(t)
+	require.NoError(t, provider.azureManager.forceRefresh())
+
+	// The provider fixture caches only "test-asg"; the missing-vmss pool is not in the cache
+	scaleSet := newTestScaleSet(provider.azureManager, "missing-vmss")
+	scaleSet.curSize = 3
+	scaleSet.lastSizeRefresh = time.Now()
+	scaleSet.sizeRefreshPeriod = time.Hour
+	require.Positive(t, scaleSet.MinSize())
+
+	// TargetSize should succeed - we treat a missing VMSS as having zero target capacity.
+	size, err := scaleSet.TargetSize()
+	require.NoError(t, err)
+	assert.Zero(t, size)
+
+	// All attempts to scale that pool should fail because the VMSS is missing.
+	assert.ErrorContains(t, scaleSet.IncreaseSize(1), "could not find vmss: missing-vmss")
+	assert.ErrorContains(t, scaleSet.AtomicIncreaseSize(1), "could not find vmss: missing-vmss")
+	assert.ErrorContains(t, scaleSet.DecreaseTargetSize(-1), "could not find vmss: missing-vmss")
+	_, err = scaleSet.TemplateNodeInfo()
+	assert.ErrorContains(t, err, "could not find vmss: missing-vmss")
+
+	// VMSS reappears; TargetSize should return its capacity.
+	provider.azureManager.azureCache.mutex.Lock()
+	scaleSets := make(map[string]compute.VirtualMachineScaleSet, len(provider.azureManager.azureCache.scaleSets)+1)
+	for k, v := range provider.azureManager.azureCache.scaleSets {
+		scaleSets[k] = v
+	}
+	scaleSets[scaleSet.Name] = newTestVMSSList(2, scaleSet.Name, testLocation, compute.Uniform)[0]
+	provider.azureManager.azureCache.scaleSets = scaleSets
+	provider.azureManager.azureCache.mutex.Unlock()
+	scaleSet.lastSizeRefresh = time.Time{}
+	size, err = scaleSet.TargetSize()
+	require.NoError(t, err)
+	assert.Equal(t, 2, size)
+}
+
+func TestScaleSetTargetSizeSpotReadErrors(t *testing.T) {
+	tests := []struct {
+		name     string
+		err      *retry.Error
+		notFound bool
+	}{
+		{
+			name:     "not found",
+			err:      &retry.Error{HTTPStatusCode: http.StatusNotFound, RawError: errors.New("ResourceNotFound")},
+			notFound: true,
+		},
+		{
+			name: "forbidden",
+			err:  &retry.Error{HTTPStatusCode: http.StatusForbidden, RawError: errors.New("AuthorizationFailed")},
+		},
+		{
+			name: "throttled",
+			err:  &retry.Error{HTTPStatusCode: http.StatusTooManyRequests, RawError: errors.New("TooManyRequests")},
+		},
+		{
+			name: "service unavailable",
+			err:  &retry.Error{HTTPStatusCode: http.StatusServiceUnavailable, RawError: errors.New("ServiceUnavailable")},
+		},
+		{
+			name: "transport error",
+			err:  &retry.Error{RawError: errors.New("connection reset")},
+		},
+		{
+			name: "timeout",
+			err:  &retry.Error{RawError: context.DeadlineExceeded},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			provider := newTestProvider(t)
+			require.NoError(t, provider.azureManager.forceRefresh())
+			vmss := newTestVMSSList(3, "spot-vmss", testLocation, compute.Uniform)[0]
+			vmss.VirtualMachineProfile = &compute.VirtualMachineScaleSetVMProfile{Priority: compute.Spot}
+			provider.azureManager.azureCache.mutex.Lock()
+			scaleSets := make(map[string]compute.VirtualMachineScaleSet, len(provider.azureManager.azureCache.scaleSets)+1)
+			for k, v := range provider.azureManager.azureCache.scaleSets {
+				scaleSets[k] = v
+			}
+			scaleSets[*vmss.Name] = vmss
+			provider.azureManager.azureCache.scaleSets = scaleSets
+			provider.azureManager.azureCache.mutex.Unlock()
+
+			mockVMSSClient := mockvmssclient.NewMockInterface(gomock.NewController(t))
+			mockVMSSClient.EXPECT().Get(gomock.Any(), provider.azureManager.config.ResourceGroup, *vmss.Name).
+				Return(compute.VirtualMachineScaleSet{}, tt.err)
+			provider.azureManager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
+			scaleSet := newTestScaleSet(provider.azureManager, *vmss.Name)
+
+			size, err := scaleSet.TargetSize()
+			if tt.notFound {
+				require.NoError(t, err)
+				assert.Zero(t, size)
+			} else {
+				assert.ErrorContains(t, err, tt.err.RawError.Error())
+				assert.Equal(t, -1, size)
+			}
+		})
+	}
 }
