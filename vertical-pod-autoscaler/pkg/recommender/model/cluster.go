@@ -426,7 +426,7 @@ func (cluster *clusterState) findOrCreateAggregateContainerState(containerID Con
 func (cluster *clusterState) garbageCollectAggregateCollectionStates(ctx context.Context, now time.Time, controllerFetcher controllerfetcher.ControllerFetcher) {
 	klog.V(1).InfoS("Garbage collection of AggregateCollectionStates triggered")
 	keysToDelete := make([]AggregateStateKey, 0)
-	contributiveKeys := cluster.getContributiveAggregateStateKeys(ctx, controllerFetcher)
+	contributiveKeys, referencedLabelSetMaps := cluster.getContributiveAggregateStateKeysWithReferencedLabelSetMaps(ctx, controllerFetcher)
 	for key, aggregateContainerState := range cluster.aggregateStateMap {
 		isKeyContributive := contributiveKeys[key]
 		if !isKeyContributive && aggregateContainerState.isEmpty() {
@@ -437,12 +437,31 @@ func (cluster *clusterState) garbageCollectAggregateCollectionStates(ctx context
 		if aggregateContainerState.isExpired(now) {
 			keysToDelete = append(keysToDelete, key)
 			klog.V(1).InfoS("Removing expired AggregateCollectionState", "key", key)
+			continue
+		}
+
+		if stateKey, ok := key.(aggregateStateKey); ok {
+			referencedLabelSetMaps[stateKey.labelSetKey] = struct{}{}
 		}
 	}
+
 	for _, key := range keysToDelete {
 		delete(cluster.aggregateStateMap, key)
 		for _, vpa := range cluster.vpas {
 			vpa.DeleteAggregation(key)
+		}
+	}
+
+	cluster.garbageCollectLabelSetMaps(referencedLabelSetMaps)
+}
+
+// garbageCollectLabelSetMaps removes labelSetMap entries that are no longer
+// referenced by any tracked pod or surviving aggregates after GC.
+func (cluster *clusterState) garbageCollectLabelSetMaps(referencedLabelSetMaps map[labelSetKey]struct{}) {
+	for key := range cluster.labelSetMap {
+		if _, referenced := referencedLabelSetMaps[key]; !referenced {
+			klog.V(1).InfoS("Removing label set map.", "key", key)
+			delete(cluster.labelSetMap, key)
 		}
 	}
 }
@@ -465,12 +484,14 @@ func (cluster *clusterState) RateLimitedGarbageCollectAggregateCollectionStates(
 	cluster.lastAggregateContainerStateGC = now
 }
 
-func (cluster *clusterState) getContributiveAggregateStateKeys(ctx context.Context, controllerFetcher controllerfetcher.ControllerFetcher) map[AggregateStateKey]bool {
+func (cluster *clusterState) getContributiveAggregateStateKeysWithReferencedLabelSetMaps(ctx context.Context, controllerFetcher controllerfetcher.ControllerFetcher) (map[AggregateStateKey]bool, map[labelSetKey]struct{}) {
 	contributiveKeys := map[AggregateStateKey]bool{}
+	referencedLabelSetMaps := make(map[labelSetKey]struct{})
 	for _, pod := range cluster.pods {
 		// Pod is considered contributive in any of following situations:
 		// 1) It is in active state - i.e. not PodSucceeded nor PodFailed.
 		// 2) Its associated controller (e.g. Deployment) still exists.
+		referencedLabelSetMaps[pod.labelSetKey] = struct{}{}
 		podControllerExists := cluster.GetControllerForPodUnderVPA(ctx, pod, controllerFetcher) != nil
 		podActive := pod.Phase != corev1.PodSucceeded && pod.Phase != corev1.PodFailed
 		if podActive || podControllerExists {
@@ -479,7 +500,7 @@ func (cluster *clusterState) getContributiveAggregateStateKeys(ctx context.Conte
 			}
 		}
 	}
-	return contributiveKeys
+	return contributiveKeys, referencedLabelSetMaps
 }
 
 // RecordRecommendation marks the state of recommendation in the cluster. We
