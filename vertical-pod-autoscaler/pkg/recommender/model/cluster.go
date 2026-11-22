@@ -471,9 +471,8 @@ func (cluster *clusterState) getContributiveAggregateStateKeys(ctx context.Conte
 		// Pod is considered contributive in any of following situations:
 		// 1) It is in active state - i.e. not PodSucceeded nor PodFailed.
 		// 2) Its associated controller (e.g. Deployment) still exists.
-		podControllerExists := cluster.GetControllerForPodUnderVPA(ctx, pod, controllerFetcher) != nil
 		podActive := pod.Phase != corev1.PodSucceeded && pod.Phase != corev1.PodFailed
-		if podActive || podControllerExists {
+		if podActive || cluster.GetControllerForPodUnderVPA(ctx, pod, controllerFetcher) != nil {
 			for container := range pod.Containers {
 				contributiveKeys[cluster.MakeAggregateStateKey(pod, container)] = true
 			}
