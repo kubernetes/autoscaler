@@ -303,13 +303,17 @@ func listScalingInstancesPaged(groupID string, fn listScalingInstancesFunc) ([]h
 			newInPage++
 		}
 
-		// terminate when current page is smaller than requested pageSize, which means no more instances to list.
-		// do NOT rely on TotalNumber which can drift due to instance scale up/down during the listing process.
-		if int32(len(currentPage)) < pageSize {
-			break
-		}
-		// advance startNumber by the original page size, not the number of new instances added, to avoid skipping pages if duplicates were removed.
-		// because the AS offset is based on total list position, not the number of unique instances returned.
+		// Only an empty page ends pagination. A page shorter than the requested
+		// Limit is not treated as the last page: the AS service may cap Limit
+		// below the value we ask for, and breaking there would silently truncate
+		// the instance list, hiding nodes from the cluster autoscaler.
+		// TotalNumber is not used either, because it drifts while instances are
+		// added or removed during the scan; the maxPages cap bounds the worst
+		// case instead.
+		//
+		// Advance startNumber by the returned page length (not by the number of
+		// uniquely kept instances): the AS offset is a position in the full
+		// list, not in the de-duplicated result.
 		startNumber += int32(len(currentPage))
 	}
 
@@ -334,6 +338,9 @@ func ptrToInt32(p *int32) int32 {
 
 func (csm *cloudServiceManager) DeleteScalingInstances(groupID string, instanceIds []string) error {
 	asClient := csm.getASClientFunc()
+	if asClient == nil {
+		return fmt.Errorf("failed to delete scaling instances due to can not get as client")
+	}
 
 	instanceDeleteBatchRemoveInstancesOption := huaweicloudsdkasmodel.GetBatchRemoveInstancesOptionInstanceDeleteEnum().YES
 

@@ -26,6 +26,7 @@ import (
 	"testing"
 
 	apiv1 "k8s.io/api/core/v1"
+	huaweicloudsdkas "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/services/as/v1"
 	huaweicloudsdkasmodel "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/huaweicloud/huaweicloud-sdk-go-v3/services/as/v1/model"
 
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
@@ -323,7 +324,9 @@ func TestListScalingInstancesPaged_SinglePage(t *testing.T) {
 	if len(got) != 50 {
 		t.Errorf("expected 50 instances, got %d", len(got))
 	}
-	assertRequests(t, rec, []int32{0})
+	// A short page does not end pagination: the offset advances by the 50 rows
+	// that were returned, and the following empty page confirms the end.
+	assertRequests(t, rec, []int32{0, 50})
 }
 
 // TestListScalingInstancesPaged_MultiplePages covers 500 instances: five full
@@ -461,16 +464,21 @@ func TestListScalingInstancesPaged_DedupAcrossPages(t *testing.T) {
 	for i := 101; i <= 199; i++ {
 		page2 = append(page2, makeInstance(fmt.Sprintf("inst-%03d", i)))
 	}
-	pages := [][]huaweicloudsdkasmodel.ScalingGroupInstance{page0, page1, page2}
-	call := 0
+	// Offsets 0, 100 and 200 serve the data; 299 is the 99 row page and the
+	// empty page after it ends pagination.
+	pages := map[int32][]huaweicloudsdkasmodel.ScalingGroupInstance{
+		0:   page0,
+		100: page1,
+		200: page2,
+		299: {},
+	}
 	total := int32(200)
 	rec := &requestRecorder{}
 	fn := func(opts *huaweicloudsdkasmodel.ListScalingInstancesRequest) (*huaweicloudsdkasmodel.ListScalingInstancesResponse, error) {
-		if call >= len(pages) {
-			t.Fatalf("unexpected call %d, only %d pages exist", call, len(pages))
+		page, ok := pages[*opts.StartNumber]
+		if !ok {
+			t.Fatalf("unexpected StartNumber %d", *opts.StartNumber)
 		}
-		page := pages[call]
-		call++
 		return &huaweicloudsdkasmodel.ListScalingInstancesResponse{
 			ScalingGroupInstances: &page,
 			TotalNumber:           &total,
@@ -483,9 +491,7 @@ func TestListScalingInstancesPaged_DedupAcrossPages(t *testing.T) {
 	if len(got) != 200 {
 		t.Errorf("expected 200 unique instances (100 duplicates dropped), got %d", len(got))
 	}
-	if len(rec.calls) != 3 {
-		t.Errorf("expected 3 calls, got %d", len(rec.calls))
-	}
+	assertRequests(t, rec, []int32{0, 100, 200, 299})
 	seen := make(map[string]struct{}, len(got))
 	for _, inst := range got {
 		if inst.InstanceId == nil {
@@ -522,7 +528,8 @@ func TestListScalingInstancesPaged_DedupDuringScaleUp(t *testing.T) {
 		200: shifted[200:300],
 		300: shifted[300:400],
 		400: shifted[400:500],
-		500: shifted[500:], // 70 rows, the short page that ends pagination
+		500: shifted[500:], // 70 rows, the last short page
+		570: {},            // empty page: the 70 row page above ends at offset 570
 	}
 	total := int32(instances)
 	rec := &requestRecorder{}
@@ -540,7 +547,7 @@ func TestListScalingInstancesPaged_DedupDuringScaleUp(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	assertRequests(t, rec, []int32{0, 100, 200, 300, 400, 500})
+	assertRequests(t, rec, []int32{0, 100, 200, 300, 400, 500, 570})
 
 	// 570 rows were handed back, 50 of them duplicates: the result must be the
 	// 520 original instances, with no new-instance row ever paged in.
@@ -574,6 +581,62 @@ func sortedKeys(m map[string]struct{}) []string {
 	}
 	sort.Strings(out)
 	return out
+}
+
+// TestListScalingInstancesPaged_ServerCapsPageSize covers a service that honours
+// Limit only up to a smaller internal page size (the SDK documents a default of
+// 20 and no maximum). A short page must not be mistaken for the end of the
+// list, otherwise the instance list is silently truncated and the autoscaler
+// stops seeing part of the group.
+func TestListScalingInstancesPaged_ServerCapsPageSize(t *testing.T) {
+	const serverLimit int32 = 50
+	total := int32(520)
+	all := makeInstances("inst", 0, int(total))
+	rec := &requestRecorder{}
+	fn := func(opts *huaweicloudsdkasmodel.ListScalingInstancesRequest) (*huaweicloudsdkasmodel.ListScalingInstancesResponse, error) {
+		start := *opts.StartNumber
+		if start >= total {
+			empty := []huaweicloudsdkasmodel.ScalingGroupInstance{}
+			return &huaweicloudsdkasmodel.ListScalingInstancesResponse{
+				ScalingGroupInstances: &empty,
+				TotalNumber:           &total,
+			}, nil
+		}
+		end := start + serverLimit
+		if end > total {
+			end = total
+		}
+		page := all[start:end]
+		return &huaweicloudsdkasmodel.ListScalingInstancesResponse{
+			ScalingGroupInstances: &page,
+			TotalNumber:           &total,
+		}, nil
+	}
+	got, err := listScalingInstancesPaged("test-asg", rec.wrap(fn))
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(got) != int(total) {
+		t.Errorf("expected %d instances despite the server side page cap, got %d", total, len(got))
+	}
+	// 10 full pages of 50, one 20 row page and the terminating empty page.
+	if want := int(total/serverLimit) + 2; len(rec.calls) != want {
+		t.Errorf("expected %d calls, got %d", want, len(rec.calls))
+	}
+}
+
+// TestDeleteScalingInstances_NilClient covers an unavailable AS client. The
+// method must report an error instead of dereferencing a nil client, which is
+// the path DeleteNodes takes now that its instance pre-check is gone.
+func TestDeleteScalingInstances_NilClient(t *testing.T) {
+	csm := &cloudServiceManager{getASClientFunc: func() *huaweicloudsdkas.AsClient { return nil }}
+	err := csm.DeleteScalingInstances("asg-a", []string{"inst-0"})
+	if err == nil {
+		t.Fatal("expected an error when the AS client is unavailable, got nil")
+	}
+	if !strings.Contains(err.Error(), "as client") {
+		t.Errorf("error = %v, want it to mention the missing AS client", err)
+	}
 }
 
 // TestListScalingInstancesPaged_ASError covers an AS error: it must surface
