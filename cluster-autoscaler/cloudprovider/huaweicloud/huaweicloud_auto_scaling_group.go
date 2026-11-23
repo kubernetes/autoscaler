@@ -106,7 +106,7 @@ func (asg *AutoScalingGroup) AtomicIncreaseSize(ctx context.Context, delta int) 
 // Context handling: the vendored huaweicloud-sdk-go-v3 AS client does not accept a context.Context
 // on its request methods, so ctx cannot be plumbed through to the cloud-side BatchRemoveInstances call.
 // context.TODO() is only used where client-go's API shape (e.g. immediate non-blocking paths) does not expose ctx. If the AS SDK gains ctx support in the
-//future, this method should be updated to pass ctx through and reconcile on cancellation.
+// future, this method should be updated to pass ctx through and reconcile on cancellation.
 func (asg *AutoScalingGroup) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
 	instanceIds := make([]string, 0, len(nodes))
 	nodeNames := make([]string, 0, len(nodes))
