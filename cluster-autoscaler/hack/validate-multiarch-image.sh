@@ -42,56 +42,40 @@ set -o nounset
 set -o pipefail
 
 readonly DEFAULT_BINARY="/cluster-autoscaler"
-# Fallback arch list when the manifest cannot be enumerated. Mirrors ALL_ARCH in
-# cluster-autoscaler/Makefile.
-readonly DEFAULT_ARCHES="amd64 arm64 s390x"
-# Architectures we always expect a release image to publish (used only to warn
-# about a missing arch). Mirrors ALL_ARCH in cluster-autoscaler/Makefile.
-readonly EXPECTED_ARCHES="amd64 arm64 s390x"
-
-BINARY="${DEFAULT_BINARY}"
+BINARY="$DEFAULT_BINARY"
 RUNTIME="${CONTAINER_RUNTIME:-}"
-ARCHES_OVERRIDE=""
+ARCH_SPEC=""
+MODE=release
 KEEP=0
 REF=""
-WORKDIR=""
 
 usage() {
   cat <<EOF
-Validate that every architecture of a multi-arch cluster-autoscaler image
-contains a binary actually compiled for that architecture.
+Usage: $(basename "$0") [options] <image-ref>
 
-Usage:
-  $(basename "$0") [options] <image-ref>
+Check the ELF architecture of /cluster-autoscaler without running the image.
+The default (release) check requires an inspectable index, checks every published
+Linux image by digest, and fails if any architecture in this branch's ALL_ARCH
+is missing. Each variant is checked for its CPU architecture, not its ISA level.
+For promotion, pass the index digest, not a mutable tag.
 
-Arguments:
-  <image-ref>   Fully-qualified image reference (a tag or an index digest), e.g.
-                  registry.k8s.io/autoscaling/cluster-autoscaler:v1.32.7
-                  gcr.io/k8s-staging-autoscaling/cluster-autoscaler:v1.32.7
+  --require-arches LIST  Release check using this required matrix instead of
+                         asking the adjacent Makefile for ALL_ARCH (used by CI).
+  -a, --arches LIST      Manual spot check of just these architectures. If the
+                         index is unavailable, try explicit platform pulls instead.
+                         Lists may be space- or comma-separated.
+  -b, --binary PATH      Image path to inspect (default: ${DEFAULT_BINARY}).
+  -r, --runtime RUNTIME  docker or podman (default: \$CONTAINER_RUNTIME, then
+                         docker, then podman).
+  -k, --keep             Keep extracted binaries in the reported temp directory.
+  -h, --help             Show this help.
 
-Options:
-  -a, --arches "amd64 arm64 s390x"
-                Space/comma separated arch list to validate. Default: auto-detect
-                from the image's manifest list, falling back to "${DEFAULT_ARCHES}".
-  -b, --binary PATH
-                Path of the binary inside the image. Default: "${DEFAULT_BINARY}".
-  -r, --runtime docker|podman
-                Container runtime to use. Default: auto-detect (\$CONTAINER_RUNTIME,
-                then docker, then podman).
-  -k, --keep    Keep the extracted binaries (in a temp dir) instead of deleting them.
-  -h, --help    Show this help.
-
-Exit status:
-  0  all checked architectures match
-  1  at least one architecture mismatched / could not be validated
-  2  usage or environment error
+Index inspection uses Python 3 (standard library); ELF inspection uses od.
+Exit: 0 = all selected images matched; 1 = failed validation; 2 = usage/setup error.
 
 Examples:
-  # Validate the staging image before it is promoted:
-  $(basename "$0") gcr.io/k8s-staging-autoscaling/cluster-autoscaler:v1.32.7
-
-  # Validate a promoted release image, only amd64 and arm64:
-  $(basename "$0") -a "amd64 arm64" registry.k8s.io/autoscaling/cluster-autoscaler:v1.32.7
+  $(basename "$0") registry.k8s.io/autoscaling/cluster-autoscaler:v1.32.7
+  $(basename "$0") --arches amd64,arm64 registry.k8s.io/autoscaling/cluster-autoscaler:v1.32.7
 EOF
 }
 
@@ -105,31 +89,50 @@ else
   C_RED=""; C_GREEN=""; C_YELLOW=""; C_BOLD=""; C_OFF=""
 fi
 
+set_ref() {
+  [[ -z $REF && -n $1 && $1 != -* ]] || die "unexpected image argument: $1"
+  REF="$1"
+}
+
 parse_args() {
-  while [ $# -gt 0 ]; do
+  local arg
+  while (( $# )); do
     case "$1" in
-      -a|--arches)  ARCHES_OVERRIDE="${2:-}"; shift 2 ;;
-      -b|--binary)  BINARY="${2:-}"; shift 2 ;;
-      -r|--runtime) RUNTIME="${2:-}"; shift 2 ;;
-      -k|--keep)    KEEP=1; shift ;;
-      -h|--help)    usage; exit 0 ;;
-      --)           shift; break ;;
-      -*)           die "unknown option: $1 (see --help)" ;;
-      *)            if [ -n "$REF" ]; then die "unexpected extra argument: $1"; fi; REF="$1"; shift ;;
+      -a|--arches|--require-arches|-b|--binary|-r|--runtime)
+        [[ -n ${2:-} && $2 != -* ]] || die "$1 requires a value"
+        case "$1" in
+          -a|--arches|--require-arches)
+            [[ -z $ARCH_SPEC ]] || die 'choose only one architecture list'
+            ARCH_SPEC="$2"
+            if [[ $1 != --require-arches ]]; then MODE=spot; fi ;;
+          -b|--binary) BINARY="$2" ;;
+          -r|--runtime) RUNTIME="$2" ;;
+        esac
+        shift 2 ;;
+      -k|--keep) KEEP=1; shift ;;
+      -h|--help) usage; exit 0 ;;
+      --) shift; break ;;
+      -*) die "unknown option: $1 (see --help)" ;;
+      *) set_ref "$1"; shift ;;
     esac
   done
-  [ $# -gt 0 ] && [ -z "$REF" ] && REF="$1"
-  [ -n "$REF" ] || { usage >&2; die "missing <image-ref>"; }
+  for arg in "$@"; do set_ref "$arg"; done
+  [[ -n $REF ]] || { usage >&2; die 'missing <image-ref>'; }
+  [[ $BINARY == /* ]] || die '--binary must be an absolute path in the image'
+  if [[ $REF == *@* && ! ${REF##*@} =~ ^[a-z0-9]+([+._-][a-z0-9]+)*:[A-Za-z0-9=_-]+$ ]]; then
+    die "invalid index digest in $REF"
+  fi
 }
 
 detect_runtime() {
-  if [ -n "$RUNTIME" ]; then
-    command -v "$RUNTIME" >/dev/null 2>&1 || die "requested runtime '$RUNTIME' not found in PATH"
-    return
+  if [[ -z $RUNTIME ]]; then
+    if command -v docker >/dev/null; then RUNTIME=docker; else RUNTIME=podman; fi
   fi
-  if command -v docker >/dev/null 2>&1; then RUNTIME=docker
-  elif command -v podman >/dev/null 2>&1; then RUNTIME=podman
-  else die "no container runtime found (need docker or podman)"; fi
+  case "${RUNTIME##*/}" in
+    docker|podman) ;;
+    *) die "unsupported runtime: $RUNTIME" ;;
+  esac
+  command -v "$RUNTIME" >/dev/null || die "runtime '$RUNTIME' not found (need docker or podman)"
 }
 
 # Strip any tag and/or digest from a reference, preserving registry:port.
@@ -144,232 +147,200 @@ repo_no_tag() {
   fi
 }
 
-# Echo the raw manifest-list / index JSON for a ref (best effort; may be empty).
-inspect_index_json() {
-  local ref="$1"
-  case "$RUNTIME" in
-    docker)
-      docker buildx imagetools inspect --raw "$ref" 2>/dev/null && return 0
-      docker manifest inspect "$ref" 2>/dev/null && return 0
-      ;;
-    podman)
-      podman manifest inspect "$ref" 2>/dev/null && return 0
-      ;;
-  esac
-  return 1
-}
-
-# List linux architectures present in the manifest list JSON on stdin.
-detect_arches() {
-  jq -r '.manifests[]?
-           | select(.platform.os == "linux")
-           | select(.platform.architecture != null and .platform.architecture != "unknown")
-           | .platform.architecture' 2>/dev/null | sort -u
-}
-
-# Echo the manifest digest for a given linux arch from the index JSON on stdin.
-digest_for_arch() {
-  jq -r --arg a "$1" '.manifests[]?
-           | select(.platform.os == "linux" and .platform.architecture == $a)
-           | .digest' 2>/dev/null | head -n1
-}
-
-# Read the ELF header of a file and set the globals:
-#   ELF_OK       1 if the file is an ELF binary, else 0
-#   ELF_CLASS    1 (32-bit) or 2 (64-bit)
-#   ELF_DATA     1 (little-endian) or 2 (big-endian)
-#   ELF_MACHINE  e_machine value (decimal)
-# Uses od so it does not depend on `file` and works identically on macOS/Linux.
-elf_read() {
-  local f="$1" magic
-  ELF_OK=0; ELF_CLASS=""; ELF_DATA=""; ELF_MACHINE=""
-  magic="$(od -An -tx1 -N4 "$f" 2>/dev/null | tr -d ' \n')"
-  [ "$magic" = "7f454c46" ] || return 0
-  ELF_OK=1
-  ELF_CLASS="$(od -An -tu1 -j4  -N1 "$f" | tr -d ' ')"
-  ELF_DATA="$(od  -An -tu1 -j5  -N1 "$f" | tr -d ' ')"
-  local b18 b19
-  b18="$(od -An -tu1 -j18 -N1 "$f" | tr -d ' ')"
-  b19="$(od -An -tu1 -j19 -N1 "$f" | tr -d ' ')"
-  if [ "$ELF_DATA" = "2" ]; then
-    ELF_MACHINE=$(( b18 * 256 + b19 ))   # big-endian (e.g. s390x)
-  else
-    ELF_MACHINE=$(( b19 * 256 + b18 ))   # little-endian
+inspect_index() {
+  if [[ ${RUNTIME##*/} == docker ]]; then
+    "$RUNTIME" buildx imagetools inspect --raw "$REF" >"$1" 2>/dev/null && return 0
   fi
+  "$RUNTIME" manifest inspect "$REF" >"$1"
 }
 
-# Map an ELF e_machine value (+ endianness) to a Go GOARCH name.
-arch_from_machine() {
-  local m="$1" data="$2"
-  case "$m" in
-    3)   echo "386" ;;
-    20)  echo "ppc" ;;
-    21)  if [ "$data" = "1" ]; then echo "ppc64le"; else echo "ppc64"; fi ;;
-    22)  echo "s390x" ;;
-    40)  echo "arm" ;;
-    62)  echo "amd64" ;;
-    183) echo "arm64" ;;
-    243) echo "riscv64" ;;
-    "")  echo "unknown" ;;
-    *)   echo "machine-$m" ;;
+# Emit one platform<TAB>digest per runnable Linux descriptor. Never select a
+# single representative digest for an entire CPU family. Exit 3 for a single
+# image, which can still be checked with --arches but is not a release index.
+index_platforms() {
+  python3 - "$@" <<'PY'
+import json
+import re
+import sys
+
+path, mode, *arches = sys.argv[1:]
+required = set(arches)
+seen = set()
+indexes = {"application/vnd.oci.image.index.v1+json",
+           "application/vnd.docker.distribution.manifest.list.v2+json"}
+try:
+    with open(path) as f:
+        index = json.load(f)
+    if "manifests" not in index and "config" in index and "layers" in index:
+        sys.exit(3)
+    if index.get("schemaVersion") != 2 or not isinstance(index.get("manifests"), list):
+        raise ValueError("not a manifest list or OCI image index")
+    for entry in index["manifests"]:
+        platform = entry.get("platform", {})
+        os = platform.get("os")
+        if os and os != "linux":  # includes BuildKit's unknown/unknown attestations
+            continue
+        if entry.get("mediaType") in indexes:
+            raise ValueError("nested image indexes are not supported")
+        if not os and entry.get("artifactType"):
+            continue  # non-platform OCI artifact
+        arch = platform.get("architecture", "")
+        variant = platform.get("variant", "")
+        if not os or arch == "unknown" or not re.fullmatch(r"[a-z0-9][a-z0-9_.-]*", arch):
+            raise ValueError("missing or invalid Linux platform in descriptor")
+        if mode == "spot" and arch not in required:
+            continue
+        if variant and not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]*", variant):
+            raise ValueError(f"invalid platform variant for linux/{arch}")
+        digest = entry.get("digest", "")
+        if not re.fullmatch(r"[a-z0-9]+(?:[+._-][a-z0-9]+)*:[A-Za-z0-9=_-]+", digest):
+            raise ValueError(f"missing or invalid manifest digest for linux/{arch}")
+        seen.add(arch)
+        print("/".join(filter(None, (os, arch, variant))), digest, sep="\t")
+    if required - seen:
+        raise ValueError("index is missing required Linux architecture(s): " + ", ".join(sorted(required - seen)))
+except (OSError, ValueError, TypeError, AttributeError) as err:
+    sys.exit(f"error inspecting index: {err}")
+PY
+}
+
+plan_platforms() {
+  local index="$WORKDIR/state/index" rc
+  if command -v python3 >/dev/null; then
+    if inspect_index "$index"; then
+      index_platforms "$index" "$MODE" "$@" && return 0
+      rc=$?
+      (( rc == 3 )) || return 1  # Malformed or incomplete index: never fall back.
+    fi
+  elif [[ $MODE == release ]]; then
+    die 'python3 is required to inspect the release index'
+  fi
+  if [[ $MODE != spot ]]; then
+    log 'FAIL: release validation requires an inspectable multi-platform index'
+    return 1
+  fi
+  log "${C_YELLOW}warning:${C_OFF} no inspectable index; spot-checking requested platforms only"
+  printf 'linux/%s\n' "$@"
+}
+
+# od -v prevents repeated zero rows from being compressed to '*'. Read enough
+# bytes for a full ELF64 header (64 bytes); ELF32 headers only need 52.
+elf_arch() {
+  local dump size size_offset lo hi machine kind
+  local -a b
+  dump=$(LC_ALL=C od -An -v -tu1 -N64 "$1") || return 1
+  read -r -a b <<< "${dump//$'\n'/ }"
+  if [[ ${b[0]:-} != 127 || ${b[1]:-} != 69 || ${b[2]:-} != 76 || ${b[3]:-} != 70 || ${b[6]:-} != 1 ]]; then
+    log 'not a valid ELF header'; return 1
+  fi
+  case ${b[4]} in
+    1) size=52; size_offset=40 ;;
+    2) size=64; size_offset=52 ;;
+    *) log 'invalid ELF class'; return 1 ;;
+  esac
+  (( ${#b[@]} >= size )) || { log 'truncated ELF header'; return 1; }
+  case ${b[5]} in
+    1) lo=0; hi=1 ;;
+    2) lo=1; hi=0 ;;
+    *) log 'invalid ELF byte order'; return 1 ;;
+  esac
+  (( b[size_offset+lo] + 256*b[size_offset+hi] == size )) || { log 'invalid ELF header size'; return 1; }
+  kind=$(( b[16+lo] + 256*b[16+hi] ))
+  (( kind == 2 || kind == 3 )) || { log 'expected an ET_EXEC or ET_DYN ELF file'; return 1; }
+  machine=$(( b[18+lo] + 256*b[18+hi] ))
+  case "$machine:${b[4]}:${b[5]}" in  # e_machine : EI_CLASS : EI_DATA
+    3:1:1)   echo 386 ;;
+    20:1:2)  echo ppc ;;
+    21:2:1)  echo ppc64le ;;
+    21:2:2)  echo ppc64 ;;
+    22:2:2)  echo s390x ;;
+    40:1:1)  echo arm ;;
+    62:2:1)  echo amd64 ;;
+    183:2:1) echo arm64 ;;
+    243:2:1) echo riscv64 ;;
+    *) log "unsupported ELF architecture (machine=$machine, class=${b[4]}, data=${b[5]})"; return 1 ;;
   esac
 }
 
 cleanup() {
-  if [ -n "$WORKDIR" ] && [ -d "$WORKDIR" ]; then
-    if [ "$KEEP" = "1" ]; then
-      log "Extracted binaries kept in: $WORKDIR"
-    else
-      rm -rf "$WORKDIR"
+  local cidfile cid
+  for cidfile in "$WORKDIR"/state/*.cid; do
+    [[ -s $cidfile ]] || continue
+    cid=$(<"$cidfile")
+    if [[ $cid =~ ^[0-9a-f]{64}$ ]]; then
+      "$RUNTIME" rm "$cid" >/dev/null || log "warning: could not remove container $cid"
     fi
+  done
+  if (( KEEP )); then
+    rm -rf "$WORKDIR/state"
+    log "Extracted binaries kept in: $WORKDIR"
+  else
+    rm -rf "$WORKDIR"
   fi
 }
 
-# Validate a single architecture. Returns 0 on match, 1 otherwise.
-validate_arch() {
-  local arch="$1"
-  local platform="linux/${arch}"
-  local pull_ref="$REF" digest=""
-  local cname="ca-validate-${arch}-$$"
-  local out="${WORKDIR}/cluster-autoscaler-${arch}"
-
-  if [ -n "$INDEX_JSON" ]; then
-    digest="$(printf '%s' "$INDEX_JSON" | digest_for_arch "$arch")"
-  fi
-  if [ -n "$digest" ]; then
-    pull_ref="$(repo_no_tag "$REF")@${digest}"
-  fi
-
-  log ""
-  log "${C_BOLD}== ${arch} (${platform})${C_OFF}"
-  [ -n "$digest" ] && log "   manifest digest: ${digest}"
-  log "   image:           ${pull_ref}"
-
-  if ! "$RUNTIME" pull --platform "$platform" "$pull_ref" >/dev/null 2>&1; then
-    log "   ${C_RED}pull failed${C_OFF} (no image for ${platform}?)"
-    return 1
-  fi
-
-  "$RUNTIME" rm -f "$cname" >/dev/null 2>&1 || true
-  if ! "$RUNTIME" create --platform "$platform" --name "$cname" "$pull_ref" >/dev/null 2>&1; then
-    # Fall back without --platform (we may have pulled by exact digest already).
-    if ! "$RUNTIME" create --name "$cname" "$pull_ref" >/dev/null 2>&1; then
-      log "   ${C_RED}create failed${C_OFF}"
-      return 1
-    fi
-  fi
-
-  local cp_rc=0
-  "$RUNTIME" cp "${cname}:${BINARY}" "$out" >/dev/null 2>&1 || cp_rc=$?
-  "$RUNTIME" rm -f "$cname" >/dev/null 2>&1 || true
-  if [ "$cp_rc" -ne 0 ]; then
-    log "   ${C_RED}cp failed${C_OFF} (is '${BINARY}' present in the image?)"
-    return 1
-  fi
-
-  # Informational: show `file` output, mirroring the issue's reproduction.
-  if command -v file >/dev/null 2>&1; then
-    log "   file:            $(file -b "$out")"
-  fi
-
-  elf_read "$out"
-  if [ "$ELF_OK" != "1" ]; then
-    log "   ${C_RED}FAIL${C_OFF}: '${BINARY}' is not an ELF binary"
-    return 1
-  fi
-
-  local detected
-  detected="$(arch_from_machine "$ELF_MACHINE" "$ELF_DATA")"
-  log "   ELF e_machine:   ${ELF_MACHINE} -> ${detected} (class=${ELF_CLASS}, data=${ELF_DATA})"
-
-  if [ "$detected" = "$arch" ]; then
-    log "   ${C_GREEN}PASS${C_OFF}: binary architecture matches ${platform}"
-    RESULT_ROWS="${RESULT_ROWS}${arch}|${detected}|PASS"$'\n'
-    return 0
-  fi
-
-  log "   ${C_RED}FAIL${C_OFF}: expected ${arch} but binary is ${detected}"
-  RESULT_ROWS="${RESULT_ROWS}${arch}|${detected}|FAIL"$'\n'
-  return 1
+validate_platform() {
+  local platform="$1" ref="$2" n="$3" arch="${1#linux/}" cid
+  local out="$WORKDIR/cluster-autoscaler-${platform//\//-}-$n"
+  local cidfile="$WORKDIR/state/$n.cid"
+  log "Checking $platform: $ref"
+  "$RUNTIME" pull --platform "$platform" "$ref" >/dev/null || return 1
+  # create never starts the image. Its stdout is the ID of our container;
+  # persist it for the EXIT trap even if cp or the header check is interrupted.
+  "$RUNTIME" create --platform "$platform" "$ref" >"$cidfile" || return 1
+  cid=$(<"$cidfile")
+  [[ $cid =~ ^[0-9a-f]{64}$ ]] || { log 'runtime did not return a container ID'; return 1; }
+  "$RUNTIME" cp "$cid:$BINARY" "$out" >/dev/null || return 1
+  [[ -f $out && ! -L $out ]] || { log "expected a regular file at $BINARY"; return 1; }
+  DETECTED=$(elf_arch "$out") || return 1
+  [[ $DETECTED == "${arch%%/*}" ]]
 }
 
 main() {
   parse_args "$@"
   detect_runtime
-  command -v od >/dev/null 2>&1 || die "'od' is required but not found in PATH"
-
-  log "Runtime:   ${RUNTIME}"
-  log "Image:     ${REF}"
-  log "Binary:    ${BINARY}"
-
-  # Enumerate the published manifest list (best effort).
-  INDEX_JSON=""
-  if command -v jq >/dev/null 2>&1; then
-    INDEX_JSON="$(inspect_index_json "$REF" || true)"
-  else
-    log "${C_YELLOW}note:${C_OFF} 'jq' not found; skipping manifest inspection (digests/auto-detect disabled)"
+  command -v od >/dev/null || die "'od' is required"
+  if [[ -z $ARCH_SPEC ]]; then
+    ARCH_SPEC=$(make -s --no-print-directory -C "$(dirname "${BASH_SOURCE[0]}")/.." print-release-arches) ||
+      die 'could not read ALL_ARCH from the release Makefile; supply --require-arches or --arches'
   fi
+  local -a arches rows
+  local arch platform digest repo ref result checked=0 failures=0
+  ARCH_SPEC=${ARCH_SPEC//,/ }
+  read -r -a arches <<< "${ARCH_SPEC//$'\n'/ }"
+  [[ -n ${arches[0]:-} ]] || die 'empty architecture list'
+  for arch in "${arches[@]}"; do
+    [[ $arch =~ ^[a-z0-9][a-z0-9_.-]*$ ]] || die "invalid architecture: $arch"
+  done
 
-  # Decide which architectures to validate.
-  local arches=""
-  if [ -n "$ARCHES_OVERRIDE" ]; then
-    arches="$(printf '%s' "$ARCHES_OVERRIDE" | tr ',' ' ')"
-  elif [ -n "$INDEX_JSON" ]; then
-    arches="$(printf '%s' "$INDEX_JSON" | detect_arches | tr '\n' ' ')"
-  fi
-  if [ -z "${arches// }" ]; then
-    log "${C_YELLOW}note:${C_OFF} could not determine architectures from manifest; using default '${DEFAULT_ARCHES}'"
-    arches="$DEFAULT_ARCHES"
-  fi
-
-  log "Arches:    ${arches}"
-
-  # Warn about any expected arch that is not advertised in the manifest at all.
-  if [ -n "$INDEX_JSON" ]; then
-    local published; published="$(printf '%s' "$INDEX_JSON" | detect_arches | tr '\n' ' ')"
-    local want
-    for want in $EXPECTED_ARCHES; do
-      case " $published " in
-        *" $want "*) ;;
-        *) log "${C_YELLOW}warning:${C_OFF} expected arch '${want}' is not published in the manifest list" ;;
-      esac
-    done
-  fi
-
-  WORKDIR="$(mktemp -d "${TMPDIR:-/tmp}/ca-multiarch-validate.XXXXXX")"
+  WORKDIR=$(mktemp -d "${TMPDIR:-/tmp}/ca-multiarch-validate.XXXXXX") || die 'could not create temp directory'
   trap cleanup EXIT
+  trap 'exit 129' HUP; trap 'exit 130' INT; trap 'exit 143' TERM
+  mkdir "$WORKDIR/state"
+  local plan="$WORKDIR/state/platforms"
+  log "Image: $REF ($MODE check using $RUNTIME)"
+  plan_platforms "${arches[@]}" >"$plan" || return 1
 
-  RESULT_ROWS=""
-  local checked=0 failures=0 arch
-  for arch in $arches; do
+  repo=$(repo_no_tag "$REF")
+  while IFS=$'\t' read -r platform digest; do
+    ref=$REF
+    if [[ -n $digest ]]; then ref="$repo@$digest"; fi
     checked=$((checked + 1))
-    if ! validate_arch "$arch"; then
+    DETECTED=''
+    if validate_platform "$platform" "$ref" "$checked" </dev/null; then
+      result="${C_GREEN}PASS${C_OFF}"
+    else
+      result="${C_RED}FAIL${C_OFF}"
       failures=$((failures + 1))
     fi
-  done
-
-  # Summary table.
-  log ""
-  log "${C_BOLD}Summary for ${REF}${C_OFF}"
-  printf '  %-10s %-12s %s\n' "ARCH" "BINARY-IS" "RESULT" >&2
-  printf '%s' "$RESULT_ROWS" | while IFS='|' read -r a d r; do
-    [ -n "$a" ] || continue
-    local color="$C_GREEN"; [ "$r" = "FAIL" ] && color="$C_RED"
-    printf '  %-10s %-12s %s%s%s\n' "$a" "$d" "$color" "$r" "$C_OFF" >&2
-  done
-
-  if [ "$checked" -eq 0 ]; then
-    log "${C_RED}No architectures were validated.${C_OFF}"
-    return 1
-  fi
-  if [ "$failures" -ne 0 ]; then
-    log ""
-    log "${C_RED}${C_BOLD}FAILED${C_OFF}: ${failures}/${checked} architecture(s) are mismatched or unverifiable."
-    return 1
-  fi
-  log ""
-  log "${C_GREEN}${C_BOLD}OK${C_OFF}: all ${checked} architecture(s) contain a correctly-built binary."
-  return 0
+    rows+=("$(printf '  %-20s %-12s %s' "$platform" "${DETECTED:--}" "$result")")
+  done <"$plan"
+  (( checked )) || { log 'FAIL: no platforms checked'; return 1; }
+  log "${C_BOLD}Summary for $REF${C_OFF}"
+  printf '  %-20s %-12s %s\n' PLATFORM BINARY-IS RESULT >&2
+  printf '%s\n' "${rows[@]}" >&2
+  (( failures == 0 )) || { log "FAILED: $failures/$checked platform image(s) mismatched or unverifiable"; return 1; }
+  log "OK: verified $checked platform image(s) for $REF ($MODE check)"
 }
 
 main "$@"

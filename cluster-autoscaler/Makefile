@@ -86,7 +86,11 @@ test-controllers: setup-envtest clean build
 test-apis:
 	$(MAKE) -C apis test
 
-test-ci: setup-envtest test-apis
+.PHONY: test-multiarch-image-validator
+test-multiarch-image-validator:
+	./hack/test-validate-multiarch-image.sh
+
+test-ci: setup-envtest test-apis test-multiarch-image-validator
 	go test -race $$(go list ./... | grep -v ${GO_TEST_EXCLUDE_REGEX} ) -vet="${GO_TEST_DEFAULT_ANALYZERS}" ${TAGS_FLAG}
 
 benchmark:
@@ -116,10 +120,19 @@ push-image-arch-%:
 push-release-image-arch-%:
 	docker push ${IMAGE}-$*:${TAG}
 
+.PHONY: print-release-arches
+print-release-arches:
+	@printf '%s\n' "$(ALL_ARCH)"
+
+# The final line from a successful manifest push is the registry's index digest.
+# Validate that exact index even if another build moves the tag during the check.
 push-manifest:
 	docker manifest create ${IMAGE}:${TAG} \
 	    $(addprefix $(REGISTRY)/cluster-autoscaler$(PROVIDER)-, $(addsuffix :$(TAG), $(ALL_ARCH)))
-	docker manifest push --purge ${IMAGE}:${TAG}
+	@output=$$(docker manifest push --purge "$(IMAGE):$(TAG)") || { printf '%s\n' "$$output" >&2; exit 1; }; \
+	printf '%s\n' "$$output"; \
+	digest=$$(printf '%s\n' "$$output" | tail -n 1); \
+	./hack/validate-multiarch-image.sh --require-arches "$(ALL_ARCH)" "$(IMAGE)@$$digest"
 
 execute-release: $(addprefix make-image-arch-,$(ALL_ARCH)) $(addprefix push-release-image-arch-,$(ALL_ARCH)) push-manifest
 	@echo "Release ${TAG}${FOR_PROVIDER} completed"
