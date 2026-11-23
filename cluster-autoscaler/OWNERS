@@ -1,6 +1,7 @@
 approvers:
 - aleksandra-malinowska
 - BigDarkClown
+- norbertcyran
 - towca
 - x13n
 reviewers:
@@ -9,6 +10,5 @@ reviewers:
 - x13n
 - elmiko
 - mtrqq
-- norbertcyran
 labels:
 - area/cluster-autoscaler
