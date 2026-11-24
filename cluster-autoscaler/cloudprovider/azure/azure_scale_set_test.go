@@ -3203,7 +3203,7 @@ func TestScaleSetMissingVMSSDoesNotBlockHealthyScaleUp(t *testing.T) {
 				// Model a template retained from before the VMSS disappeared.
 				require.Contains(t, nodeInfos, missing.Id())
 				fixture.azure.provider.azureManager.azureCache.mutex.Lock()
-				delete(fixture.azure.provider.azureManager.azureCache.scaleSets, missing.Id())
+				fixture.azure.provider.azureManager.azureCache.scaleSets.Evict(missing.Id())
 				fixture.azure.provider.azureManager.azureCache.mutex.Unlock()
 			} else {
 				require.NotContains(t, nodeInfos, missing.Id())
