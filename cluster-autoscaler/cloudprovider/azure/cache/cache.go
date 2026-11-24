@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// A custom cache data abstraction used by the Azure cloud provider.
 package cache
 
 import (

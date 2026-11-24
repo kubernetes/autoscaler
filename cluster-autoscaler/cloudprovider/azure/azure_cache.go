@@ -28,7 +28,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute/v7"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerservice/armcontainerservice/v8"
 	skewer "github.com/Azure/skewer/v2"
-	"github.com/samber/lo"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure/cache"
 	providerazureconsts "sigs.k8s.io/cloud-provider-azure/pkg/consts"
 	"sigs.k8s.io/cluster-autoscaler/pkg/cloudprovider"
@@ -189,18 +188,30 @@ func newAzureCache(client *azClient, cacheTTL time.Duration, config Config) (*az
 }
 
 func (m *azureCache) readVMsPool(poolName string) (armcontainerservice.AgentPool, bool) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	return m.vmsPools.Read(poolName)
 }
 
 func (m *azureCache) readVirtualMachines(poolName string) ([]*armcompute.VirtualMachine, bool) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	return m.virtualMachines.Read(poolName)
 }
 
 func (m *azureCache) readScaleSet(vmssName string) (*armcompute.VirtualMachineScaleSet, bool) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	return m.scaleSets.Read(vmssName)
 }
 
 func (m *azureCache) readAllScaleSets() []*armcompute.VirtualMachineScaleSet {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
 	return m.scaleSets.ReadAll()
 }
 
@@ -236,7 +247,10 @@ func (m *azureCache) regenerate() error {
 		klog.V(4).Infof("regenerate: found %d nodes for node group %s: %+v", len(instances), ng.Id(), instances)
 
 		for _, instance := range instances {
-			ref := azureRef{Name: strings.ToLower(instance.Id)}
+			ref := azureRef{
+				Name: instance.Id,
+			}
+
 			newInstanceToNodeGroupCache[ref] = ng
 			if instance.Status != nil {
 				newInstanceStates[ref] = instance.Status.State
@@ -360,7 +374,7 @@ func (m *azureCache) fetchVirtualMachines() (map[string][]*armcompute.VirtualMac
 		}
 
 		// Normalize the pool name to lowercase
-		name := strings.ToLower(lo.FromPtr(vmPoolName))
+		name := strings.ToLower(*vmPoolName)
 		instances[name] = append(instances[name], instance)
 	}
 
