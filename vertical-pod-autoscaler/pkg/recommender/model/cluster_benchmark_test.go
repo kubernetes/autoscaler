@@ -30,10 +30,10 @@ func BenchmarkGetContributiveAggregateStateKeysActivePods(b *testing.B) {
 	for _, podCount := range podCounts {
 		b.Run(fmt.Sprintf("pods=%d", podCount), func(b *testing.B) {
 			cluster := NewClusterState(testGcPeriod)
-			addVpa(cluster, testVpaID, nil, "c-1=p-2", testTargetRef)
-			podLabels := labels.Set{"c-1": "p-1"}
+			addVpa(cluster, testVpaID, nil, "c-1=p-1", testTargetRef)
 			for i := range podCount {
 				podID := PodID{Namespace: testVpaID.Namespace, PodName: fmt.Sprintf("pod-%d", i)}
+				podLabels := labels.Set{"c-1": "p-1", "pod": podID.PodName}
 				cluster.AddOrUpdatePod(podID, podLabels, corev1.PodRunning)
 				if err := cluster.AddOrUpdateContainer(ContainerID{PodID: podID, ContainerName: "c-1"}, testRequest); err != nil {
 					b.Fatal(err)
@@ -41,9 +41,12 @@ func BenchmarkGetContributiveAggregateStateKeysActivePods(b *testing.B) {
 			}
 
 			ctx := context.Background()
+			if got := len(cluster.getContributiveAggregateStateKeys(ctx, testControllerFetcher)); got != podCount {
+				b.Fatalf("got %d aggregate state keys, want %d", got, podCount)
+			}
 			b.ReportAllocs()
 			for b.Loop() {
-				cluster.getContributiveAggregateStateKeys(ctx, nil)
+				cluster.getContributiveAggregateStateKeys(ctx, testControllerFetcher)
 			}
 		})
 	}
