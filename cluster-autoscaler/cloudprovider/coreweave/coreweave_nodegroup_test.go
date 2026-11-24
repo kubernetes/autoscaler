@@ -18,6 +18,7 @@ package coreweave
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -211,32 +212,47 @@ func TestDeleteNodes(t *testing.T) {
 }
 
 func TestDecreaseTargetSize(t *testing.T) {
+	// makeTestNodeGroup creates 2 existing nodes in the node pool.
 	testCases := map[string]struct {
+		initialTargetSize  int64
 		delta              int
 		expectedTargetSize int
 		expectedError      error
 	}{
 		"positive-delta": {
+			initialTargetSize:  4,
 			delta:              2,
-			expectedTargetSize: 1,
+			expectedTargetSize: 2,
 		},
 		"negative-delta": {
+			initialTargetSize:  4,
 			delta:              -2,
-			expectedTargetSize: 1,
+			expectedTargetSize: 2,
+		},
+		"cancel-unfulfilled-requests-only": {
+			initialTargetSize:  5,
+			delta:              -2,
+			expectedTargetSize: 3,
+		},
+		"refuse-to-delete-existing-nodes": {
+			initialTargetSize:  5,
+			delta:              -4,
+			expectedTargetSize: 5,
+			expectedError:      errors.New("attempt to delete existing nodes targetSize:5 delta:-4 existingNodes: 2"),
 		},
 	}
 
 	for name, tc := range testCases {
 		t.Run(name, func(t *testing.T) {
-			ng := makeTestNodeGroup("ng-1", "uid-1", 1, 5, 3)
+			ng := makeTestNodeGroup("ng-1", "uid-1", 1, 5, tc.initialTargetSize)
 
 			err := ng.DecreaseTargetSize(context.Background(), tc.delta)
 			if tc.expectedError != nil {
 				require.Error(t, err)
 				require.Equal(t, tc.expectedError, err)
-				return
+			} else {
+				require.NoError(t, err)
 			}
-			require.NoError(t, err)
 			require.Equal(t, tc.expectedTargetSize, ng.nodepool.GetTargetSize())
 		})
 	}

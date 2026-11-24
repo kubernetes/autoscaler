@@ -103,12 +103,24 @@ func (ng *CoreWeaveNodeGroup) ForceDeleteNodes(ctx context.Context, nodes []*api
 }
 
 // DecreaseTargetSize decreases the target size of the node group by the specified delta.
+// It only cancels requests for nodes that have not joined the cluster yet. If the new
+// target would be below the number of nodes already in the node pool, it returns an
+// error and leaves the target unchanged.
 func (ng *CoreWeaveNodeGroup) DecreaseTargetSize(ctx context.Context, delta int) error {
 	klog.V(4).Infof("Decreasing target size of node group %s by %d", ng.Name, delta)
 	if delta < 0 {
 		delta = -delta
 	}
-	return ng.nodepool.SetSize(ng.nodepool.GetTargetSize() - delta)
+	nodes, err := ng.nodepool.GetNodes()
+	if err != nil {
+		return fmt.Errorf("failed to list nodes of node group %s: %v", ng.Name, err)
+	}
+	target := ng.nodepool.GetTargetSize()
+	if target-delta < len(nodes) {
+		return fmt.Errorf("attempt to delete existing nodes targetSize:%d delta:%d existingNodes: %d",
+			target, -delta, len(nodes))
+	}
+	return ng.nodepool.SetSize(target - delta)
 }
 
 // Id returns the unique identifier of the node group.

@@ -100,21 +100,18 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          {{- with .Values.updater.livenessProbe }}
           livenessProbe:
-            httpGet:
-              path: /health-check
-              port: prometheus
-              scheme: HTTP
-            initialDelaySeconds: 5
-            periodSeconds: 10
-            failureThreshold: 3
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.updater.readinessProbe }}
           readinessProbe:
-            httpGet:
-              path: /health-check
-              port: prometheus
-              scheme: HTTP
-            periodSeconds: 10
-            failureThreshold: 3
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.updater.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- with .Values.containerSecurityContext }}
           securityContext:
             {{ toYaml . | nindent 12 | trim }}

@@ -66,10 +66,6 @@ func BenchmarkStoreCheckpoints(b *testing.B) {
 	for _, tc := range testCases {
 		b.Run(fmt.Sprintf("vpas=%d/workers=%d", tc.vpaCount, tc.workers), func(b *testing.B) {
 			cluster := newCheckpointBenchmarkCluster(b, tc.vpaCount)
-			containerCount := 0
-			for _, pod := range cluster.Pods() {
-				containerCount += len(pod.Containers)
-			}
 			writer := NewCheckpointWriter(cluster, &benchmarkCheckpointClient{})
 			ctx := context.Background()
 
@@ -84,7 +80,6 @@ func BenchmarkStoreCheckpoints(b *testing.B) {
 			for b.Loop() {
 				writer.StoreCheckpoints(ctx, tc.workers)
 			}
-			b.ReportMetric(float64(len(cluster.VPAs()))*float64(containerCount), "container-visits/op")
 		})
 	}
 }

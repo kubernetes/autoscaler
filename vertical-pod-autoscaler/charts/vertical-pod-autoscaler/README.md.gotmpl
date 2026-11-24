@@ -170,6 +170,30 @@ recommender:
     - --feature-gates=InPlace=true,CPUStartupBoost=true
 ```
 
+## Probes
+
+Each component (`admissionController`, `recommender`, `updater`) has `livenessProbe`, `readinessProbe` and `startupProbe` values. The liveness and readiness defaults call `/health-check` on the `prometheus` port. You can override single fields, for example:
+
+```yaml
+recommender:
+  livenessProbe:
+    initialDelaySeconds: 30
+```
+
+The startup probe is off by default. Enable it for a component that needs more time to start, for example a Recommender with a large cluster to load:
+
+```yaml
+recommender:
+  startupProbe:
+    httpGet:
+      path: /health-check
+      port: prometheus
+    periodSeconds: 10
+    failureThreshold: 30
+```
+
+Set a probe to `null` to remove it. Helm merges your values into the defaults, so to switch a probe to a different handler (for example `tcpSocket`), also set `httpGet: null`.
+
 ## Migration Guides
 
 ### Migrating from vpa-up.sh script

@@ -171,3 +171,26 @@ func TestCreatePlaceholders(t *testing.T) {
 		})
 	}
 }
+
+func TestIsTerminatingLifecycleState(t *testing.T) {
+	testCases := []struct {
+		lifecycle autoscalingtypes.LifecycleState
+		expected  bool
+	}{
+		{autoscalingtypes.LifecycleStateTerminating, true},
+		{autoscalingtypes.LifecycleStateTerminatingWait, true},
+		{autoscalingtypes.LifecycleStateTerminatingProceed, true},
+		{autoscalingtypes.LifecycleStateTerminatingRetained, true},
+		{autoscalingtypes.LifecycleStateTerminated, true},
+		{autoscalingtypes.LifecycleStatePending, false},
+		{autoscalingtypes.LifecycleStateInService, false},
+		{autoscalingtypes.LifecycleStateStandby, false},
+		{autoscalingtypes.LifecycleStateDetaching, false},
+		{"", false},
+	}
+	for _, tc := range testCases {
+		t.Run(string(tc.lifecycle), func(t *testing.T) {
+			assert.Equal(t, tc.expected, isTerminatingLifecycleState(tc.lifecycle))
+		})
+	}
+}
