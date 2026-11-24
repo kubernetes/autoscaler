@@ -1007,47 +1007,49 @@ func TestLabelSetGCLifecycle(t *testing.T) {
 	labelKey := labelSetKey(podLabels.String())
 
 	for _, tc := range tests {
-		cluster := NewClusterState(time.Hour)
-		cluster.AddOrUpdatePod(podID, podLabels, corev1.PodRunning)
-		assert.Contains(t, cluster.labelSetMap, labelKey, tc.name)
+		t.Run(tc.name, func(t *testing.T) {
+			cluster := NewClusterState(time.Hour)
+			cluster.AddOrUpdatePod(podID, podLabels, corev1.PodRunning)
+			assert.Contains(t, cluster.labelSetMap, labelKey)
 
-		for _, name := range tc.containers {
-			containerID := ContainerID{PodID: podID, ContainerName: name}
-			if err := cluster.AddOrUpdateContainer(containerID, nil); err != nil {
-				t.Fatalf("%s: %v", tc.name, err)
+			for _, name := range tc.containers {
+				containerID := ContainerID{PodID: podID, ContainerName: name}
+				if err := cluster.AddOrUpdateContainer(containerID, nil); err != nil {
+					t.Fatalf("%v", err)
+				}
 			}
-		}
 
-		now := time.Now()
-		var sampledKey AggregateStateKey
-		if tc.sampled != "" {
-			containerID := ContainerID{PodID: podID, ContainerName: tc.sampled}
-			sampledKey = cluster.aggregateStateKeyForContainerID(containerID)
-			if err := cluster.AddSample(&ContainerUsageSampleWithKey{
-				ContainerUsageSample: ContainerUsageSample{MeasureStart: now, Usage: 100, Resource: ResourceCPU},
-				Container:            containerID,
-			}); err != nil {
-				t.Fatalf("%s: %v", tc.name, err)
+			now := time.Now()
+			var sampledKey AggregateStateKey
+			if tc.sampled != "" {
+				containerID := ContainerID{PodID: podID, ContainerName: tc.sampled}
+				sampledKey = cluster.aggregateStateKeyForContainerID(containerID)
+				if err := cluster.AddSample(&ContainerUsageSampleWithKey{
+					ContainerUsageSample: ContainerUsageSample{MeasureStart: now, Usage: 100, Resource: ResourceCPU},
+					Container:            containerID,
+				}); err != nil {
+					t.Fatalf("%v", err)
+				}
 			}
-		}
-		if tc.deletePod {
-			cluster.DeletePod(podID)
-		}
+			if tc.deletePod {
+				cluster.DeletePod(podID)
+			}
 
-		cluster.garbageCollectAggregateCollectionStates(context.Background(), now.Add(tc.gcAfter), nil)
+			cluster.garbageCollectAggregateCollectionStates(context.Background(), now.Add(tc.gcAfter), nil)
 
-		assert.Len(t, cluster.aggregateStateMap, tc.wantAggregates, tc.name)
-		if sampledKey != nil {
-			if tc.wantAggregates > 0 {
-				assert.Contains(t, cluster.aggregateStateMap, sampledKey, tc.name)
+			assert.Len(t, cluster.aggregateStateMap, tc.wantAggregates)
+			if sampledKey != nil {
+				if tc.wantAggregates > 0 {
+					assert.Contains(t, cluster.aggregateStateMap, sampledKey)
+				} else {
+					assert.NotContains(t, cluster.aggregateStateMap, sampledKey)
+				}
+			}
+			if tc.wantLabels {
+				assert.Equal(t, podLabels, cluster.labelSetMap[labelKey])
 			} else {
-				assert.NotContains(t, cluster.aggregateStateMap, sampledKey, tc.name)
+				assert.NotContains(t, cluster.labelSetMap, labelKey)
 			}
-		}
-		if tc.wantLabels {
-			assert.Equal(t, podLabels, cluster.labelSetMap[labelKey], tc.name)
-		} else {
-			assert.NotContains(t, cluster.labelSetMap, labelKey, tc.name)
-		}
+		})
 	}
 }
