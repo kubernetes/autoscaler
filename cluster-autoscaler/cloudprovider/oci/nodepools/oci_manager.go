@@ -648,7 +648,7 @@ func (m *ociManagerImpl) GetNodePoolForInstance(instance ocicommon.OciRef) (Node
 
 	np, found := m.staticNodePools[instance.NodePoolID]
 	if !found {
-		klog.V(4).Infof("did not find node pool for reference: %+v", instance)
+		klog.V(5).Infof("did not find node pool for reference: %+v", instance)
 		return nil, errInstanceNodePoolNotFound
 	}
 
