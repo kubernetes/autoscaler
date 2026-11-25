@@ -304,12 +304,14 @@ func listScalingInstancesPaged(groupID string, fn listScalingInstancesFunc) ([]h
 			scalingGroupInstances = append(scalingGroupInstances, inst)
 			newInPage++
 		}
-
-		// terminate when current page is smaller than requested pageSize, which means no more instances to list.
-		// do NOT rely on TotalNumber which can drift due to instance scale up/down during the listing process.
-		if int32(len(currentPage)) < pageSize {
-			break
-		}
+		
+		// Only an empty page ends pagination. A page shorter than the requested
+		// Limit is not treated as the last page: the AS service may cap Limit
+		// below the value we ask for, and breaking there would silently truncate
+		// the instance list, hiding nodes from the cluster autoscaler.
+		// TotalNumber is not used either, because it drifts while instances are
+		// added or removed during the scan; the maxPages cap bounds the worst
+		// case instead.
 		// advance startNumber by the original page size, not the number of new instances added, to avoid skipping pages if duplicates were removed.
 		// because the AS offset is based on total list position, not the number of unique instances returned.
 		startNumber += int32(len(currentPage))
