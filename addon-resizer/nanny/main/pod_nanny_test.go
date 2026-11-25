@@ -109,7 +109,10 @@ func TestCurrentResources(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			fakeClientset := fake.NewSimpleClientset(tc.configMap)
-			nanyConfigUpdater := newNannyConfigUpdater(fakeClientset, defaultConfig, namespace, nannyConfigMapName, baseStorage)
+			nanyConfigUpdater, err := newNannyConfigUpdater(fakeClientset, defaultConfig, namespace, nannyConfigMapName, baseStorage)
+			if err != nil {
+				t.Fatal(err)
+			}
 			gotResources, gotErr := nanyConfigUpdater.CurrentResources()
 
 			if gotErr != nil && !tc.wantErr {
