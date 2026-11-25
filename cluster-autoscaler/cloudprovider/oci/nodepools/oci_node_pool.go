@@ -149,11 +149,24 @@ func (np *nodePool) DeleteNodes(nodes []*apiv1.Node) (err error) {
 	}
 
 	refs := make([]ocicommon.OciRef, 0, len(nodes))
+	nodesWithRefs := make([]*apiv1.Node, 0, len(nodes))
+	nodesWithoutInstanceID := 0
 
 	// even though the nodes param is an array, in reality, nodes only contains a single node
 	// Each node is deleted in its own DeleteNodes call, and all the calls are in parallel
 	// we will still loop through just to future proof this function
 	for _, node := range nodes {
+		ociRef, err := ocicommon.NodeToOciRef(node)
+		if err != nil {
+			return err
+		}
+		if ociRef.InstanceID == "" {
+			if node.Annotations[cloudprovider.FakeNodeReasonAnnotation] == cloudprovider.FakeNodeCreateError {
+				nodesWithoutInstanceID++
+				continue
+			}
+			return fmt.Errorf("node %s doesn't have an instance id so it can't be deleted", node.Name)
+		}
 		belongs, err := np.Belongs(node)
 		if err != nil {
 			return err
@@ -161,25 +174,27 @@ func (np *nodePool) DeleteNodes(nodes []*apiv1.Node) (err error) {
 		if !belongs {
 			return fmt.Errorf("%s belong to a different nodepool than %s", node.Name, np.Id())
 		}
-		ociRef, err := ocicommon.NodeToOciRef(node)
-		if err != nil {
-			return err
-		}
 
 		refs = append(refs, ociRef)
+		nodesWithRefs = append(nodesWithRefs, node)
 	}
 
-	if len(refs) == 0 {
-		return nil
+	if len(refs) > 0 {
+		deleteInstancesErr := np.manager.DeleteInstances(np, refs)
+		if deleteInstancesErr == nil {
+			// this will add taints to all the nodes. For now, we have only a single node deleted in a given call, but the implementation might change in the future
+			np.manager.TaintToPreventFurtherSchedulingOnRestart(nodesWithRefs, np.kubeClient)
+		} else {
+			klog.Warning("Error deleting instances", deleteInstancesErr)
+			return deleteInstancesErr
+		}
 	}
-	deleteInstancesErr := np.manager.DeleteInstances(np, refs)
-	if deleteInstancesErr == nil {
-		// this will add taints to all the nodes. For now, we have only a single node deleted in a given call, but the implementation might change in the future
-		np.manager.TaintToPreventFurtherSchedulingOnRestart(nodes, np.kubeClient)
-	} else {
-		klog.Warning("Error deleting instances", deleteInstancesErr)
+	if nodesWithoutInstanceID > 0 {
+		klog.Warningf("%d node(s) in node pool %s have no instance ID. Falling back to DecreaseTargetSize to clean up failed node creation.", nodesWithoutInstanceID, np.Id())
+		return np.DecreaseTargetSize(-nodesWithoutInstanceID)
 	}
-	return deleteInstancesErr
+
+	return nil
 }
 
 // ForceDeleteNodes deletes nodes from the group regardless of constraints.
