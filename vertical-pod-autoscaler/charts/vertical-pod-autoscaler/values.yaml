@@ -16,14 +16,12 @@ rbac:
   # extraRules -- Additional rules to add to the ClusterRole
   extraRules: []
 
-# podSecurityContext -- Pod security context to add to the pod
 podSecurityContext:
   runAsNonRoot: true
   runAsUser: 65534
   seccompProfile:
     type: RuntimeDefault
 
-# containerSecurityContext -- Container security context to add to all containers within a pod
 containerSecurityContext:
   allowPrivilegeEscalation: false
   capabilities:

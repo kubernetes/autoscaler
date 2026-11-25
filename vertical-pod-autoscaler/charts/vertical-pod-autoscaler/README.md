@@ -315,7 +315,9 @@ This chart includes [helm-unittest](https://github.com/helm-unittest/helm-unitte
 | admissionController.volumes[0].secret.items[2].path | string | `"serverKey.pem"` |  |
 | admissionController.volumes[0].secret.secretName | string | `"vpa-tls-certs"` |  |
 | commonLabels | object | `{}` |  |
-| containerSecurityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"readOnlyRootFilesystem":true}` | Container security context to add to all containers within a pod |
+| containerSecurityContext.allowPrivilegeEscalation | bool | `false` |  |
+| containerSecurityContext.capabilities.drop[0] | string | `"ALL"` |  |
+| containerSecurityContext.readOnlyRootFilesystem | bool | `true` |  |
 | crds.enabled | bool | `true` | Whether to install and manage the VPA CRDs. Disable if you manage CRDs separately. |
 | crds.keep | bool | `true` | Whether to add the helm.sh/resource-policy: keep annotation to the CRDs, so they are not removed by `helm uninstall`. |
 | extraObjects | list | `[]` | Extra Kubernetes objects to deploy with the release, such as PodMonitors, NetworkPolicies or ConfigMaps. Each item is either a YAML map or a multi-line string, and is evaluated as a template. See the README for examples. |
@@ -323,7 +325,9 @@ This chart includes [helm-unittest](https://github.com/helm-unittest/helm-unitte
 | fullnameOverride | string | `nil` |  |
 | imagePullSecrets | list | `[]` |  |
 | nameOverride | string | `nil` |  |
-| podSecurityContext | object | `{"runAsNonRoot":true,"runAsUser":65534,"seccompProfile":{"type":"RuntimeDefault"}}` | Pod security context to add to the pod |
+| podSecurityContext.runAsNonRoot | bool | `true` |  |
+| podSecurityContext.runAsUser | int | `65534` |  |
+| podSecurityContext.seccompProfile.type | string | `"RuntimeDefault"` |  |
 | rbac.create | bool | `true` |  |
 | rbac.extraRules | list | `[]` |  |
 | recommender.affinity.podAntiAffinity.preferredDuringSchedulingIgnoredDuringExecution[0].podAffinityTerm.labelSelector.matchExpressions[0].key | string | `"app.kubernetes.io/component"` |  |
