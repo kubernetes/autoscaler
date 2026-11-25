@@ -51,6 +51,9 @@ spec:
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- if kindIs "bool" .Values.admissionController.hostUsers }}
+      hostUsers: {{ .Values.admissionController.hostUsers }}
+      {{- end }}
       {{- with .Values.admissionController.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
