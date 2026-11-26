@@ -34,9 +34,9 @@ trap cleanup EXIT
 if [[ -z $(which controller-gen) || "$(controller-gen --version 2>/dev/null)" != "Version: ${CONTROLLER_GEN_VERSION}" ]]; then
     (
         cd $WORKSPACE
-	      go install sigs.k8s.io/controller-tools/cmd/controller-gen@${CONTROLLER_GEN_VERSION}
+        GOBIN="${WORKSPACE}/bin" go install sigs.k8s.io/controller-tools/cmd/controller-gen@${CONTROLLER_GEN_VERSION}
     )
-    CONTROLLER_GEN=${GOBIN:-$(go env GOPATH)/bin}/controller-gen
+    CONTROLLER_GEN=${WORKSPACE}/bin/controller-gen
 else
     CONTROLLER_GEN=$(which controller-gen)
 fi
