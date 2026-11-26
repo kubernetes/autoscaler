@@ -23,6 +23,7 @@ CRD_OPTS=crd:allowDangerousTypes=true
 APIS_PATH=${REPOSITORY_ROOT}/pkg/apis
 OUTPUT=${REPOSITORY_ROOT}/deploy/vpa-v1-crd-gen.yaml
 CHARTS_CRD_DIR=${REPOSITORY_ROOT}/charts/vertical-pod-autoscaler/crds
+CONTROLLER_GEN_VERSION=v0.16.5
 WORKSPACE=$(mktemp -d)
 
 function cleanup() {
@@ -30,14 +31,23 @@ function cleanup() {
 }
 trap cleanup EXIT
 
-if [[ -z $(which controller-gen) ]]; then
+CONTROLLER_GEN=$(command -v controller-gen || true)
+INSTALLED_VERSION=""
+if [[ -n "${CONTROLLER_GEN}" ]]; then
+    # "controller-gen --version" prints "Version: vX.Y.Z"
+    INSTALLED_VERSION=$("${CONTROLLER_GEN}" --version 2>/dev/null | awk '{print $2}' || true)
+fi
+
+if [[ "${INSTALLED_VERSION}" != "${CONTROLLER_GEN_VERSION}" ]]; then
+    if [[ -n "${CONTROLLER_GEN}" ]]; then
+        echo "Found controller-gen ${INSTALLED_VERSION:-(unknown version)} at ${CONTROLLER_GEN}, but ${CONTROLLER_GEN_VERSION} is required."
+    fi
+    echo "Installing controller-gen ${CONTROLLER_GEN_VERSION} into a temporary directory."
     (
         cd $WORKSPACE
-	      go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.16.5
+        GOBIN="${WORKSPACE}/bin" go install sigs.k8s.io/controller-tools/cmd/controller-gen@${CONTROLLER_GEN_VERSION}
     )
-    CONTROLLER_GEN=${GOBIN:-$(go env GOPATH)/bin}/controller-gen
-else
-    CONTROLLER_GEN=$(which controller-gen)
+    CONTROLLER_GEN=${WORKSPACE}/bin/controller-gen
 fi
 
 # The following commands always returns an error because controller-gen does not accept keys other than strings.
