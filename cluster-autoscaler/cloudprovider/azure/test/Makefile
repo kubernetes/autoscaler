@@ -43,6 +43,13 @@ test-e2e: build-e2e ## CI: build image + run tests (Prow/CAPZ)
 		-cas-image-repository="$(IMAGE)-$(GOARCH)" \
 		-cas-image-tag="$(TAG)"
 
+.PHONY: test-e2e-autoscaling
+test-e2e-autoscaling: build-e2e ## CI: run upstream Standard and DRA autoscaling tests on AKS
+	AZURE_RESOURCE_GROUP="$$(KUBECONFIG= kubectl get managedclusters -n default -o jsonpath='{.items[0].status.nodeResourceGroup}')" \
+		CLUSTER_AUTOSCALER_CLIENT_ID="$$(KUBECONFIG= kubectl get userassignedidentities -n default -o jsonpath='{.items[0].status.clientId}')" \
+		ARTIFACTS="$(ARTIFACTS)" \
+		bash "$(CAS_ROOT)/hack/e2e/run-e2e-azure.sh" "$(IMAGE)-$(GOARCH)" "$(TAG)"
+
 # --------------------------------------------------------------------------
 # Local developer targets
 # --------------------------------------------------------------------------
