@@ -110,6 +110,23 @@ _Appears in:_
 | `changeRequirement` _[EvictionChangeRequirement](#evictionchangerequirement)_ |  |  | Enum: [TargetHigherThanRequests TargetLowerThanRequests] <br /> |
 
 
+#### GenericStartupBoost
+
+
+
+GenericStartupBoost defines the startup boost policy for a resource.
+
+
+
+_Appears in:_
+- [StartupBoost](#startupboost)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `type` _[StartupBoostType](#startupboosttype)_ | type specifies the kind of boost to apply.<br />Supported values are: "Factor", "Quantity".<br />No startupboost will be applied for unrecognized values. |  | Enum: [Factor Quantity] <br />Required: \{\} <br /> |
+| `factor` _integer_ | factor specifies the factor to apply to the resource request.<br />This field is required when Type is "Factor". |  | Optional: \{\} <br /> |
+| `quantity` _[Quantity](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/#quantity-resource-api)_ | quantity specifies the absolute resource quantity to be used as the<br />resource request and limit during the boost phase.<br />This field is required when Type is "Quantity". |  | Optional: \{\} <br /> |
+| `durationSeconds` _integer_ | durationSeconds indicates for how long to keep the pod boosted after it goes to Ready.<br />Defaults to 0. |  | Optional: \{\} <br /> |
 
 
 #### HistogramCheckpoint
