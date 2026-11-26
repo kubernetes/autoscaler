@@ -22,13 +22,14 @@ SCRIPT_DIR=$(readlink -f "$(dirname "${BASH_SOURCE[0]}")")
 CA_ROOT="$(readlink -f "${SCRIPT_DIR}/../..")"
 
 function print_help {
-  echo "Usage: run-e2e-tests.sh [--report-prefix=PREFIX] [FOCUS]"
+  echo "Usage: run-e2e-tests.sh [--report-prefix=PREFIX] [FOCUS] [-- TEST_ARGS...]"
   echo "  FOCUS: Optional ginkgo focus string. Defaults to '\[sig-autoscaling\]'"
   echo "  Flags:"
   echo "    --report-prefix=PREFIX: Optional prefix for the JUnit report file name."
   echo "                            When set, output becomes junit_\${PREFIX}01.xml,"
   echo "                            so multiple invocations sharing the same ARTIFACTS"
   echo "                            directory do not overwrite each other."
+  echo "    -- TEST_ARGS...: Additional arguments passed directly to the test binary."
   echo "  Environment variables:"
   echo "    KUBECONFIG: Path to kubeconfig (default: ~/.kube/config)"
   echo "    ARTIFACTS: Directory for report artifacts (default: e2e/_artifacts)"
@@ -51,6 +52,10 @@ while [[ $# -gt 0 ]]; do
     --report-prefix)
       echo "ERROR: use --report-prefix=PREFIX" >&2
       exit 1
+      ;;
+    --)
+      shift
+      break
       ;;
     *)
       FOCUS="$1"
@@ -78,7 +83,7 @@ echo "Building e2e tests..."
 "${GOBIN}/ginkgo" build .
 
 echo "Running e2e tests with focus: ${FOCUS}"
-"${GOBIN}/ginkgo" -v --timeout="${TIMEOUT}" --focus="${FOCUS}" ./e2e.test -- --report-dir="${ARTIFACTS}" "${REPORT_PREFIX_FLAG[@]}" --disable-log-dump ${SKIP:-}
+"${GOBIN}/ginkgo" -v --timeout="${TIMEOUT}" --focus="${FOCUS}" ./e2e.test -- --report-dir="${ARTIFACTS}" "${REPORT_PREFIX_FLAG[@]}" --disable-log-dump ${SKIP:-} "$@"
 RESULT=$?
 
 popd >/dev/null
