@@ -36,6 +36,7 @@ ${CRD_REF_DOCS} \
     --source-path=pkg/apis/ \
     --config=./hack/api-docs/config.yaml \
     --renderer=markdown \
+    --max-depth=15 \
     --output-path=${WORKSPACE}
 
 
