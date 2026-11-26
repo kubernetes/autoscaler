@@ -33,9 +33,9 @@ trap cleanup EXIT
 if [[ -z $(which controller-gen) ]]; then
     (
         cd $WORKSPACE
-	      go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.16.5
+        GOBIN="${WORKSPACE}/bin" go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.16.5
     )
-    CONTROLLER_GEN=${GOBIN:-$(go env GOPATH)/bin}/controller-gen
+    CONTROLLER_GEN=${WORKSPACE}/bin/controller-gen
 else
     CONTROLLER_GEN=$(which controller-gen)
 fi
