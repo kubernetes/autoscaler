@@ -31,14 +31,23 @@ function cleanup() {
 }
 trap cleanup EXIT
 
-if [[ -z $(which controller-gen) || "$(controller-gen --version 2>/dev/null)" != "Version: ${CONTROLLER_GEN_VERSION}" ]]; then
+CONTROLLER_GEN=$(command -v controller-gen || true)
+INSTALLED_VERSION=""
+if [[ -n "${CONTROLLER_GEN}" ]]; then
+    # "controller-gen --version" prints "Version: vX.Y.Z"
+    INSTALLED_VERSION=$("${CONTROLLER_GEN}" --version 2>/dev/null | awk '{print $2}' || true)
+fi
+
+if [[ "${INSTALLED_VERSION}" != "${CONTROLLER_GEN_VERSION}" ]]; then
+    if [[ -n "${CONTROLLER_GEN}" ]]; then
+        echo "Found controller-gen ${INSTALLED_VERSION:-(unknown version)} at ${CONTROLLER_GEN}, but ${CONTROLLER_GEN_VERSION} is required."
+    fi
+    echo "Installing controller-gen ${CONTROLLER_GEN_VERSION} into a temporary directory."
     (
         cd $WORKSPACE
-	      go install sigs.k8s.io/controller-tools/cmd/controller-gen@${CONTROLLER_GEN_VERSION}
+        GOBIN="${WORKSPACE}/bin" go install sigs.k8s.io/controller-tools/cmd/controller-gen@${CONTROLLER_GEN_VERSION}
     )
-    CONTROLLER_GEN=${GOBIN:-$(go env GOPATH)/bin}/controller-gen
-else
-    CONTROLLER_GEN=$(which controller-gen)
+    CONTROLLER_GEN=${WORKSPACE}/bin/controller-gen
 fi
 
 # The following commands always returns an error because controller-gen does not accept keys other than strings.
