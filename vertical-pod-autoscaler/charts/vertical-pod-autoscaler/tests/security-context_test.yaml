@@ -1,0 +1,44 @@
+suite: pod and container security contexts
+templates:
+  - admission-controller-deployment.yaml
+  - recommender-deployment.yaml
+  - updater-deployment.yaml
+tests:
+  - it: renders defaults that meet the Pod Security Standards restricted profile
+    asserts:
+      - equal:
+          path: spec.template.spec.securityContext
+          value:
+            runAsNonRoot: true
+            runAsUser: 65534
+            seccompProfile:
+              type: RuntimeDefault
+      - equal:
+          path: spec.template.spec.containers[0].securityContext
+          value:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+
+  - it: merges a single overridden field into the defaults
+    set:
+      podSecurityContext.runAsUser: 1000
+    asserts:
+      - equal:
+          path: spec.template.spec.securityContext.runAsUser
+          value: 1000
+      - equal:
+          path: spec.template.spec.securityContext.seccompProfile.type
+          value: RuntimeDefault
+
+  - it: removes a default field that is set to null
+    set:
+      containerSecurityContext.readOnlyRootFilesystem: null
+    asserts:
+      - notExists:
+          path: spec.template.spec.containers[0].securityContext.readOnlyRootFilesystem
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.allowPrivilegeEscalation
+          value: false
