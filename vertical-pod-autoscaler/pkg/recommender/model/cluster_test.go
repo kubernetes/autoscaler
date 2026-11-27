@@ -82,6 +82,46 @@ func makeTestUsageSample() *ContainerUsageSampleWithKey {
 		testContainerID}
 }
 
+func TestAddOrUpdatePodLabelChanges(t *testing.T) {
+	for _, tc := range []struct {
+		name       string
+		labels     labels.Set
+		matchesVPA bool
+	}{
+		{name: "unchanged labels", labels: labels.Set{"label-1": "value-1"}, matchesVPA: true},
+		{name: "changed label value", labels: labels.Set{"label-1": "value-2"}, matchesVPA: false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			cluster := NewClusterState(testGcPeriod)
+			vpa := addTestVpa(cluster)
+			addTestPod(cluster)
+			container := addTestContainer(t, cluster)
+			oldKey := cluster.aggregateStateKeyForContainerID(testContainerID)
+			oldAggregator := container.aggregator
+			oldAggregate := cluster.aggregateStateMap[oldKey]
+			assert.Equal(t, 1, vpa.PodCount)
+			assert.Same(t, oldAggregate, vpa.aggregateContainerStates[oldKey])
+
+			cluster.AddOrUpdatePod(testPodID, tc.labels, corev1.PodSucceeded)
+
+			assert.Equal(t, corev1.PodSucceeded, cluster.Pods()[testPodID].Phase)
+			newKey := cluster.aggregateStateKeyForContainerID(testContainerID)
+			current := cluster.GetContainer(testContainerID).aggregator
+			if tc.matchesVPA {
+				assert.Equal(t, 1, vpa.PodCount)
+				assert.Same(t, oldAggregator, current)
+				assert.Same(t, oldAggregate, cluster.aggregateStateMap[newKey])
+				assert.Same(t, oldAggregate, vpa.aggregateContainerStates[newKey])
+			} else {
+				assert.Zero(t, vpa.PodCount)
+				assert.NotSame(t, oldAggregate, cluster.aggregateStateMap[newKey])
+				assert.Same(t, cluster.aggregateStateMap[newKey], current)
+				assert.NotContains(t, vpa.aggregateContainerStates, newKey)
+			}
+		})
+	}
+}
+
 func TestClusterAddSample(t *testing.T) {
 	// Create a pod with a single container.
 	cluster := NewClusterState(testGcPeriod)
