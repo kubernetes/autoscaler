@@ -167,6 +167,7 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 
 		delta := -2
 
+		expectGetNodePool(client, ng, ng.nodePool)
 		newCount := numberOfNodes + delta
 		client.On("UpdateNodePool",
 			ctx,
@@ -195,6 +196,7 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 		})
 
 		delta := -1
+		expectGetNodePool(client, ng, ng.nodePool)
 		newCount := ng.nodePool.Count + delta
 		client.On("UpdateNodePool",
 			ctx,
@@ -251,11 +253,119 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 			MaxNodes: 5,
 		})
 
+		expectGetNodePool(client, ng, ng.nodePool)
 		exp := fmt.Errorf("size decrease is too small. current: %d desired: %d min: %d",
 			numberOfNodes, numberOfNodes+delta, ng.MinSize(context.Background()))
 		err := ng.DecreaseTargetSize(context.Background(), delta)
 		assert.EqualError(t, err, exp.Error(), "size decrease is too small")
 	})
+
+	t.Run("decrease to number of existing nodes", func(t *testing.T) {
+		client := &doClientMock{}
+		ng := testNodeGroup(client, &godo.KubernetesNodePool{
+			Count:     40,
+			AutoScale: true,
+			MinNodes:  2,
+			MaxNodes:  80,
+			Nodes:     runningNodes(26),
+		})
+
+		expectGetNodePool(client, ng, ng.nodePool)
+		newCount := 26
+		client.On("UpdateNodePool",
+			ctx,
+			ng.clusterID,
+			ng.id,
+			&godo.KubernetesNodePoolUpdateRequest{
+				Count: &newCount,
+			},
+		).Return(
+			&godo.KubernetesNodePool{Count: newCount},
+			&godo.Response{},
+			nil,
+		).Once()
+
+		err := ng.DecreaseTargetSize(context.Background(), -14)
+		assert.NoError(t, err)
+		assert.Equal(t, newCount, ng.nodePool.Count)
+	})
+
+	t.Run("decrease below number of existing nodes", func(t *testing.T) {
+		client := &doClientMock{}
+		ng := testNodeGroup(client, &godo.KubernetesNodePool{
+			Count:     40,
+			AutoScale: true,
+			MinNodes:  2,
+			MaxNodes:  80,
+			Nodes:     runningNodes(26),
+		})
+
+		expectGetNodePool(client, ng, ng.nodePool)
+		err := ng.DecreaseTargetSize(context.Background(), -37)
+		assert.EqualError(t, err, "attempt to delete existing nodes. current: 40 desired: 3 existing: 26")
+		client.AssertNotCalled(t, "UpdateNodePool", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+		assert.Equal(t, 40, ng.nodePool.Count, "cached target size must not change")
+	})
+
+	t.Run("decrease below number of existing nodes with stale node group", func(t *testing.T) {
+		client := &doClientMock{}
+		// Snapshot taken before the new nodes came up.
+		ng := testNodeGroup(client, &godo.KubernetesNodePool{
+			Count:     40,
+			AutoScale: true,
+			MinNodes:  2,
+			MaxNodes:  80,
+			Nodes:     runningNodes(3),
+		})
+
+		expectGetNodePool(client, ng, &godo.KubernetesNodePool{
+			Count:     40,
+			AutoScale: true,
+			MinNodes:  2,
+			MaxNodes:  80,
+			Nodes:     runningNodes(26),
+		})
+		err := ng.DecreaseTargetSize(context.Background(), -37)
+		assert.EqualError(t, err, "attempt to delete existing nodes. current: 40 desired: 3 existing: 26")
+		client.AssertNotCalled(t, "UpdateNodePool", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+	})
+
+	t.Run("get node pool fails", func(t *testing.T) {
+		client := &doClientMock{}
+		ng := testNodeGroup(client, &godo.KubernetesNodePool{Count: 5})
+
+		client.On("GetNodePool", ctx, ng.clusterID, ng.id).
+			Return(&godo.KubernetesNodePool{}, &godo.Response{}, errors.New("api error")).Once()
+		err := ng.DecreaseTargetSize(context.Background(), -2)
+		assert.EqualError(t, err, "api error")
+		client.AssertNotCalled(t, "UpdateNodePool", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+	})
+
+	t.Run("get node pool returns no node pool", func(t *testing.T) {
+		client := &doClientMock{}
+		ng := testNodeGroup(client, &godo.KubernetesNodePool{Count: 5})
+
+		expectGetNodePool(client, ng, nil)
+		err := ng.DecreaseTargetSize(context.Background(), -2)
+		assert.EqualError(t, err, `node pool "1" not found`)
+		client.AssertNotCalled(t, "UpdateNodePool", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+	})
+}
+
+func expectGetNodePool(client *doClientMock, ng *NodeGroup, np *godo.KubernetesNodePool) {
+	client.On("GetNodePool", context.Background(), ng.clusterID, ng.id).
+		Return(np, &godo.Response{}, nil).Once()
+}
+
+func runningNodes(count int) []*godo.KubernetesNode {
+	nodes := make([]*godo.KubernetesNode, count)
+	for i := range nodes {
+		nodes[i] = &godo.KubernetesNode{
+			ID:     fmt.Sprintf("node-%d", i),
+			Status: &godo.KubernetesNodeStatus{State: "running"},
+		}
+	}
+	return nodes
 }
 
 func TestNodeGroup_DeleteNodes(t *testing.T) {
@@ -708,6 +818,11 @@ type doClientMock struct {
 func (m *doClientMock) ListNodePools(ctx context.Context, clusterID string, opts *godo.ListOptions) ([]*godo.KubernetesNodePool, *godo.Response, error) {
 	args := m.Called(ctx, clusterID, nil)
 	return args.Get(0).([]*godo.KubernetesNodePool), args.Get(1).(*godo.Response), args.Error(2)
+}
+
+func (m *doClientMock) GetNodePool(ctx context.Context, clusterID, poolID string) (*godo.KubernetesNodePool, *godo.Response, error) {
+	args := m.Called(ctx, clusterID, poolID)
+	return args.Get(0).(*godo.KubernetesNodePool), args.Get(1).(*godo.Response), args.Error(2)
 }
 
 func (m *doClientMock) UpdateNodePool(ctx context.Context, clusterID, poolID string, req *godo.KubernetesNodePoolUpdateRequest) (*godo.KubernetesNodePool, *godo.Response, error) {
