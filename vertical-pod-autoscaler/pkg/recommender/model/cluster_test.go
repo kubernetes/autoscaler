@@ -959,3 +959,115 @@ func TestVPAWithMatchingPods(t *testing.T) {
 		})
 	}
 }
+
+func TestLabelSetGCLifecycle(t *testing.T) {
+	tests := []struct {
+		name           string
+		containers     []string
+		sampled        string
+		deletePod      bool
+		gcAfter        time.Duration
+		wantAggregates int
+		wantLabels     bool
+	}{
+		{
+			name:       "keeps labels for a live pod after its aggregate expires",
+			containers: []string{"container-1"},
+			gcAfter:    9 * 24 * time.Hour,
+			wantLabels: true,
+		},
+		{
+			name:           "keeps labels for a surviving aggregate",
+			containers:     []string{"empty-container", "sampled-container"},
+			sampled:        "sampled-container",
+			deletePod:      true,
+			wantAggregates: 1,
+			wantLabels:     true,
+		},
+		{
+			name:      "removes orphaned labels that never had an aggregate",
+			deletePod: true,
+		},
+		{
+			name:       "removes orphaned labels when an empty aggregate is collected",
+			containers: []string{"empty-container"},
+			deletePod:  true,
+		},
+		{
+			name:       "removes orphaned labels when a sampled aggregate expires",
+			containers: []string{"sampled-container"},
+			sampled:    "sampled-container",
+			deletePod:  true,
+			gcAfter:    9 * 24 * time.Hour,
+		},
+	}
+
+	podID := PodID{Namespace: "namespace-1", PodName: "pod-1"}
+	podLabels := labels.Set{"label-key": "label-value"}
+	labelKey := labelSetKey(podLabels.String())
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			cluster := NewClusterState(time.Hour)
+			cluster.AddOrUpdatePod(podID, podLabels, corev1.PodRunning)
+			assert.Contains(t, cluster.labelSetMap, labelKey)
+
+			for _, name := range tc.containers {
+				containerID := ContainerID{PodID: podID, ContainerName: name}
+				if err := cluster.AddOrUpdateContainer(containerID, nil); err != nil {
+					t.Fatalf("%v", err)
+				}
+			}
+
+			now := time.Now()
+			var sampledKey AggregateStateKey
+			if tc.sampled != "" {
+				containerID := ContainerID{PodID: podID, ContainerName: tc.sampled}
+				sampledKey = cluster.aggregateStateKeyForContainerID(containerID)
+				if err := cluster.AddSample(&ContainerUsageSampleWithKey{
+					ContainerUsageSample: ContainerUsageSample{MeasureStart: now, Usage: 100, Resource: ResourceCPU},
+					Container:            containerID,
+				}); err != nil {
+					t.Fatalf("%v", err)
+				}
+			}
+			if tc.deletePod {
+				cluster.DeletePod(podID)
+			}
+
+			cluster.garbageCollectAggregateCollectionStates(context.Background(), now.Add(tc.gcAfter), nil)
+
+			assert.Len(t, cluster.aggregateStateMap, tc.wantAggregates)
+			if sampledKey != nil {
+				if tc.wantAggregates > 0 {
+					assert.Contains(t, cluster.aggregateStateMap, sampledKey)
+				} else {
+					assert.NotContains(t, cluster.aggregateStateMap, sampledKey)
+				}
+			}
+			if tc.wantLabels {
+				assert.Equal(t, podLabels, cluster.labelSetMap[labelKey])
+			} else {
+				assert.NotContains(t, cluster.labelSetMap, labelKey)
+			}
+		})
+	}
+}
+
+func TestLabelSetGCAfterPodLabelChange(t *testing.T) {
+	cluster := NewClusterState(time.Hour)
+	podID := PodID{Namespace: "namespace-1", PodName: "pod-1"}
+	oldLabels := labels.Set{"label": "v1"}
+	newLabels := labels.Set{"label": "v2"}
+	oldKey := labelSetKey(oldLabels.String())
+	newKey := labelSetKey(newLabels.String())
+
+	cluster.AddOrUpdatePod(podID, oldLabels, corev1.PodRunning)
+	cluster.AddOrUpdatePod(podID, newLabels, corev1.PodRunning)
+	assert.Contains(t, cluster.labelSetMap, oldKey)
+
+	cluster.garbageCollectAggregateCollectionStates(context.Background(), time.Now(), nil)
+
+	assert.NotContains(t, cluster.labelSetMap, oldKey)
+	assert.Equal(t, newLabels, cluster.labelSetMap[newKey])
+}
