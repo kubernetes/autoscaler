@@ -392,6 +392,93 @@ func TestUpdateFromPolicyMemoryAggregationIntervalCount(t *testing.T) {
 	}
 }
 
+func TestUpdateFromPolicyRecommendationPercentiles(t *testing.T) {
+	fullPolicy := &vpa_types.ContainerResourcePolicy{
+		RecommendationPercentiles: &vpa_types.RecommendationPercentiles{
+			CPU:    &vpa_types.ResourcePercentiles{Target: 95},
+			Memory: &vpa_types.ResourcePercentiles{Target: 80},
+		},
+	}
+	testCases := []struct {
+		name           string
+		policy         *vpa_types.ContainerResourcePolicy
+		featureEnabled bool
+		// expected (0,1] fractions: targetCPU, targetMem.
+		expected [2]float64
+	}{
+		{
+			name:           "Custom percentiles with feature enabled",
+			policy:         fullPolicy,
+			featureEnabled: true,
+			expected:       [2]float64{0.95, 0.8},
+		},
+		{
+			name:           "Custom percentiles with feature disabled - stay unset (0)",
+			policy:         fullPolicy,
+			featureEnabled: false,
+			expected:       [2]float64{},
+		},
+		{
+			name: "CPU only - memory stays unset (0)",
+			policy: &vpa_types.ContainerResourcePolicy{
+				RecommendationPercentiles: &vpa_types.RecommendationPercentiles{
+					CPU: &vpa_types.ResourcePercentiles{Target: 95},
+				},
+			},
+			featureEnabled: true,
+			expected:       [2]float64{0.95, 0},
+		},
+		{
+			name:           "Empty percentiles - stay unset (0)",
+			policy:         &vpa_types.ContainerResourcePolicy{RecommendationPercentiles: &vpa_types.RecommendationPercentiles{}},
+			featureEnabled: true,
+			expected:       [2]float64{},
+		},
+		{
+			name:           "Nil percentiles - stay unset (0)",
+			policy:         &vpa_types.ContainerResourcePolicy{},
+			featureEnabled: true,
+			expected:       [2]float64{},
+		},
+		{
+			name:           "Nil policy - stay unset (0)",
+			policy:         nil,
+			featureEnabled: true,
+			expected:       [2]float64{},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.PerVPAConfig, tc.featureEnabled)
+			cs := NewAggregateContainerState()
+			cs.UpdateFromPolicy(tc.policy)
+			got := [2]float64{cs.GetTargetCPUPercentile(), cs.GetTargetMemoryPercentile()}
+			assert.Equal(t, tc.expected, got)
+		})
+	}
+}
+
+func TestUpdateFromPolicyRecommendationPercentilesReset(t *testing.T) {
+	// AggregateContainerState is reused across reconciles, so removing a per-VPA
+	// override must reset the field back to 0 (global fallback), not keep the old value.
+	featuregatetesting.SetFeatureGateDuringTest(t, features.MutableFeatureGate, features.PerVPAConfig, true)
+	cs := NewAggregateContainerState()
+
+	cs.UpdateFromPolicy(&vpa_types.ContainerResourcePolicy{
+		RecommendationPercentiles: &vpa_types.RecommendationPercentiles{
+			CPU:    &vpa_types.ResourcePercentiles{Target: 95},
+			Memory: &vpa_types.ResourcePercentiles{Target: 80},
+		},
+	})
+	assert.Equal(t, 0.95, cs.GetTargetCPUPercentile())
+	assert.Equal(t, 0.8, cs.GetTargetMemoryPercentile())
+
+	// Re-applying a policy without the fields must clear the previous overrides.
+	cs.UpdateFromPolicy(&vpa_types.ContainerResourcePolicy{})
+	assert.Equal(t, float64(0), cs.GetTargetCPUPercentile())
+	assert.Equal(t, float64(0), cs.GetTargetMemoryPercentile())
+}
+
 func TestAggregateContainerStateIsExpiredWithCustomIntervalCount(t *testing.T) {
 	defaultInterval := GetAggregationsConfig().MemoryAggregationIntervalDuration
 	customCount := int64(4)
