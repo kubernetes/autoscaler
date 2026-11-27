@@ -40,3 +40,9 @@ Estimators:
 ## Example deployment file
 
 The [example.yaml](deploy/example.yaml) file is an example deployment where the nanny watches and resizes itself.
+
+## Releases
+
+Active development and future releases (`1.9+`) take place on the `master` branch (see [RELEASE.md](RELEASE.md)).
+
+Legacy release branches (`addon-resizer-release-1.8` and earlier `addon-resizer-release-*` branches) are frozen for historical reference and no longer accept changes or patch releases.
