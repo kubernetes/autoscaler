@@ -373,9 +373,9 @@ func (u *updater) RunOnce(ctx context.Context) {
 					klog.V(0).InfoS("In-place update deferred", "pod", klog.KObj(pod))
 					continue
 				}
-				// Pod passed priority calculator, meaning recommendations differ from spec.
-				// Retry the in-place update implicitly by ignoring until the next loop.
+				// A deferred restriction, including the disruption budget, must be respected.
 				klog.V(2).InfoS("In-place update deferred", "pod", klog.KObj(pod))
+				continue
 			case utils.InPlaceEvict:
 				// This should only happen for InPlaceOrRecreate mode
 				podsForEviction = append(podsForEviction, pod)
@@ -737,9 +737,8 @@ func filterNonInPlaceUpdatablePods(pods []*corev1.Pod, inplaceRestriction restri
 		switch decision {
 		case utils.InPlaceApproved:
 			return true
-		case utils.InPlaceInfeasible, utils.InPlaceDeferred:
-			// For InPlace mode, include infeasible/deferred pods to retry (no backoff for alpha)
-			// or to check if recommendation changed and apply a new patch while a previous update is in progress
+		case utils.InPlaceInfeasible:
+			// For InPlace mode, include infeasible pods to retry (no backoff for alpha)
 			return updateMode == vpa_types.UpdateModeInPlace
 		case utils.InPlaceEvict:
 			// For InPlaceOrRecreate, include so they can be redirected to eviction in the loop
