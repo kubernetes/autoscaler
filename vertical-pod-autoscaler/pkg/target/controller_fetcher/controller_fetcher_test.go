@@ -20,6 +20,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -423,4 +425,88 @@ func TestControllerFetcher(t *testing.T) {
 			}
 		})
 	}
+}
+
+// scaleFixedLater sets up f so that the /scale subresource of "iCanScale"
+// returns a 500 until fixScale is called, and adds a Deployment owned by it.
+// It returns the Deployment's key and the key expected once /scale works.
+func scaleFixedLater(t *testing.T, f *controllerFetcher) (key, expected *ControllerKeyWithAPIVersion, fixScale func()) {
+	t.Helper()
+	var scaleBroken atomic.Bool
+	scaleBroken.Store(true)
+	f.scaleNamespacer.(*scalefake.FakeScaleClient).PrependReactor("get", "iCanScale", func(action core.Action) (bool, runtime.Object, error) {
+		if scaleBroken.Load() {
+			return true, nil, apierrors.NewInternalError(errors.New(`the spec replicas field ".spec.shardCount" does not exist`))
+		}
+		return false, nil, nil // Fall through to the working reactor.
+	})
+	addController(t, f, &appsv1.Deployment{
+		TypeMeta: metav1.TypeMeta{Kind: "Deployment"},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      testDeployment,
+			Namespace: testNamespace,
+			OwnerReferences: []metav1.OwnerReference{
+				{APIVersion: "Foo/Foo", Controller: &trueVar, Kind: "ScalingResource", Name: "iCanScale"},
+			},
+		},
+	})
+	key = &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
+		Name: testDeployment, Kind: "Deployment", Namespace: testNamespace}}
+	expected = &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
+		Name: "iCanScale", Kind: "ScalingResource", Namespace: testNamespace}, ApiVersion: "Foo/Foo"}
+	return key, expected, func() { scaleBroken.Store(false) }
+}
+
+// A cached /scale error must be replaced once the custom resource is fixed and
+// the entry is refreshed, instead of being served forever.
+func TestControllerFetcher_RefreshReplacesCachedScaleError(t *testing.T) {
+	oldNow := now
+	defer func() { now = oldNow }()
+	startTime := oldNow()
+	timeNow := startTime
+	now = func() time.Time { return timeNow }
+
+	f := simpleControllerFetcher()
+	// Same settings as the VPA components: refreshed after 10-20 minutes.
+	f.scaleSubresourceCacheStorage = newControllerCacheStorage(10*time.Minute, time.Hour, 1)
+	key, expected, fixScale := scaleFixedLater(t, f)
+
+	_, err := f.FindTopMostWellKnownOrScalable(context.Background(), key)
+	assert.Error(t, err)
+
+	fixScale()
+	timeNow = startTime.Add(21 * time.Minute)
+	// Without a refresh, the cached error is still served.
+	_, err = f.FindTopMostWellKnownOrScalable(context.Background(), key)
+	assert.Error(t, err)
+
+	f.refreshCache()
+	got, err := f.FindTopMostWellKnownOrScalable(context.Background(), key)
+	assert.NoError(t, err)
+	assert.Equal(t, expected, got)
+}
+
+// The background refresh loop must replace a cached /scale error.
+func TestControllerFetcher_RefreshLoopReplacesCachedScaleError(t *testing.T) {
+	f := simpleControllerFetcher()
+	f.scaleSubresourceCacheStorage = newControllerCacheStorage(10*time.Millisecond, time.Hour, 1)
+	key, expected, fixScale := scaleFixedLater(t, f)
+
+	_, err := f.FindTopMostWellKnownOrScalable(context.Background(), key)
+	assert.Error(t, err)
+
+	fixScale()
+	ctx, cancel := context.WithCancel(context.Background())
+	var wg sync.WaitGroup
+	wg.Go(func() { f.periodicallyRefreshCache(ctx, 10*time.Millisecond) })
+	// Stop the loop and wait for it to return, so it can't outlive the test.
+	defer func() {
+		cancel()
+		wg.Wait()
+	}()
+
+	assert.Eventually(t, func() bool {
+		got, err := f.FindTopMostWellKnownOrScalable(context.Background(), key)
+		return err == nil && assert.ObjectsAreEqual(expected, got)
+	}, 5*time.Second, 10*time.Millisecond)
 }

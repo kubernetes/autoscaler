@@ -95,16 +95,22 @@ func (f *controllerFetcher) periodicallyRefreshCache(ctx context.Context, period
 		case <-ctx.Done():
 			return
 		case <-time.After(period):
-			keysToRefresh := f.scaleSubresourceCacheStorage.GetKeysToRefresh()
-			klog.V(5).InfoS("Starting to refresh entries in controllerFetchers scaleSubresourceCacheStorage")
-			for _, item := range keysToRefresh {
-				scale, err := f.scaleNamespacer.Scales(item.namespace).Get(context.TODO(), item.groupResource, item.name, metav1.GetOptions{})
-				f.scaleSubresourceCacheStorage.Refresh(item.namespace, item.groupResource, item.name, scale, err)
-			}
-			klog.V(5).InfoS("Finished refreshing entries in controllerFetchers scaleSubresourceCacheStorage", "refreshed", len(keysToRefresh))
-			f.scaleSubresourceCacheStorage.RemoveExpired()
+			f.refreshCache()
 		}
 	}
+}
+
+// refreshCache re-fetches the cache entries that are due for a refresh and
+// removes the expired ones.
+func (f *controllerFetcher) refreshCache() {
+	keysToRefresh := f.scaleSubresourceCacheStorage.GetKeysToRefresh()
+	klog.V(5).InfoS("Starting to refresh entries in controllerFetchers scaleSubresourceCacheStorage")
+	for _, item := range keysToRefresh {
+		scale, err := f.scaleNamespacer.Scales(item.namespace).Get(context.TODO(), item.groupResource, item.name, metav1.GetOptions{})
+		f.scaleSubresourceCacheStorage.Refresh(item.namespace, item.groupResource, item.name, scale, err)
+	}
+	klog.V(5).InfoS("Finished refreshing entries in controllerFetchers scaleSubresourceCacheStorage", "refreshed", len(keysToRefresh))
+	f.scaleSubresourceCacheStorage.RemoveExpired()
 }
 
 func (f *controllerFetcher) Start(ctx context.Context, loopPeriod time.Duration) {
