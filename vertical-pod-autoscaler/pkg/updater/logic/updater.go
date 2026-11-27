@@ -296,6 +296,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 
 	vpasWithInPlaceUpdatablePodsCounter := metrics_updater.NewVpasWithInPlaceUpdatablePodsCounter()
 	vpasWithInPlaceUpdatedPodsCounter := metrics_updater.NewVpasWithInPlaceUpdatedPodsCounter()
+	vpasInInitialDelayCounter := metrics_updater.NewVpasInInitialDelayCounter()
 
 	// using defer to protect against 'return' after evictionRateLimiter.Wait
 	defer controlledPodsCounter.Observe()
@@ -306,6 +307,7 @@ func (u *updater) RunOnce(ctx context.Context) {
 	defer inPlaceUpdatablePodsCounter.Observe()
 	defer vpasWithInPlaceUpdatablePodsCounter.Observe()
 	defer vpasWithInPlaceUpdatedPodsCounter.Observe()
+	defer vpasInInitialDelayCounter.Observe()
 
 	for vpa, livePods := range controlledPods {
 		vpaSize := len(livePods)
@@ -331,7 +333,11 @@ func (u *updater) RunOnce(ctx context.Context) {
 			})
 		}
 
-		if updateMode == vpa_types.UpdateModeOff || updateMode == vpa_types.UpdateModeInitial {
+		inInitialDelay := vpa_api_util.InInitialDelayWindow(vpa)
+		if inInitialDelay {
+			vpasInInitialDelayCounter.Add(vpaSize, updateMode, 1)
+		}
+		if updateMode == vpa_types.UpdateModeOff || updateMode == vpa_types.UpdateModeInitial || inInitialDelay {
 			continue
 		}
 

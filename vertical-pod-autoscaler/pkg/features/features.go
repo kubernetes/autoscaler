@@ -61,6 +61,13 @@ const (
 	// InPlace enables the InPlace update mode to be used.
 	// Requires KEP-1287 InPlacePodVerticalScaling feature-gate to be enabled on the cluster.
 	InPlace featuregate.Feature = "InPlace"
+
+	// alpha: v1.9.0
+	// components: admission-controller, recommender, updater
+
+	// VPAInitialDelay enables the updatePolicy.initialDelaySeconds field, which
+	// delays actuation of recommendations for a period after the VPA is created.
+	VPAInitialDelay featuregate.Feature = "VPAInitialDelay"
 )
 
 // MutableFeatureGate is a mutable, versioned, global FeatureGate.

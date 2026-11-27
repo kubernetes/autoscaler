@@ -140,6 +140,14 @@ var (
 		}, []string{"vpa_size_log2", "vpa_name", "vpa_namespace"},
 	)
 
+	vpasInInitialDelayCount = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: metricsNamespace,
+			Name:      "vpas_in_initial_delay_total",
+			Help:      "Number of VPA objects in their initial delay window.",
+		}, []string{"vpa_size_log2", "update_mode"},
+	)
+
 	functionLatency = metrics.CreateExecutionTimeMetric(metricsNamespace,
 		"Time spent in various parts of VPA Updater main loop.")
 
@@ -167,6 +175,7 @@ func Register() {
 		vpasWithInPlaceUpdatablePodsCount,
 		vpasWithInPlaceUpdatedPodsCount,
 		failedInPlaceUpdateAttempts,
+		vpasInInitialDelayCount,
 		functionLatency,
 		admissionControllerStatusInvalidCount,
 	}
@@ -224,6 +233,12 @@ func NewVpasWithEvictablePodsCounter() *UpdateModeAndSizeBasedGauge {
 func NewVpasWithEvictedPodsCounter() *UpdateModeAndSizeBasedGauge {
 	vpasWithEvictedPodsCount.Reset()
 	return newModeAndSizeBasedGauge(vpasWithEvictedPodsCount)
+}
+
+// NewVpasInInitialDelayCounter returns a wrapper for counting VPA objects in their initial delay window
+func NewVpasInInitialDelayCounter() *UpdateModeAndSizeBasedGauge {
+	vpasInInitialDelayCount.Reset()
+	return newModeAndSizeBasedGauge(vpasInInitialDelayCount)
 }
 
 // AddEvictedPod increases the counter of pods evicted by Updater, by given VPA size
