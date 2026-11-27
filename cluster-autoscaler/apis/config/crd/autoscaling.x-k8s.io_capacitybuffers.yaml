@@ -261,6 +261,9 @@ spec:
     served: true
     storage: false
     subresources:
+      scale:
+        specReplicasPath: .spec.replicas
+        statusReplicasPath: .status.replicas
       status: {}
   - additionalPrinterColumns:
     - description: The strategy to be used.
@@ -512,4 +515,7 @@ spec:
     served: true
     storage: true
     subresources:
+      scale:
+        specReplicasPath: .spec.replicas
+        statusReplicasPath: .status.replicas
       status: {}
