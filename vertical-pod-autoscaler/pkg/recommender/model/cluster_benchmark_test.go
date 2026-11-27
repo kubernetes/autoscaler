@@ -49,6 +49,8 @@ func BenchmarkGetContributiveAggregateStateKeysActivePods(b *testing.B) {
 				cluster.getContributiveAggregateStateKeys(ctx, testControllerFetcher)
 			}
 		})
+	}
+}
 
 func BenchmarkAddOrUpdatePodUnchangedLabels(b *testing.B) {
 	cluster := NewClusterState(testGcPeriod)
