@@ -359,14 +359,11 @@ func toInstanceStatus(status hcloud.ServerStatus) *cloudprovider.InstanceStatus 
 
 	st := &cloudprovider.InstanceStatus{}
 	switch status {
-	case hcloud.ServerStatusInitializing:
-	case hcloud.ServerStatusStarting:
+	case hcloud.ServerStatusInitializing, hcloud.ServerStatusStarting:
 		st.State = cloudprovider.InstanceCreating
 	case hcloud.ServerStatusRunning:
 		st.State = cloudprovider.InstanceRunning
-	case hcloud.ServerStatusOff:
-	case hcloud.ServerStatusDeleting:
-	case hcloud.ServerStatusStopping:
+	case hcloud.ServerStatusOff, hcloud.ServerStatusDeleting, hcloud.ServerStatusStopping:
 		st.State = cloudprovider.InstanceDeleting
 	default:
 		st.ErrorInfo = &cloudprovider.InstanceErrorInfo{
