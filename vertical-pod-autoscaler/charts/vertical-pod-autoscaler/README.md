@@ -325,6 +325,7 @@ This chart includes [helm-unittest](https://github.com/helm-unittest/helm-unitte
 | fullnameOverride | string | `nil` |  |
 | imagePullSecrets | list | `[]` |  |
 | nameOverride | string | `nil` |  |
+| namespaceOverride | string | `""` | Override the namespace |
 | podSecurityContext.runAsNonRoot | bool | `true` |  |
 | podSecurityContext.runAsUser | int | `65534` |  |
 | podSecurityContext.seccompProfile.type | string | `"RuntimeDefault"` |  |
