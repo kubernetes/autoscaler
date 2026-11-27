@@ -53,7 +53,19 @@ const (
 	evictionWatchJitterFactor = 0.5
 	// DefaultRecommenderName recommender name explicitly (and so implicitly specify that the default recommender should handle them)
 	DefaultRecommenderName = "default"
+	// pendingOOMRetention is how long an OOM observation is kept when the cluster state cannot
+	// accept it yet.
+	pendingOOMRetention = 10 * time.Minute
+	// pendingOOMsCapacity bounds the buffer so a recommender that never sees
+	// the pod cannot grow it without limit.
+	pendingOOMsCapacity = 1000
 )
+
+// pendingOOM is an OOM observation waiting for its pod to enter the cluster state.
+type pendingOOM struct {
+	info      oom.OomInfo
+	firstSeen time.Time
+}
 
 // ClusterStateFeeder can update state of clusterState object.
 type ClusterStateFeeder interface {
@@ -226,6 +238,9 @@ type clusterStateFeeder struct {
 	ignoredNamespaces   []string
 	vpaObjectNamespace  string
 	podsToDelete        []model.PodID
+	// pendingOOMs holds OOM observations whose pod is not in the cluster state yet; see
+	// recordOOM and retryPendingOOMs.
+	pendingOOMs []pendingOOM
 }
 
 func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider history.HistoryProvider) {
@@ -484,6 +499,10 @@ func (feeder *clusterStateFeeder) DeleteRemovedPods() {
 }
 
 func (feeder *clusterStateFeeder) LoadRealTimeMetrics(ctx context.Context) {
+	// Retry before draining, so an OOM observed while its pod was not yet in the cluster state
+	// is recorded as soon as the pod becomes known.
+	feeder.retryPendingOOMs()
+
 	containersMetrics, err := feeder.metricsClient.GetContainersMetrics(ctx)
 	if err != nil {
 		klog.ErrorS(err, "Cannot get ContainerMetricsSnapshot from MetricsClient")
@@ -519,14 +538,71 @@ Loop:
 		select {
 		case oomInfo := <-feeder.oomChan:
 			klog.V(3).InfoS("OOM detected", "oomInfo", oomInfo)
-			if err = feeder.clusterState.RecordOOM(oomInfo.ContainerID, oomInfo.Timestamp, oomInfo.Memory); err != nil {
-				klog.V(0).InfoS("Failed to record OOM", "oomInfo", oomInfo, "error", err)
-			}
+			feeder.recordOOM(oomInfo)
 		default:
 			break Loop
 		}
 	}
 	metrics_recommender.RecordAggregateContainerStatesCount(feeder.clusterState.StateMapSize())
+}
+
+// recordOOM records an OOM observation into the cluster state. When the observation belongs to a pod
+// that the cluster state does not track yet, it is buffered so that retryPendingOOMs can record it
+// once a later cycle does track the pod. A pod recreated faster than it is observed has no entry when
+// its event arrives: pods enter the cluster state in LoadPods and the pod informer does not watch
+// Pending pods, so RecordOOM reports a KeyError for exactly the OOM that matters most. Dropping it
+// makes the recommendation miss the memory spike; retrying is safe because RecordOOM takes the
+// maximum.
+func (feeder *clusterStateFeeder) recordOOM(oomInfo oom.OomInfo) {
+	err := feeder.clusterState.RecordOOM(oomInfo.ContainerID, oomInfo.Timestamp, oomInfo.Memory)
+	if err == nil {
+		return
+	}
+	if _, isKeyError := err.(model.KeyError); isKeyError {
+		if len(feeder.pendingOOMs) >= pendingOOMsCapacity {
+			oldest := 0
+			for i, pending := range feeder.pendingOOMs {
+				if pending.firstSeen.Before(feeder.pendingOOMs[oldest].firstSeen) {
+					oldest = i
+				}
+			}
+			klog.V(0).InfoS("Removing the oldest buffered OOM event, retry buffer full",
+				"oomInfo", feeder.pendingOOMs[oldest].info, "capacity", pendingOOMsCapacity)
+			feeder.pendingOOMs = append(feeder.pendingOOMs[:oldest], feeder.pendingOOMs[oldest+1:]...)
+		}
+		klog.V(2).InfoS("Buffering OOM event for a later retry, pod is not tracked yet", "oomInfo", oomInfo)
+		metrics_recommender.RecordOOMEventBuffered()
+		feeder.pendingOOMs = append(feeder.pendingOOMs, pendingOOM{info: oomInfo, firstSeen: time.Now()})
+		return
+	}
+	klog.V(0).InfoS("Failed to record OOM", "oomInfo", oomInfo, "error", err)
+}
+
+// retryPendingOOMs records buffered observations whose pod has since entered the cluster state, and
+// forgets the ones that outlived their retention or failed for a non-KeyError reason.
+func (feeder *clusterStateFeeder) retryPendingOOMs() {
+	if len(feeder.pendingOOMs) == 0 {
+		return
+	}
+	now := time.Now()
+	retryLater := make([]pendingOOM, 0, len(feeder.pendingOOMs))
+	for _, pending := range feeder.pendingOOMs {
+		age := now.Sub(pending.firstSeen)
+		if age > pendingOOMRetention {
+			klog.V(0).InfoS("Giving up on a pending OOM event", "oomInfo", pending.info, "age", age)
+			continue
+		}
+		err := feeder.clusterState.RecordOOM(pending.info.ContainerID, pending.info.Timestamp, pending.info.Memory)
+		if err == nil {
+			continue
+		}
+		if _, isKeyError := err.(model.KeyError); !isKeyError {
+			klog.V(0).InfoS("Failed to record pending OOM", "oomInfo", pending.info, "error", err)
+			continue
+		}
+		retryLater = append(retryLater, pending)
+	}
+	feeder.pendingOOMs = retryLater
 }
 
 func (feeder *clusterStateFeeder) matchesVPA(pod *spec.BasicPodSpec) bool {
