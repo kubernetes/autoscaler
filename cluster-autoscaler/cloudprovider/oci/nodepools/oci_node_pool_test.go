@@ -56,7 +56,7 @@ func TestDeletePastMinSize(t *testing.T) {
 	}
 }
 
-func TestDeleteCreateErrorNodeWithoutInstanceIDDecreasesTargetSize(t *testing.T) {
+func TestDeleteCreateErrorPlaceholderDecreasesTargetSize(t *testing.T) {
 	client := fake.NewSimpleClientset()
 
 	manager := &mockManager{
@@ -68,8 +68,8 @@ func TestDeleteCreateErrorNodeWithoutInstanceIDDecreasesTargetSize(t *testing.T)
 					State: cloudprovider.InstanceCreating,
 					ErrorInfo: &cloudprovider.InstanceErrorInfo{
 						ErrorClass:   cloudprovider.OutOfResourcesErrorClass,
-						ErrorCode:    "QuotaExceeded",
-						ErrorMessage: "quota exceeded",
+						ErrorCode:    "InternalError",
+						ErrorMessage: "Out of host capacity",
 					},
 				},
 			},
@@ -86,7 +86,7 @@ func TestDeleteCreateErrorNodeWithoutInstanceIDDecreasesTargetSize(t *testing.T)
 
 	nodeWithoutInstanceID := &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "",
+			Name: "instance_placeholdernodepool-0",
 			Annotations: map[string]string{
 				cloudprovider.FakeNodeReasonAnnotation: cloudprovider.FakeNodeCreateError,
 			},
