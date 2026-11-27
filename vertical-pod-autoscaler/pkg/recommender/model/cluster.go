@@ -302,16 +302,26 @@ func (cluster *clusterState) AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAuto
 	}
 
 	vpa, vpaExists := cluster.vpas[vpaID]
-	if vpaExists && (vpa.PodSelector.String() != selector.String()) {
-		// Pod selector was changed. Delete the VPA object and recreate
-		// it with the new selector.
-		if err := cluster.DeleteVpa(vpaID); err != nil {
-			return err
+	var preservedInitialState ContainerNameToAggregateStateMap
+	if vpaExists && selectorsDiffer(vpa.PodSelector, selector) {
+		// A target resolution failure gives labels.Nothing(), so keep the previous selector.
+		if isEmptySelector(selector) && !isEmptySelector(vpa.PodSelector) {
+			selector = vpa.PodSelector
+		} else {
+			// Keep the history loaded from checkpoints when recreating the VPA.
+			preservedInitialState = vpa.ContainersInitialAggregateState
+			if err := cluster.DeleteVpa(vpaID); err != nil {
+				return err
+			}
+			vpaExists = false
+			vpa = nil
 		}
-		vpaExists = false
 	}
 	if !vpaExists {
 		vpa = NewVpa(vpaID, selector, apiObject.CreationTimestamp.Time)
+		if len(preservedInitialState) > 0 {
+			vpa.ContainersInitialAggregateState = preservedInitialState
+		}
 		cluster.vpas[vpaID] = vpa
 		for aggregationKey, aggregation := range cluster.aggregateStateMap {
 			vpa.UseAggregationIfMatching(aggregationKey, aggregation)
@@ -327,6 +337,19 @@ func (cluster *clusterState) AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAuto
 	vpa.SetAPIVersion(apiObject.GetObjectKind().GroupVersionKind().Version)
 	vpa.Generation = apiObject.Generation
 	return nil
+}
+
+// isEmptySelector reports whether s is labels.Nothing(), which getSelector
+// returns when the target can't be resolved. Everything() also stringifies
+// to "", so Empty() tells them apart.
+func isEmptySelector(s labels.Selector) bool {
+	return s == nil || (s.String() == "" && !s.Empty())
+}
+
+// selectorsDiffer compares selectors by String(), but also tells Nothing()
+// and Everything() apart.
+func selectorsDiffer(a, b labels.Selector) bool {
+	return isEmptySelector(a) != isEmptySelector(b) || a.String() != b.String()
 }
 
 // DeleteVpa removes a VPA with the given ID from the clusterState.
