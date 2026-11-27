@@ -60,6 +60,9 @@ spec:
           {{- end }}
           args:
             - --stderrthreshold=info
+            {{- with .Values.vpaObjectNamespace }}
+            - --vpa-object-namespace={{ . }}
+            {{- end }}
             {{- /* Smart auto-enable: if enabled is null, auto-enable when replicas > 1 */ -}}
             {{- $leaderElectionEnabled := .Values.recommender.leaderElection.enabled }}
             {{- if eq $leaderElectionEnabled nil }}

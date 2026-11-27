@@ -76,6 +76,9 @@ spec:
           {{- end }}
           args:
             - --stderrthreshold=info
+            {{- with .Values.vpaObjectNamespace }}
+            - --vpa-object-namespace={{ . }}
+            {{- end }}
             {{- if eq (include "vertical-pod-autoscaler.updater.leaderElectionEnabled" .) "true" }}
             - --leader-elect=true
             - --leader-elect-resource-namespace={{ .Values.updater.leaderElection.resourceNamespace | default .Release.Namespace }}
