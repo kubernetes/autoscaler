@@ -26,6 +26,7 @@ import (
 	"testing"
 	"time"
 
+	authv1 "k8s.io/api/authorization/v1"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -632,10 +633,11 @@ const fifteenSecondDuration = time.Second * 15
 type testMachineController struct {
 	*machineController
 
-	stopCh           chan struct{}
-	testingTb        testing.TB
-	dynamicClientset *fakedynamic.FakeDynamicClient
-	discoveryClient  *fakediscovery.FakeDiscovery
+	stopCh              chan struct{}
+	testingTb           testing.TB
+	dynamicClientset    *fakedynamic.FakeDynamicClient
+	managementClientset *fakekube.Clientset
+	discoveryClient     *fakediscovery.FakeDiscovery
 }
 
 // NewTestMachineController returns a new machineController wrapped by a test harness and associated with a testing interface.
@@ -643,6 +645,20 @@ func NewTestMachineController(t testing.TB) *testMachineController {
 	t.Helper()
 
 	kubeclientSet := fakekube.NewSimpleClientset()
+	managementClientset := fakekube.NewSimpleClientset()
+	managementClientset.PrependReactor("create", "selfsubjectaccessreviews", func(action clientgotesting.Action) (bool, runtime.Object, error) {
+		createAction, ok := action.(clientgotesting.CreateAction)
+		if !ok {
+			return false, nil, nil
+		}
+		sar, ok := createAction.GetObject().(*authv1.SelfSubjectAccessReview)
+		if !ok {
+			return false, nil, nil
+		}
+		sar = sar.DeepCopy()
+		sar.Status.Allowed = true
+		return true, sar, nil
+	})
 	dynamicClientset := fakedynamic.NewSimpleDynamicClientWithCustomListKinds(
 		runtime.NewScheme(),
 		map[schema.GroupVersionResource]string{
@@ -832,7 +848,7 @@ func NewTestMachineController(t testing.TB) *testMachineController {
 	scaleClient.AddReactor("*", "*", scaleReactor)
 
 	stopCh := make(chan struct{})
-	controller, err := newMachineController(dynamicClientset, kubeclientSet, discoveryClient, scaleClient, cloudprovider.NodeGroupDiscoveryOptions{}, stopCh)
+	controller, err := newMachineController(dynamicClientset, managementClientset, kubeclientSet, discoveryClient, scaleClient, cloudprovider.NodeGroupDiscoveryOptions{}, stopCh)
 	if err != nil {
 		t.Fatal("failed to create test controller")
 	}
@@ -842,11 +858,12 @@ func NewTestMachineController(t testing.TB) *testMachineController {
 	}
 
 	return &testMachineController{
-		machineController: controller,
-		stopCh:            stopCh,
-		testingTb:         t,
-		dynamicClientset:  dynamicClientset,
-		discoveryClient:   discoveryClient,
+		machineController:   controller,
+		stopCh:              stopCh,
+		testingTb:           t,
+		dynamicClientset:    dynamicClientset,
+		managementClientset: managementClientset,
+		discoveryClient:     discoveryClient,
 	}
 }
 
