@@ -5,6 +5,7 @@ on:
     paths:
       - 'vertical-pod-autoscaler/**'
       - '!vertical-pod-autoscaler/**/*.md'
+      - '.github/workflows/vpa-benchmark.yaml'
 
 permissions:
   contents: read
@@ -35,17 +36,35 @@ jobs:
           go-version-file: pr/vertical-pod-autoscaler/go.mod
           cache-dependency-path: pr/vertical-pod-autoscaler/go.sum
 
-      - name: Run Benchmark (Base branch)
+      - name: Run Benchmarks (base and PR interleaved)
         shell: bash
         run: |
-          cd base/vertical-pod-autoscaler
-          go test -run='^$' -bench=. -count=10 ./... | tee ../../base.txt
+          # Run one count at a time, alternating between base and PR, so both sides see
+          # the same runner conditions. Running all of base and then all of PR lets a slow
+          # period on the runner land on one side only.
+          # Only packages that contain benchmarks are run, so each round does not have to
+          # start every test binary.
+          bench_pkgs() {
+            (
+              cd "$1/vertical-pod-autoscaler"
+              go list -f '{{.ImportPath}} {{.Dir}}' ./... | while read -r pkg dir; do
+                if grep -qsE '^func Benchmark' "$dir"/*_test.go; then echo "$pkg"; fi
+              done
+            )
+          }
+          declare -A pkgs
+          pkgs[base]=$(bench_pkgs base)
+          pkgs[pr]=$(bench_pkgs pr)
 
-      - name: Run Benchmark (PR branch)
-        shell: bash
-        run: |
-          cd pr/vertical-pod-autoscaler
-          go test -run='^$' -bench=. -count=10 ./... | tee ../../pr.txt
+          for i in $(seq 10); do
+            if (( i % 2 )); then sides="base pr"; else sides="pr base"; fi
+            for side in $sides; do
+              (
+                cd "$side/vertical-pod-autoscaler"
+                go test -run='^$' -bench=. -count=1 ${pkgs[$side]}
+              ) | tee -a "$side.txt"
+            done
+          done
 
       - name: Install benchstat
         run: go install golang.org/x/perf/cmd/benchstat@v0.0.0-20260813145340-fd4a688df892
