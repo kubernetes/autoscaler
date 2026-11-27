@@ -51,3 +51,17 @@ func BenchmarkGetContributiveAggregateStateKeysActivePods(b *testing.B) {
 		})
 	}
 }
+
+func BenchmarkAddOrUpdatePodUnchangedLabels(b *testing.B) {
+	cluster := NewClusterState(testGcPeriod)
+	podLabels := labels.Set{}
+	for i := range 12 {
+		podLabels[fmt.Sprintf("label-%d", i)] = fmt.Sprintf("value-%d", i)
+	}
+	cluster.AddOrUpdatePod(testPodID, podLabels, corev1.PodRunning)
+
+	b.ReportAllocs()
+	for b.Loop() {
+		cluster.AddOrUpdatePod(testPodID, podLabels, corev1.PodRunning)
+	}
+}
