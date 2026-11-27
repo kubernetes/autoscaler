@@ -38,6 +38,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/fake"
 	k8stesting "k8s.io/client-go/testing"
+
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/config"
 )
 
 func generateCerts(t *testing.T, org string, caCert *x509.Certificate, caKey *rsa.PrivateKey) (certPemBytes []byte, certKeyBytes []byte) {
@@ -197,20 +199,7 @@ func TestChangedCAReloader(t *testing.T) {
 
 	testClientSet := fake.NewClientset()
 
-	selfRegistration(
-		testClientSet,
-		readFile(caPath),
-		0*time.Second,
-		"default",
-		"vpa-service",
-		"http://example.com/",
-		true,
-		int32(32),
-		"",
-		[]string{},
-		false,
-		"key1:value1,key2:value2",
-	)
+	selfRegistration(testClientSet, readFile(caPath), 0*time.Second, config.DefaultAdmissionControllerConfig())
 
 	webhookConfigInterface := testClientSet.AdmissionregistrationV1().MutatingWebhookConfigurations()
 	oldWebhookConfig, err := webhookConfigInterface.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
@@ -311,20 +300,7 @@ func TestUnchangedCAReloader(t *testing.T) {
 
 	testClientSet := fake.NewClientset()
 
-	selfRegistration(
-		testClientSet,
-		readFile(caPath),
-		0*time.Second,
-		"default",
-		"vpa-service",
-		"http://example.com/",
-		true,
-		int32(32),
-		"",
-		[]string{},
-		false,
-		"key1:value1,key2:value2",
-	)
+	selfRegistration(testClientSet, readFile(caPath), 0*time.Second, config.DefaultAdmissionControllerConfig())
 
 	webhookConfigInterface := testClientSet.AdmissionregistrationV1().MutatingWebhookConfigurations()
 	oldWebhookConfig, err := webhookConfigInterface.Get(context.TODO(), webhookConfigName, metav1.GetOptions{})
