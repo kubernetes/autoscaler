@@ -1053,3 +1053,21 @@ func TestLabelSetGCLifecycle(t *testing.T) {
 		})
 	}
 }
+
+func TestLabelSetGCAfterPodLabelChange(t *testing.T) {
+	cluster := NewClusterState(time.Hour)
+	podID := PodID{Namespace: "namespace-1", PodName: "pod-1"}
+	oldLabels := labels.Set{"label": "v1"}
+	newLabels := labels.Set{"label": "v2"}
+	oldKey := labelSetKey(oldLabels.String())
+	newKey := labelSetKey(newLabels.String())
+
+	cluster.AddOrUpdatePod(podID, oldLabels, corev1.PodRunning)
+	cluster.AddOrUpdatePod(podID, newLabels, corev1.PodRunning)
+	assert.Contains(t, cluster.labelSetMap, oldKey)
+
+	cluster.garbageCollectAggregateCollectionStates(context.Background(), time.Now(), nil)
+
+	assert.NotContains(t, cluster.labelSetMap, oldKey)
+	assert.Equal(t, newLabels, cluster.labelSetMap[newKey])
+}

@@ -25,7 +25,7 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	set "k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/klog/v2"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
@@ -428,7 +428,7 @@ func (cluster *clusterState) garbageCollectAggregateCollectionStates(ctx context
 	klog.V(1).InfoS("Garbage collection of AggregateCollectionStates triggered")
 	keysToDelete := make([]AggregateStateKey, 0)
 	contributiveKeys := cluster.getContributiveAggregateStateKeys(ctx, controllerFetcher)
-	referencedLabelSetMaps := set.New[labelSetKey]()
+	referencedLabelSetMaps := sets.New[labelSetKey]()
 	for key, aggregateContainerState := range cluster.aggregateStateMap {
 		isKeyContributive := contributiveKeys[key]
 		if !isKeyContributive && aggregateContainerState.isEmpty() {
@@ -463,9 +463,9 @@ func (cluster *clusterState) garbageCollectAggregateCollectionStates(ctx context
 
 // garbageCollectLabelSetMaps removes labelSetMap entries that are no longer
 // referenced by any tracked pod or surviving aggregates after GC.
-func (cluster *clusterState) garbageCollectLabelSetMaps(referencedLabelSetMaps set.Set[labelSetKey]) {
+func (cluster *clusterState) garbageCollectLabelSetMaps(referencedLabelSetMaps sets.Set[labelSetKey]) {
 	for key := range cluster.labelSetMap {
-		if _, referenced := referencedLabelSetMaps[key]; !referenced {
+		if !referencedLabelSetMaps.Has(key) {
 			klog.V(1).InfoS("Removing label set map.", "key", key)
 			delete(cluster.labelSetMap, key)
 		}
