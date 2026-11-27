@@ -479,3 +479,92 @@ func TestRecommendationHasLowerResource(t *testing.T) {
 		})
 	}
 }
+
+func TestCapResources(t *testing.T) {
+	testCases := []struct {
+		desc         string
+		resources    corev1.ResourceList
+		maxResources corev1.ResourceList
+		expected     corev1.ResourceList
+	}{
+		{
+			desc: "resources above the max are capped down to it",
+			resources: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("101m"),
+				corev1.ResourceMemory: resource.MustParse("1025"),
+			},
+			maxResources: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("100500u"),
+				corev1.ResourceMemory: resource.MustParse("1024500m"),
+			},
+			expected: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("100500u"),
+				corev1.ResourceMemory: resource.MustParse("1024500m"),
+			},
+		},
+		{
+			desc: "resources below the max are kept",
+			resources: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("1"),
+				corev1.ResourceMemory: resource.MustParse("10Mi"),
+			},
+			maxResources: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("2"),
+				corev1.ResourceMemory: resource.MustParse("20Mi"),
+			},
+			expected: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("1"),
+				corev1.ResourceMemory: resource.MustParse("10Mi"),
+			},
+		},
+		{
+			desc: "resources equal to the max are kept",
+			resources: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("2"),
+				corev1.ResourceMemory: resource.MustParse("20Mi"),
+			},
+			maxResources: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("2"),
+				corev1.ResourceMemory: resource.MustParse("20Mi"),
+			},
+			expected: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("2"),
+				corev1.ResourceMemory: resource.MustParse("20Mi"),
+			},
+		},
+		{
+			desc: "a resource missing from maxResources is left unchanged",
+			resources: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("101m"),
+				corev1.ResourceMemory: resource.MustParse("1025"),
+			},
+			maxResources: corev1.ResourceList{
+				corev1.ResourceCPU: resource.MustParse("100500u"),
+			},
+			expected: corev1.ResourceList{
+				corev1.ResourceCPU:    resource.MustParse("100500u"),
+				corev1.ResourceMemory: resource.MustParse("1025"),
+			},
+		},
+		{
+			desc:         "no resources stays nil",
+			resources:    nil,
+			maxResources: corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("1")},
+			expected:     nil,
+		},
+		{
+			desc:         "nil maxResources leaves resources unchanged",
+			resources:    corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("101m")},
+			maxResources: nil,
+			expected:     corev1.ResourceList{corev1.ResourceCPU: resource.MustParse("101m")},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.desc, func(t *testing.T) {
+			resources := tc.resources.DeepCopy()
+			CapResources(resources, tc.maxResources)
+			assert.Equal(t, tc.expected, resources, "resources should be mutated in place")
+		})
+	}
+}
