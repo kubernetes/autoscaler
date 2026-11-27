@@ -197,11 +197,11 @@ func (m *AzureManager) parseSKUAndVMsAgentpoolNameFromSpecName(name string) (boo
 		agentPoolName := parts[0]
 		sku := parts[1]
 
-		vmsPoolMap := m.azureCache.getVMsPoolMap()
-		if _, ok := vmsPoolMap[agentPoolName]; ok {
+		if _, ok := m.azureCache.readVMsPool(agentPoolName); ok {
 			return true, agentPoolName, sku
 		}
 	}
+
 	return false, "", ""
 }
 
@@ -324,20 +324,23 @@ func (m *AzureManager) GetNodeGroupForInstance(instance *azureRef) (cloudprovide
 
 // GetScaleSetOptions parse options extracted from VMSS tags and merges them with provided defaults
 func (m *AzureManager) GetScaleSetOptions(scaleSetName string, defaults config.NodeGroupAutoscalingOptions) *config.NodeGroupAutoscalingOptions {
-	options := m.azureCache.getAutoscalingOptions(azureRef{Name: scaleSetName})
-	if options == nil || len(options) == 0 {
+	options, ok := m.azureCache.getAutoscalingOptions(azureRef{Name: scaleSetName})
+	if !ok || len(options) == 0 {
 		return &defaults
 	}
 
 	if opt, ok := getFloat64Option(options, scaleSetName, config.DefaultScaleDownUtilizationThresholdKey); ok {
 		defaults.ScaleDownUtilizationThreshold = opt
 	}
+
 	if opt, ok := getFloat64Option(options, scaleSetName, config.DefaultScaleDownGpuUtilizationThresholdKey); ok {
 		defaults.ScaleDownGpuUtilizationThreshold = opt
 	}
+
 	if opt, ok := getDurationOption(options, scaleSetName, config.DefaultScaleDownUnneededTimeKey); ok {
 		defaults.ScaleDownUnneededTime = opt
 	}
+
 	if opt, ok := getDurationOption(options, scaleSetName, config.DefaultScaleDownUnreadyTimeKey); ok {
 		defaults.ScaleDownUnreadyTime = opt
 	}
@@ -364,13 +367,13 @@ func (m *AzureManager) getFilteredNodeGroups(filter []labelAutoDiscoveryConfig) 
 
 // getFilteredScaleSets gets a list of scale sets and instanceIDs.
 func (m *AzureManager) getFilteredScaleSets(filter []labelAutoDiscoveryConfig) ([]cloudprovider.NodeGroup, error) {
-	vmssList := m.azureCache.getScaleSets()
+	vmssList := m.azureCache.readAllScaleSets()
 
 	var nodeGroups []cloudprovider.NodeGroup
 	for _, scaleSet := range vmssList {
 		var cfgSizes *autoDiscoveryConfigSizes
 		if len(filter) > 0 {
-			if scaleSet.Tags == nil || len(scaleSet.Tags) == 0 {
+			if len(scaleSet.Tags) == 0 {
 				continue
 			}
 

@@ -29,6 +29,8 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure/cache"
+	klog "k8s.io/klog/v2"
 	"k8s.io/utils/ptr"
 	azclient "sigs.k8s.io/cloud-provider-azure/pkg/azclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azclient/virtualmachineclient/mock_virtualmachineclient"
@@ -1052,9 +1054,14 @@ func TestGetScaleSetOptions(t *testing.T) {
 		loadEnv(originalEnv)
 	})
 
+	autoscalingOptions := cache.New[azureRef, map[string]string](
+		klog.Background(),
+		cache.WithKeyCanonicalizer(azureRef.canonicalize),
+	)
+
 	manager := &AzureManager{
 		azureCache: &azureCache{
-			autoscalingOptions: make(map[azureRef]map[string]string),
+			autoscalingOptions: autoscalingOptions,
 		},
 	}
 	defaultOptions := config.NodeGroupAutoscalingOptions{
@@ -1070,7 +1077,7 @@ func TestGetScaleSetOptions(t *testing.T) {
 		config.DefaultScaleDownUnneededTimeKey:            "30m",
 		config.DefaultScaleDownUnreadyTimeKey:             "1h",
 	}
-	manager.azureCache.autoscalingOptions[azureRef{Name: "test1"}] = tags
+	manager.azureCache.autoscalingOptions.Add(azureRef{Name: "test1"}, tags)
 	opts := manager.GetScaleSetOptions("test1", defaultOptions)
 	assert.Equal(t, opts.ScaleDownUtilizationThreshold, 0.2)
 	assert.Equal(t, opts.ScaleDownGpuUtilizationThreshold, 0.3)
@@ -1083,14 +1090,14 @@ func TestGetScaleSetOptions(t *testing.T) {
 		config.DefaultScaleDownUnneededTimeKey:            "1m",
 		config.DefaultScaleDownUnreadyTimeKey:             "not-a-duration",
 	}
-	manager.azureCache.autoscalingOptions[azureRef{Name: "test2"}] = tags
+	manager.azureCache.autoscalingOptions.Add(azureRef{Name: "test2"}, tags)
 	opts = manager.GetScaleSetOptions("test2", defaultOptions)
 	assert.Equal(t, opts.ScaleDownUtilizationThreshold, defaultOptions.ScaleDownUtilizationThreshold)
 	assert.Equal(t, opts.ScaleDownGpuUtilizationThreshold, defaultOptions.ScaleDownGpuUtilizationThreshold)
 	assert.Equal(t, opts.ScaleDownUnneededTime, time.Minute)
 	assert.Equal(t, opts.ScaleDownUnreadyTime, defaultOptions.ScaleDownUnreadyTime)
 
-	manager.azureCache.autoscalingOptions[azureRef{Name: "test3"}] = map[string]string{}
+	manager.azureCache.autoscalingOptions.Add(azureRef{Name: "test3"}, map[string]string{})
 	opts = manager.GetScaleSetOptions("test3", defaultOptions)
 	assert.Equal(t, *opts, defaultOptions)
 }
@@ -1138,8 +1145,7 @@ func TestVMSSNotFound(t *testing.T) {
 		assert.Len(t, nodeGroups, 1)
 		assert.Equal(t, nodeGroups[0].Id(), testASG)
 		// expect no scale sets to be present
-		scaleSets := manager.azureCache.getScaleSets()
-		assert.Len(t, scaleSets, 0)
+		assert.True(t, manager.azureCache.scaleSets.IsEmpty())
 	})
 }
 

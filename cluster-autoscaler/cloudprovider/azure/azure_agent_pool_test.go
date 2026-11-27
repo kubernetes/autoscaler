@@ -333,7 +333,7 @@ func TestAgentPoolBelongs(t *testing.T) {
 	defer ctrl.Finish()
 
 	as := newTestAgentPool(newTestAzureManager(t), "as")
-	as.manager.azureCache.instanceToNodeGroup[azureRef{Name: testValidProviderID0}] = as
+	as.manager.azureCache.instanceToNodeGroup.Add(azureRef{Name: testValidProviderID0}, as)
 
 	flag, err := as.Belongs(&apiv1.Node{Spec: apiv1.NodeSpec{ProviderID: testValidProviderID0}})
 	assert.NoError(t, err)
@@ -348,7 +348,7 @@ func TestAgentPoolBelongs(t *testing.T) {
 	assert.False(t, flag)
 
 	as1 := newTestAgentPool(newTestAzureManager(t), "as1")
-	as1.manager.azureCache.instanceToNodeGroup[azureRef{Name: testValidProviderID0}] = as
+	as1.manager.azureCache.instanceToNodeGroup.Add(azureRef{Name: testValidProviderID0}, as)
 	flag, err = as1.Belongs(&apiv1.Node{Spec: apiv1.NodeSpec{ProviderID: testValidProviderID0}})
 	assert.NoError(t, err)
 	assert.False(t, flag)
@@ -360,9 +360,9 @@ func TestDeleteInstances(t *testing.T) {
 
 	as := newTestAgentPool(newTestAzureManager(t), "as")
 	as1 := newTestAgentPool(newTestAzureManager(t), "as1")
-	as.manager.azureCache.instanceToNodeGroup[azureRef{Name: testValidProviderID0}] = as
-	as.manager.azureCache.instanceToNodeGroup[azureRef{Name: testValidProviderID1}] = as1
-	as.manager.azureCache.instanceToNodeGroup[azureRef{Name: testInvalidProviderID}] = as
+	as.manager.azureCache.instanceToNodeGroup.Add(azureRef{Name: testValidProviderID0}, as)
+	as.manager.azureCache.instanceToNodeGroup.Add(azureRef{Name: testValidProviderID1}, as1)
+	as.manager.azureCache.instanceToNodeGroup.Add(azureRef{Name: testInvalidProviderID}, as)
 
 	mockVMClient := NewMockInterface(ctrl)
 	as.manager.azClient.virtualMachinesClient = mockVMClient
@@ -410,9 +410,9 @@ func TestForceDeleteNodes(t *testing.T) {
 
 	as := newTestAgentPool(newTestAzureManager(t), "as")
 	as1 := newTestAgentPool(newTestAzureManager(t), "as1")
-	as.manager.azureCache.instanceToNodeGroup[azureRef{Name: testValidProviderID0}] = as
-	as.manager.azureCache.instanceToNodeGroup[azureRef{Name: testValidProviderID1}] = as1
-	as.manager.azureCache.instanceToNodeGroup[azureRef{Name: testInvalidProviderID}] = as
+	as.manager.azureCache.instanceToNodeGroup.Add(azureRef{Name: testValidProviderID0}, as)
+	as.manager.azureCache.instanceToNodeGroup.Add(azureRef{Name: testValidProviderID1}, as1)
+	as.manager.azureCache.instanceToNodeGroup.Add(azureRef{Name: testInvalidProviderID}, as)
 
 	mockVMClient := NewMockInterface(ctrl)
 	as.manager.azClient.virtualMachinesClient = mockVMClient
@@ -449,7 +449,7 @@ func TestAgentPoolDeleteNodes(t *testing.T) {
 	defer ctrl.Finish()
 
 	as := newTestAgentPool(newTestAzureManager(t), "as")
-	as.manager.azureCache.instanceToNodeGroup[azureRef{Name: testValidProviderID0}] = as
+	as.manager.azureCache.instanceToNodeGroup.Add(azureRef{Name: testValidProviderID0}, as)
 	expectedVMs := getExpectedVMs()
 	mockVMClient := NewMockInterface(ctrl)
 	as.manager.azClient.virtualMachinesClient = mockVMClient
@@ -472,7 +472,7 @@ func TestAgentPoolDeleteNodes(t *testing.T) {
 	assert.Equal(t, expectedErr, err)
 
 	as1 := newTestAgentPool(newTestAzureManager(t), "as1")
-	as.manager.azureCache.instanceToNodeGroup[azureRef{Name: testValidProviderID0}] = as1
+	as.manager.azureCache.instanceToNodeGroup.Add(azureRef{Name: testValidProviderID0}, as1)
 	err = as.DeleteNodes(context.Background(), []*apiv1.Node{
 		{
 			Spec:       apiv1.NodeSpec{ProviderID: testValidProviderID0},
@@ -521,7 +521,7 @@ func TestAgentPoolNodes(t *testing.T) {
 	assert.Equal(t, cloudprovider.InstanceRunning, nodes[0].Status.State)
 
 	expectedVMs[1].Properties = &armcompute.VirtualMachineProperties{ProvisioningState: ptr.To(VMProvisioningStateDeleting)}
-	as.manager.azureCache.virtualMachines["as"] = expectedVMs
+	as.manager.azureCache.virtualMachines.Add("as", expectedVMs)
 	nodes, err = as.Nodes(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, cloudprovider.InstanceDeleting, nodes[0].Status.State)
@@ -546,7 +546,7 @@ func TestAgentPoolDeleteInstancesProactivelyMarksDeletion(t *testing.T) {
 	defer ctrl.Finish()
 
 	as := newTestAgentPool(newTestAzureManager(t), "as")
-	as.manager.azureCache.instanceToNodeGroup[azureRef{Name: testValidProviderID0}] = as
+	as.manager.azureCache.instanceToNodeGroup.Add(azureRef{Name: testValidProviderID0}, as)
 
 	mockVMClient := NewMockInterface(ctrl)
 	as.manager.azClient.virtualMachinesClient = mockVMClient
@@ -580,7 +580,7 @@ func TestAgentPoolDeleteInstancesStrictCacheDoesNotProactivelyMarkDeletion(t *te
 
 	as := newTestAgentPool(newTestAzureManager(t), "as")
 	as.manager.config.StrictCacheUpdates = true
-	as.manager.azureCache.instanceToNodeGroup[azureRef{Name: testValidProviderID0}] = as
+	as.manager.azureCache.instanceToNodeGroup.Add(azureRef{Name: testValidProviderID0}, as)
 
 	mockVMClient := NewMockInterface(ctrl)
 	as.manager.azClient.virtualMachinesClient = mockVMClient
