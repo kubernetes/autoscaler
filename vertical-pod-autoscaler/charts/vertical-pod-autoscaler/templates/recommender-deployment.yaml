@@ -114,6 +114,9 @@ spec:
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- if kindIs "bool" .Values.recommender.hostUsers }}
+      hostUsers: {{ .Values.recommender.hostUsers }}
+      {{- end }}
       {{- with .Values.recommender.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}

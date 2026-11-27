@@ -236,6 +236,7 @@ This chart includes [helm-unittest](https://github.com/helm-unittest/helm-unitte
 | admissionController.certGen.affinity | object | `{}` |  |
 | admissionController.certGen.enabled | bool | `true` |  |
 | admissionController.certGen.env | object | `{}` | Additional environment variables to be added to the certgen container. Format is KEY: Value format |
+| admissionController.certGen.hostUsers | bool | `true` |  |
 | admissionController.certGen.image.pullPolicy | string | `"IfNotPresent"` | The pull policy for the certgen image. Recommend not changing this |
 | admissionController.certGen.image.repository | string | `"registry.k8s.io/ingress-nginx/kube-webhook-certgen"` | An image that contains certgen for creating certificates. |
 | admissionController.certGen.image.tag | string | `"v20231011-8b53cabe0"` | An image tag for the admissionController.certGen.image.repository image. |
@@ -262,6 +263,7 @@ This chart includes [helm-unittest](https://github.com/helm-unittest/helm-unitte
 | admissionController.extraArgs | list | `[]` |  |
 | admissionController.extraEnv | list | `[]` |  |
 | admissionController.hostNetwork | bool | `false` | Enable host network for the admission controller pod. Set to true when the pod needs direct access to the host's network namespace. Note: this bypasses Kubernetes network isolation and may cause port conflicts if multiple replicas run on the same node. |
+| admissionController.hostUsers | bool | `true` |  |
 | admissionController.image.pullPolicy | string | `"IfNotPresent"` |  |
 | admissionController.image.repository | string | `"registry.k8s.io/autoscaling/vpa-admission-controller"` |  |
 | admissionController.image.tag | string | `nil` |  |
@@ -339,6 +341,7 @@ This chart includes [helm-unittest](https://github.com/helm-unittest/helm-unitte
 | recommender.enabled | bool | `true` |  |
 | recommender.extraArgs | list | `[]` |  |
 | recommender.extraEnv | list | `[]` |  |
+| recommender.hostUsers | bool | `true` |  |
 | recommender.image.pullPolicy | string | `"IfNotPresent"` |  |
 | recommender.image.repository | string | `"registry.k8s.io/autoscaling/vpa-recommender"` |  |
 | recommender.image.tag | string | `nil` |  |
@@ -378,6 +381,7 @@ This chart includes [helm-unittest](https://github.com/helm-unittest/helm-unitte
 | updater.enabled | bool | `true` |  |
 | updater.extraArgs[0] | string | `"--in-place-skip-disruption-budget=true"` |  |
 | updater.extraEnv | list | `[]` |  |
+| updater.hostUsers | bool | `true` |  |
 | updater.image.pullPolicy | string | `"IfNotPresent"` |  |
 | updater.image.repository | string | `"registry.k8s.io/autoscaling/vpa-updater"` |  |
 | updater.image.tag | string | `nil` |  |

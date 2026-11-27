@@ -50,6 +50,9 @@ spec:
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- if kindIs "bool" .Values.updater.hostUsers }}
+      hostUsers: {{ .Values.updater.hostUsers }}
+      {{- end }}
       {{- with .Values.updater.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
