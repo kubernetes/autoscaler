@@ -244,6 +244,12 @@ func (c *machineController) run() error {
 	return nil
 }
 
+// shutdown blocks until all informer goroutines started by the factories have exited, stopChannel must be closed first.
+func (c *machineController) shutdown() {
+	c.workloadInformerFactory.Shutdown()
+	c.managementInformerFactory.Shutdown()
+}
+
 func (c *machineController) findScalableResourceByProviderID(providerID normalizedProviderID) (*unstructured.Unstructured, error) {
 	// Check for a MachinePool first to simplify the logic afterward.
 	if c.machinePoolsAvailable {
@@ -457,7 +463,7 @@ func newMachineController(
 	managementDiscoveryClient discovery.DiscoveryInterface,
 	managementScaleClient scale.ScalesGetter,
 	discoveryOpts cloudprovider.NodeGroupDiscoveryOptions,
-	stopChannel chan struct{},
+	stopChannel <-chan struct{},
 ) (*machineController, error) {
 	workloadInformerFactory := kubeinformers.NewSharedInformerFactory(workloadClient, 0)
 
