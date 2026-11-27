@@ -46,6 +46,12 @@ const (
 	// CPUStartupBoost enables the CPU startup boost feature.
 	CPUStartupBoost featuregate.Feature = "CPUStartupBoost"
 
+	// alpha: v1.9.0
+	// components: admission-controller, updater
+
+	// EvictionRequirementOOMScaleUp enables the TargetHigherThanRequestsAndOOM eviction requirement.
+	EvictionRequirementOOMScaleUp featuregate.Feature = "EvictionRequirementOOMScaleUp"
+
 	// alpha: v1.5.0
 	// components: admission-controller, recommender, updater
 

@@ -29,10 +29,11 @@ import (
 
 // VPAValidationOptions contains the different settings for VPA validation
 type VPAValidationOptions struct {
-	IsVPACreate          bool
-	AllowCPUStartupBoost bool
-	AllowPerVPAConfig    bool
-	AllowInPlace         bool
+	IsVPACreate                        bool
+	AllowCPUStartupBoost               bool
+	AllowPerVPAConfig                  bool
+	AllowInPlace                       bool
+	AllowEvictionRequirementOOMScaleUp bool
 	// ExistingControlledResources contains the controlled resources already
 	// present in the old VPA object, which stay allowed on update even if
 	// they wouldn't be accepted on create.
@@ -41,11 +42,12 @@ type VPAValidationOptions struct {
 
 func getValidationOptionsForVPA(oldObj *vpa_types.VerticalPodAutoscaler) VPAValidationOptions {
 	opts := VPAValidationOptions{
-		IsVPACreate:                 oldObj == nil,
-		AllowCPUStartupBoost:        allowCPUBoost(oldObj),
-		AllowPerVPAConfig:           allowPerVPAConfig(oldObj),
-		AllowInPlace:                allowInPlace(oldObj),
-		ExistingControlledResources: existingControlledResources(oldObj),
+		IsVPACreate:                        oldObj == nil,
+		AllowCPUStartupBoost:               allowCPUBoost(oldObj),
+		AllowPerVPAConfig:                  allowPerVPAConfig(oldObj),
+		AllowInPlace:                       allowInPlace(oldObj),
+		AllowEvictionRequirementOOMScaleUp: allowEvictionRequirementOOMScaleUp(oldObj),
+		ExistingControlledResources:        existingControlledResources(oldObj),
 	}
 
 	return opts
@@ -130,6 +132,24 @@ func allowInPlace(oldObj *vpa_types.VerticalPodAutoscaler) bool {
 	return false
 }
 
+func allowEvictionRequirementOOMScaleUp(oldObj *vpa_types.VerticalPodAutoscaler) bool {
+	if features.Enabled(features.EvictionRequirementOOMScaleUp) {
+		return true
+	}
+
+	if oldObj == nil || oldObj.Spec.UpdatePolicy == nil {
+		return false
+	}
+
+	for _, req := range oldObj.Spec.UpdatePolicy.EvictionRequirements {
+		if req != nil && req.ChangeRequirement == vpa_types.TargetHigherThanRequestsAndOOM {
+			return true
+		}
+	}
+
+	return false
+}
+
 func validateVPA(vpa *vpa_types.VerticalPodAutoscaler, opts VPAValidationOptions) ([]string, field.ErrorList) {
 	return validateVPASpec(&vpa.Spec, field.NewPath("spec"), opts)
 }
@@ -196,6 +216,12 @@ func validateVPASpecUpdatePolicy(updatePolicy *vpa_types.PodUpdatePolicy, fldPat
 			}
 		} else {
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("evictAfterOOMSeconds"), fmt.Sprintf("not supported when feature flag %s is disabled", features.PerVPAConfig)))
+		}
+	}
+
+	for i, req := range updatePolicy.EvictionRequirements {
+		if req != nil && req.ChangeRequirement == vpa_types.TargetHigherThanRequestsAndOOM && !opts.AllowEvictionRequirementOOMScaleUp {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("evictionRequirements").Index(i).Child("changeRequirement"), fmt.Sprintf("in order to use ChangeRequirement %s, you must enable feature gate %s in the admission-controller args", vpa_types.TargetHigherThanRequestsAndOOM, features.EvictionRequirementOOMScaleUp)))
 		}
 	}
 

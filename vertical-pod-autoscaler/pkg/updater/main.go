@@ -212,7 +212,7 @@ func run(healthCheck *metrics.HealthCheck, commonFlag *common.CommonFlags) {
 		admissionControllerStatusNamespace,
 		config.AdmissionControllerStatusLeaseTimeout,
 		vpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator),
-		priority.NewScalingDirectionPodEvictionAdmission(),
+		priority.NewScalingDirectionPodEvictionAdmission(priority.WithEvictAfterOOMThreshold(config.EvictAfterOOMThreshold)),
 		targetSelectorFetcher,
 		controllerFetcher,
 		priority.NewProcessor(),
